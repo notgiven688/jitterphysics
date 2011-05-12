@@ -99,6 +99,8 @@ namespace Jitter.Collision.Shapes
         /// </summary>
         public TransformedShape[] Shapes { get { return this.shapes; } }
 
+        private JBBox mInternalBBox;
+
         /// <summary>
         /// Created a new instance of the CompountShape class.
         /// </summary>
@@ -167,16 +169,21 @@ namespace Jitter.Collision.Shapes
         /// <param name="box">The axis aligned bounding box of the shape.</param>
         public override void GetBoundingBox(ref JMatrix orientation, out JBBox box)
         {
-            box.Min = new JVector(float.MaxValue);
-            box.Max = new JVector(float.MinValue);
+            box.Min = mInternalBBox.Min;
+            box.Max = mInternalBBox.Max;
 
-            JBBox addBox;
-            for (int i = 0; i < shapes.Length; i++)
-            {
-                this.SetCurrentShape(i);
-                base.GetBoundingBox(ref orientation, out addBox);
-                JBBox.CreateMerged(ref box, ref addBox, out box);
-            }
+            JVector localHalfExtents = 0.5f * (box.Max - box.Min);
+            JVector localCenter = 0.5f * (box.Max + box.Min);
+
+            JVector center;
+            JVector.Transform(ref localCenter, ref orientation, out center);
+
+            JMatrix abs; JMath.Absolute(ref orientation, out abs);
+            JVector temp;
+            JVector.Transform(ref localHalfExtents, ref abs, out temp);
+
+            box.Max = center + temp;
+            box.Min = center - temp;
         }
 
         int currentShape = 0;
@@ -189,6 +196,8 @@ namespace Jitter.Collision.Shapes
         public override void SetCurrentShape(int index)
         {
             currentShape = index;
+			shapes[currentShape].Shape.SupportCenter(out geomCen);
+			geomCen += shapes[currentShape].Position;
         }
 
         /// <summary>
@@ -200,6 +209,31 @@ namespace Jitter.Collision.Shapes
         public override int Prepare(ref JVector rayOrigin, ref JVector rayEnd)
         {
             return shapes.Length;
+        }
+
+
+        public override void UpdateShape()
+        {
+            UpdateInternalBoundingBox();
+            base.UpdateShape();
+        }
+
+        protected void UpdateInternalBoundingBox()
+        {
+            mInternalBBox.Min = new JVector(float.MaxValue);
+            mInternalBBox.Max = new JVector(float.MinValue);
+
+            JBBox addBox;
+            for (int i = 0; i < shapes.Length; i++)
+            {
+                JMatrix shapeOrientation = shapes[i].Orientation;
+                shapes[i].Shape.GetBoundingBox(ref shapeOrientation, out addBox);
+
+                addBox.Min += shapes[i].Position;
+                addBox.Max += shapes[i].Position;
+
+                JBBox.CreateMerged(ref mInternalBBox, ref addBox, out mInternalBBox);
+            }
         }
     }
 }
