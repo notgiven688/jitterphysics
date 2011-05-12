@@ -137,6 +137,7 @@ namespace Jitter.LinearMath
             triBoxes = null;
             tris = null;
             nodes = null;
+            nodeStackPool.ResetResourcePool();
         }
         #endregion
 
