@@ -1,0 +1,582 @@
+﻿#region Using Statements
+using System;
+using System.Collections.Generic;
+
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+
+using Jitter;
+using Jitter.Dynamics;
+using Jitter.Collision;
+using Jitter.LinearMath;
+using Jitter.Collision.Shapes;
+using Jitter.Dynamics.Constraints;
+using Jitter.Dynamics.Joints;
+using System.Reflection;
+using Jitter.Forces;
+using System.Diagnostics;
+
+using SingleBodyConstraints = Jitter.Dynamics.Constraints.SingleBody;
+using System.IO;
+#endregion
+
+namespace JitterDemo
+{
+
+    public enum BodyTag { DrawMe, DontDrawMe }
+
+    public class JitterDemo : Microsoft.Xna.Framework.Game
+    {
+        private GraphicsDeviceManager graphics;
+
+        private enum Primitives { box,sphere,cylinder,cone,capsule }
+
+        private Primitives3D.GeometricPrimitive[] primitives =
+            new Primitives3D.GeometricPrimitive[5];
+
+        private Random random = new Random();
+
+        private Color backgroundColor = new Color(63, 66, 73);
+        private bool multithread = true;
+
+        public Camera Camera { private set; get; }
+        public Display Display { private set; get; }
+        public DebugDrawer DebugDrawer { private set; get; }
+        public BasicEffect BasicEffect { private set; get; }
+        public List<Scenes.Scene> PhysicScenes { private set; get;   }
+        public World World { private set; get; }
+
+        private int currentScene = 0;
+
+        RasterizerState wireframe;
+
+        public JitterDemo()
+        {
+            this.IsMouseVisible = true;
+            graphics = new GraphicsDeviceManager(this);
+
+
+            graphics.GraphicsProfile = GraphicsProfile.HiDef;
+            graphics.PreferMultiSampling = true;
+
+            Content.RootDirectory = "Content";
+
+            graphics.PreferredBackBufferHeight = 600;
+            graphics.PreferredBackBufferWidth = 800;
+
+            this.IsFixedTimeStep = false;
+            this.graphics.SynchronizeWithVerticalRetrace = false;
+
+            CollisionSystem collision = new CollisionSystemPersistentSAP();
+            World = new World(collision); World.AllowDeactivation = true;
+
+            this.Window.AllowUserResizing = true;
+
+
+            this.Window.Title = "Jitter Physics Demo - Jitter "
+                + Assembly.GetAssembly(typeof(Jitter.World)).GetName().Version.ToString();
+
+            wireframe = new RasterizerState();
+            wireframe.FillMode = FillMode.WireFrame;
+
+        }
+
+
+        protected override void Initialize()
+        {
+            Camera = new Camera(this);
+            Camera.Position = new Vector3(15, 15, 30);
+            Camera.Target = Camera.Position + Vector3.Normalize(new Vector3(10, 5, 20));
+            this.Components.Add(Camera);
+
+            DebugDrawer = new DebugDrawer(this);
+            this.Components.Add(DebugDrawer);
+
+            Display = new Display(this);
+            Display.DrawOrder = int.MaxValue;
+            this.Components.Add(Display);
+
+            primitives[(int)Primitives.box] = new Primitives3D.BoxPrimitive(GraphicsDevice);
+            primitives[(int)Primitives.capsule] = new Primitives3D.CapsulePrimitive(GraphicsDevice);
+            primitives[(int)Primitives.cone] = new Primitives3D.ConePrimitive(GraphicsDevice);
+            primitives[(int)Primitives.cylinder] = new Primitives3D.CylinderPrimitive(GraphicsDevice);
+            primitives[(int)Primitives.sphere] = new Primitives3D.SpherePrimitive(GraphicsDevice);
+
+            BasicEffect = new BasicEffect(GraphicsDevice);
+            BasicEffect.EnableDefaultLighting();
+            BasicEffect.PreferPerPixelLighting = true;
+
+            this.PhysicScenes = new List<Scenes.Scene>();
+
+            foreach (Type type in Assembly.GetExecutingAssembly().GetTypes())
+            {
+                if (type.Namespace == "JitterDemo.Scenes" && !type.IsAbstract)
+                {
+                    Scenes.Scene scene = (Scenes.Scene)Activator.CreateInstance(type, this);
+                    this.PhysicScenes.Add(scene);
+                }
+            }
+
+         
+
+            if (PhysicScenes.Count > 0)
+                this.PhysicScenes[0].Build();
+
+            base.Initialize();
+        }
+
+
+        private Vector3 RayTo(int x, int y)
+        {
+            Vector3 nearSource = new Vector3(x, y, 0);
+            Vector3 farSource = new Vector3(x, y, 1);
+
+            Matrix world = Matrix.Identity;
+
+            Vector3 nearPoint = graphics.GraphicsDevice.Viewport.Unproject(nearSource, Camera.Projection, Camera.View, world);
+            Vector3 farPoint = graphics.GraphicsDevice.Viewport.Unproject(farSource, Camera.Projection, Camera.View, world);
+
+            Vector3 direction = farPoint - nearPoint;
+            return direction;
+        }
+
+        #region update - global variables
+        // Hold previous input states.
+        KeyboardState keyboardPreviousState = new KeyboardState();
+        GamePadState gamePadPreviousState = new GamePadState();
+        MouseState mousePreviousState = new MouseState();
+
+        // Store information for drag and drop
+        JVector hitPoint, hitNormal;
+        SingleBodyConstraints.PointOnPoint grabConstraint;
+        RigidBody grabBody;
+        float hitDistance = 0.0f;
+        int scrollWheel = 0;
+        #endregion
+
+        private void RemoveComponents()
+        {
+            for (int i = this.Components.Count - 1; i >= 0; i--)
+            {
+                IGameComponent component = this.Components[i];
+
+                if (component is QuadDrawer) continue;
+                if (component is Camera) continue;
+                if (component is Display) continue;
+                if (component is DebugDrawer) continue;
+
+                this.Components.RemoveAt(i);
+
+            }
+        }
+
+       
+
+        protected override void Update(GameTime gameTime)
+        {
+            GamePadState padState = GamePad.GetState(PlayerIndex.One);
+            KeyboardState keyState = Keyboard.GetState();
+            MouseState mouseState = Mouse.GetState();
+
+           // World.Step(
+
+            // let the user escape the demo
+            if (keyState.IsKeyDown(Keys.Escape) || 
+                padState.IsButtonDown(Buttons.Back)) this.Exit();
+
+            // change threading mode
+            if (keyState.IsKeyDown(Keys.M) && !keyboardPreviousState.IsKeyDown(Keys.M))
+                multithread = !multithread;
+
+            #region drag and drop physical objects with the mouse
+            if (mouseState.LeftButton == ButtonState.Pressed &&
+                mousePreviousState.LeftButton == ButtonState.Released)
+            {
+                JVector ray = Conversion.ToJitterVector(RayTo(mouseState.X, mouseState.Y));
+                JVector camp = Conversion.ToJitterVector(Camera.Position);
+
+                ray = JVector.Normalize(ray) * 100;
+
+                float fraction;
+                bool result = World.CollisionSystem.Raycast(camp, ray, null, out grabBody, out hitNormal, out fraction);
+
+                if (result)
+                {
+                    hitPoint = camp + fraction * ray;
+
+                    if (grabConstraint != null) World.RemoveConstraint(grabConstraint);
+
+                    JVector lanchor = hitPoint - grabBody.Position;
+                    lanchor = JVector.Transform(lanchor, JMatrix.Transpose(grabBody.Orientation));
+
+                    grabConstraint = new SingleBodyConstraints.PointOnPoint(grabBody, lanchor);
+                    grabConstraint.Softness = 0.1f;
+                    
+                    World.AddConstraint(grabConstraint);
+                    hitDistance = (Conversion.ToXNAVector(hitPoint) - Camera.Position).Length();
+                    scrollWheel = mouseState.ScrollWheelValue;
+                    grabConstraint.Anchor = hitPoint;
+                }
+            }
+
+            if (mouseState.LeftButton == ButtonState.Pressed)
+            {
+                hitDistance += (mouseState.ScrollWheelValue - scrollWheel) * 0.01f;
+                scrollWheel = mouseState.ScrollWheelValue;
+
+                if (grabBody != null)
+                {
+                    Vector3 ray = RayTo(mouseState.X, mouseState.Y); ray.Normalize();
+                    grabConstraint.Anchor = Conversion.ToJitterVector(Camera.Position + ray * hitDistance);
+                    grabBody.IsActive = true;
+                }
+            }
+            else
+            {
+                grabBody = null;
+                if (grabConstraint != null) World.RemoveConstraint(grabConstraint);
+            }
+            #endregion
+
+            #region create random primitives
+
+            if (keyState.IsKeyDown(Keys.Space) && !keyboardPreviousState.IsKeyDown(Keys.Space))
+            {
+                SpawnRandomPrimitive(Conversion.ToJitterVector(Camera.Position),
+                    Conversion.ToJitterVector((Camera.Target - Camera.Position) * 40.0f));
+
+            }
+            #endregion
+
+            #region switch through physic scenes
+            if (keyState.IsKeyDown(Keys.Add) &&
+                !keyboardPreviousState.IsKeyDown(Keys.Add) ||
+                keyState.IsKeyDown(Keys.OemPlus) &&
+                !keyboardPreviousState.IsKeyDown(Keys.OemPlus))
+            {
+                PhysicScenes[currentScene].Destroy();
+                RemoveComponents();
+                currentScene++;
+                currentScene = currentScene % PhysicScenes.Count;
+                PhysicScenes[currentScene].Build();
+            }
+
+            if (keyState.IsKeyDown(Keys.OemMinus) &&
+                 !keyboardPreviousState.IsKeyDown(Keys.OemMinus) ||
+                 keyState.IsKeyDown(Keys.Subtract) &&
+                !keyboardPreviousState.IsKeyDown(Keys.Subtract))
+            {
+                PhysicScenes[currentScene].Destroy();
+                RemoveComponents();
+                currentScene += PhysicScenes.Count - 1;
+                currentScene = currentScene % PhysicScenes.Count;
+                PhysicScenes[currentScene].Build();
+            }
+            #endregion
+
+
+            UpdateDisplayText(gameTime);
+
+            float step = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            //World.StepFixed(step, true, 1.0f / 60.0f, 1);
+
+
+            if (step > 1.0f / 100.0f) step = 1.0f / 100.0f;
+
+            World.Step(step, multithread);
+
+            //if(!keyboardPreviousState.IsKeyDown(Keys.Space) && keyState.IsKeyDown(Keys.Space))
+            //    World.Step(step,multithread);
+
+            gamePadPreviousState = padState;
+            keyboardPreviousState = keyState;
+            mousePreviousState = mouseState;
+
+
+
+            base.Update(gameTime);
+        }
+
+
+        private bool RaycastCallback(RigidBody body, JVector normal, float fraction)
+        {
+            if (body.IsStatic) return false;
+            else return true;
+        }
+
+        RigidBody lastBody = null;
+
+        private void SpawnRandomPrimitive(JVector position, JVector velocity)
+        {
+            RigidBody body = null;
+            int rndn = random.Next(7);
+
+            // less of the more advanced objects
+            if (rndn == 5 || rndn == 6 || rndn == 7) rndn = random.Next(7);
+
+            switch (rndn)
+            {
+                case 0:
+                    body = new RigidBody(new ConeShape((float)random.Next(5, 50) / 20.0f, (float)random.Next(10, 20) / 20.0f));
+                    break;
+                case 1:
+                    body = new RigidBody(new BoxShape((float)random.Next(10, 30) / 20.0f, (float)random.Next(10, 30) / 20.0f, (float)random.Next(10, 30) / 20.0f));
+                    break;
+                case 2:
+                    body = new RigidBody(new SphereShape(1.0f));
+                    break;
+                case 3:
+                    body = new RigidBody(new CylinderShape(1.0f, 0.5f));
+                    break;
+                case 4:
+                    body = new RigidBody(new CapsuleShape(1.0f, 0.5f));
+                    break;
+                case 5:
+                    Shape b1 = new BoxShape(new JVector(3, 1, 1));
+                    Shape b2 = new BoxShape(new JVector(1, 1, 3));
+                    Shape b3 = new CylinderShape(3.0f, 0.5f);
+
+                    CompoundShape.TransformedShape t1 = new CompoundShape.TransformedShape(b1, JMatrix.Identity, JVector.Zero);
+                    CompoundShape.TransformedShape t2 = new CompoundShape.TransformedShape(b2, JMatrix.Identity, JVector.Zero);
+                    CompoundShape.TransformedShape t3 = new CompoundShape.TransformedShape(b3, JMatrix.Identity, new JVector(0, 0, 0));
+
+                    CompoundShape ms = new CompoundShape(new CompoundShape.TransformedShape[3] { t1, t2, t3 });
+
+                    body = new RigidBody(ms);
+                    break;
+                case 6:
+                    ConvexHullObject obj2 = new ConvexHullObject(this);
+                    Components.Add(obj2);
+                    body = obj2.body;
+                    body.Material.Restitution = 0.2f;
+                    body.Material.StaticFriction = 0.8f;
+                    break;
+            }
+
+            World.AddBody(body);
+
+ 
+            body.Position = position;
+            body.LinearVelocity = velocity;
+
+
+            lastBody = body;
+        }
+
+        #region update the display text informations
+
+        private float accUpdateTime = 0.0f;
+        private void UpdateDisplayText(GameTime time)
+        {
+            accUpdateTime += (float)time.ElapsedGameTime.TotalSeconds;
+            if (accUpdateTime < 0.1f) return;
+
+            accUpdateTime = 0.0f;
+
+            int contactCount = 0;
+            foreach (Arbiter ar in World.ArbiterMap.Values)
+                contactCount += ar.ContactList.Count;
+
+            Display.DisplayText[1] = World.CollisionSystem.ToString();
+
+            Display.DisplayText[0] = "Current Scene: " + PhysicScenes[currentScene].ToString();
+            //
+            Display.DisplayText[2] = "Arbitercount: " + World.ArbiterMap.Values.Count.ToString() + ";" + " Contactcount: " + contactCount.ToString();
+            Display.DisplayText[3] = "Islandcount: " + World.Islands.Count.ToString();
+            Display.DisplayText[4] = "Bodycount: " + World.RigidBodies.Count + " (" + activeBodies.ToString() + ")";
+            Display.DisplayText[5] = (multithread) ? "Multithreaded" : "Single Threaded";
+
+            int entries = (int)Jitter.World.DebugType.Num;
+            double total = 0;
+
+            for (int i = 0; i < entries; i++)
+            {
+                World.DebugType type = (World.DebugType)i;
+
+                Display.DisplayText[8 + i] = type.ToString() + ": " +
+                    ((double)World.DebugTimes[i]).ToString("0.00");
+
+                total += World.DebugTimes[i];
+            }
+
+            Display.DisplayText[8+entries] = "------------------------------";
+            Display.DisplayText[9 + entries] = "Total Physics Time: " + total.ToString("0.00");
+            Display.DisplayText[10 + entries] = "Physics Framerate: " + (1000.0d / total).ToString("0") + " fps";
+
+
+
+            Display.DisplayText[6] = "gen0: " + GC.CollectionCount(0).ToString() +
+                "  gen1: " + GC.CollectionCount(1).ToString() +
+                "  gen2: " + GC.CollectionCount(2).ToString();
+
+        }
+        #endregion
+
+        #region add draw matrices to the different primitives
+        private void AddShapeToDrawList(Shape shape, JMatrix ori, JVector pos)
+        {
+            Primitives3D.GeometricPrimitive primitive = null;
+            Matrix scaleMatrix = Matrix.Identity;
+
+            if (shape is BoxShape)
+            {
+                primitive = primitives[(int)Primitives.box];
+                scaleMatrix = Matrix.CreateScale(Conversion.ToXNAVector((shape as BoxShape).Size));
+            }
+            else if (shape is SphereShape)
+            {
+                primitive = primitives[(int)Primitives.sphere];
+                scaleMatrix = Matrix.CreateScale((shape as SphereShape).Radius);
+            }
+            else if (shape is CylinderShape)
+            {
+                primitive = primitives[(int)Primitives.cylinder];
+                CylinderShape cs = shape as CylinderShape;
+                scaleMatrix = Matrix.CreateScale(cs.Radius, cs.Height, cs.Radius);
+            }
+            else if (shape is CapsuleShape)
+            {
+                primitive = primitives[(int)Primitives.capsule];
+                CapsuleShape cs = shape as CapsuleShape;
+                scaleMatrix = Matrix.CreateScale(cs.Radius * 2, cs.Length, cs.Radius * 2);
+
+            }
+            else if (shape is ConeShape)
+            {
+                ConeShape cs = shape as ConeShape;
+                scaleMatrix = Matrix.CreateScale(cs.Radius, cs.Height, cs.Radius);
+                primitive = primitives[(int)Primitives.cone];
+            }
+
+            primitive.AddWorldMatrix(scaleMatrix * Conversion.ToXNAMatrix(ori) *
+                        Matrix.CreateTranslation(Conversion.ToXNAVector(pos)));
+        }
+
+        private void AddBodyToDrawList(RigidBody rb)
+        {
+            if (rb.Tag is BodyTag && ((BodyTag)rb.Tag) == BodyTag.DontDrawMe) return;
+
+            bool isCompoundShape = (rb.Shape is CompoundShape);
+
+            if (!isCompoundShape)
+            {
+                AddShapeToDrawList(rb.Shape, rb.Orientation, rb.Position);
+            }
+            else
+            {
+                CompoundShape cShape = rb.Shape as CompoundShape;
+                JMatrix orientation = rb.Orientation;
+                JVector position = rb.Position;
+
+                foreach (var ts in cShape.Shapes)
+                {
+                    JVector pos = ts.Position;
+                    JMatrix ori = ts.Orientation;
+
+                    JVector.Transform(ref pos,ref orientation,out pos);
+                    JVector.Add(ref pos, ref position, out pos);
+
+                    JMatrix.Multiply(ref ori, ref orientation, out ori);
+
+                    AddShapeToDrawList(ts.Shape, ori, pos);
+                }
+
+            }
+
+        }
+        #endregion
+
+        #region draw jitter debug data
+
+        List<JVector> pointList = new List<JVector>();
+        List<JVector> lineList = new List<JVector>();
+
+        private void DrawJitterDebugInfo()
+        {
+            pointList.Clear(); lineList.Clear();
+            foreach (Constraint constr in World.Constraints)
+                constr.AddToDebugDrawList(lineList, pointList);
+
+            //foreach (Arbiter arbiter in World.ArbiterMap.Values)
+            //{
+            //    foreach (Contact contact in arbiter.ContactList)
+            //    {
+            //        pointList.Add(contact.Position1);
+            //        pointList.Add(contact.Position2);
+            //    }
+            //}
+
+            for (int i = 0; i < lineList.Count; i += 2)
+            {
+                DebugDrawer.DrawLine(Conversion.ToXNAVector(lineList[i]),
+                    Conversion.ToXNAVector(lineList[i + 1]), Color.Blue);
+            }
+
+            for (int i = 0; i < pointList.Count; i++)
+            {
+                DebugDrawer.DrawLine(Conversion.ToXNAVector(pointList[i] + JVector.Up * 0.3f),
+                    Conversion.ToXNAVector(pointList[i] + JVector.Down * 0.3f), Color.Red);
+                DebugDrawer.DrawLine(Conversion.ToXNAVector(pointList[i] + JVector.Left*0.3f),
+                    Conversion.ToXNAVector(pointList[i] + JVector.Right * 0.3f), Color.Red);
+                DebugDrawer.DrawLine(Conversion.ToXNAVector(pointList[i] + JVector.Backward * 0.3f),
+                    Conversion.ToXNAVector(pointList[i] + JVector.Forward * 0.3f), Color.Red);
+            }
+        }
+
+        private void DrawIslands()
+        {
+            JBBox box;
+
+            foreach (CollisionIsland island in World.Islands)
+            {
+                box = JBBox.SmallBox;
+
+                foreach (RigidBody body in island.Bodies)
+                {
+                    box = JBBox.CreateMerged(box, body.BoundingBox);
+                }
+
+                DebugDrawer.DrawAabb(Conversion.ToXNAVector(box.Min),
+                    Conversion.ToXNAVector(box.Max),
+                    island.IsActive() ? Color.Red : Color.Green);
+
+            }
+        }
+        #endregion
+
+        int activeBodies = 0;
+
+        protected override void Draw(GameTime gameTime)
+        {
+            GraphicsDevice.Clear(backgroundColor);
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            //GraphicsDevice.RasterizerState = wireframe;
+
+            BasicEffect.View = Camera.View;
+            BasicEffect.Projection = Camera.Projection;
+
+            activeBodies = 0;
+
+            // Draw all shapes
+            foreach (RigidBody body in World.RigidBodies)
+            {
+                if (body.IsActive) activeBodies++;
+                AddBodyToDrawList(body);
+            }
+
+            BasicEffect.DiffuseColor = Color.LightGray.ToVector3();
+            foreach (Primitives3D.GeometricPrimitive prim in primitives) prim.Draw(BasicEffect);
+
+            PhysicScenes[currentScene].Draw();
+
+            // Draw the debug data provided by Jitter
+            //DrawIslands();
+            DrawJitterDebugInfo();
+            base.Draw(gameTime);
+        }
+
+
+    }
+}

@@ -1,0 +1,205 @@
+﻿/* Copyright (C) <2009-2011> <Thorben Linneweber, Jitter Physics>
+* 
+*  This software is provided 'as-is', without any express or implied
+*  warranty.  In no event will the authors be held liable for any damages
+*  arising from the use of this software.
+*
+*  Permission is granted to anyone to use this software for any purpose,
+*  including commercial applications, and to alter it and redistribute it
+*  freely, subject to the following restrictions:
+*
+*  1. The origin of this software must not be misrepresented; you must not
+*      claim that you wrote the original software. If you use this software
+*      in a product, an acknowledgment in the product documentation would be
+*      appreciated but is not required.
+*  2. Altered source versions must be plainly marked as such, and must not be
+*      misrepresented as being the original software.
+*  3. This notice may not be removed or altered from any source distribution. 
+*/
+
+#region Using Statements
+using System;
+using System.Collections.Generic;
+
+using Jitter.Dynamics;
+using Jitter.LinearMath;
+using Jitter.Collision.Shapes;
+#endregion
+
+namespace Jitter.Collision.Shapes
+{
+
+    /// <summary>
+    /// A <see cref="Shape"/> representing a compoundShape consisting
+    /// of several 'sub' shapes.
+    /// </summary>
+    public class CompoundShape : Multishape
+    {
+        #region public struct TransformedShape
+
+        /// <summary>
+        /// Holds a 'sub' shape and it's transformation. This TransformedShape can
+        /// be added to the <see cref="CompoundShape"/>
+        /// </summary>
+        public struct TransformedShape
+        {
+            private Shape shape;
+            internal JVector position;
+            internal JMatrix orientation;
+            internal JMatrix invOrientation;
+
+            /// <summary>
+            /// The 'sub' shape.
+            /// </summary>
+            public Shape Shape { get { return shape; } set { shape = value; } }
+
+            /// <summary>
+            /// The position of a 'sub' shape
+            /// </summary>
+            public JVector Position { get { return position; } set { position = value; } }
+
+
+            /// <summary>
+            /// The inverse orientation of the 'sub' shape.
+            /// </summary>
+            public JMatrix InverseOrientation
+            {
+                get { return invOrientation; }
+            }
+
+            /// <summary>
+            /// The orienation of the 'sub' shape.
+            /// </summary>
+            public JMatrix Orientation
+            {
+                get { return orientation; }
+                set { orientation = value; JMatrix.Transpose(ref orientation, out invOrientation); }
+            }
+
+            /// <summary>
+            /// Creates a new instance of the TransformedShape struct.
+            /// </summary>
+            /// <param name="shape">The shape.</param>
+            /// <param name="orientation">The orientation this shape should have.</param>
+            /// <param name="position">The position this shape should have.</param>
+            public TransformedShape(Shape shape, JMatrix orientation, JVector position)
+            {
+                this.position = position;
+                this.orientation = orientation;
+                JMatrix.Transpose(ref orientation, out invOrientation);
+                this.shape = shape;
+            }
+        }
+        #endregion
+
+        private TransformedShape[] shapes;
+
+        /// <summary>
+        /// An array conaining all 'sub' shapes and their transforms.
+        /// </summary>
+        public TransformedShape[] Shapes { get { return this.shapes; } }
+
+        /// <summary>
+        /// Created a new instance of the CompountShape class.
+        /// </summary>
+        /// <param name="shapes">The 'sub' shapes which should be added to this 
+        /// class.</param>
+        public CompoundShape(List<TransformedShape> shapes)
+        {
+            this.shapes = new TransformedShape[shapes.Count];
+            shapes.CopyTo(this.shapes);
+
+            this.UpdateShape();
+        }
+
+        public CompoundShape(TransformedShape[] shapes)
+        {
+            this.shapes = new TransformedShape[shapes.Length];
+            Array.Copy(shapes, this.shapes, shapes.Length);
+
+            this.UpdateShape();
+        }
+
+
+        internal CompoundShape()
+        {
+        }
+
+        protected override Multishape CreateWorkingClone()
+        {
+            CompoundShape clone = new CompoundShape();
+            clone.shapes = this.shapes;
+            return clone;
+        }
+
+        /// <summary>
+        /// Passes a axis aligned bounding box to the shape where collision
+        /// could occour.
+        /// </summary>
+        /// <param name="box">The bounding box where collision could occur.</param>
+        /// <returns>The upper index with which <see cref="SetCurrentShape"/> can be 
+        /// called.</returns>
+        public override int Prepare(ref JBBox box)
+        {
+            return shapes.Length;
+        }
+
+        /// <summary>
+        /// SupportMapping. Finds the point in the shape furthest away from the given direction.
+        /// Imagine a plane with a normal in the search direction. Now move the plane along the normal
+        /// until the plane does not intersect the shape. The last intersection point is the result.
+        /// </summary>
+        /// <param name="direction">The direction.</param>
+        /// <param name="result">The result.</param>
+        public override void SupportMapping(ref JVector direction, out JVector result)
+        {
+            JVector.Transform(ref direction, ref shapes[currentShape].invOrientation, out result);
+            shapes[currentShape].Shape.SupportMapping(ref direction, out result);
+            JVector.Transform(ref result, ref shapes[currentShape].orientation, out result);
+            JVector.Add(ref result, ref shapes[currentShape].position, out result);
+        }
+
+        /// <summary>
+        /// Gets the axis aligned bounding box of the orientated shape. (Inlcuding all
+        /// 'sub' shapes)
+        /// </summary>
+        /// <param name="orientation">The orientation of the shape.</param>
+        /// <param name="box">The axis aligned bounding box of the shape.</param>
+        public override void GetBoundingBox(ref JMatrix orientation, out JBBox box)
+        {
+            box.Min = new JVector(float.MaxValue);
+            box.Max = new JVector(float.MinValue);
+
+            JBBox addBox;
+            for (int i = 0; i < shapes.Length; i++)
+            {
+                this.SetCurrentShape(i);
+                base.GetBoundingBox(ref orientation, out addBox);
+                JBBox.CreateMerged(ref box, ref addBox, out box);
+            }
+        }
+
+        int currentShape = 0;
+
+        /// <summary>
+        /// Sets the current shape. First <see cref="CompoundShape.Prepare"/> has to be called.
+        /// After SetCurrentShape the shape immitates another shape.
+        /// </summary>
+        /// <param name="index"></param>
+        public override void SetCurrentShape(int index)
+        {
+            currentShape = index;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rayOrigin"></param>
+        /// <param name="rayEnd"></param>
+        /// <returns></returns>
+        public override int Prepare(ref JVector rayOrigin, ref JVector rayEnd)
+        {
+            return shapes.Length;
+        }
+    }
+}
