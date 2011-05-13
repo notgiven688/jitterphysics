@@ -175,6 +175,23 @@ namespace Jitter.Dynamics
         #endregion
 
         /// <summary>
+        /// Calculates relative velocity of body contact points on the bodies.
+        /// </summary>
+        /// <param name="relVel">The relative velocity of body contact points on the bodies.</param>
+        public void CalculateRelativeVelocity(out JVector relVel)
+        {
+            float x, y, z;
+
+            x = (body2.angularVelocity.Y * relativePos2.Z) - (body2.angularVelocity.Z * relativePos2.Y) + body2.linearVelocity.X;
+            y = (body2.angularVelocity.Z * relativePos2.X) - (body2.angularVelocity.X * relativePos2.Z) + body2.linearVelocity.Y;
+            z = (body2.angularVelocity.X * relativePos2.Y) - (body2.angularVelocity.Y * relativePos2.X) + body2.linearVelocity.Z;
+
+            relVel.X = x - (body1.angularVelocity.Y * relativePos1.Z) + (body1.angularVelocity.Z * relativePos1.Y) - body1.linearVelocity.X;
+            relVel.Y = y - (body1.angularVelocity.Z * relativePos1.X) + (body1.angularVelocity.X * relativePos1.Z) - body1.linearVelocity.Y;
+            relVel.Z = z - (body1.angularVelocity.X * relativePos1.Y) + (body1.angularVelocity.Y * relativePos1.X) - body1.linearVelocity.Z;
+        }
+
+        /// <summary>
         /// Solves the contact iteratively.
         /// </summary>
         public void Iterate()
