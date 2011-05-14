@@ -261,6 +261,23 @@ namespace Jitter.Dynamics
         }
 
         /// <summary>
+        /// Called by the world, before each step. Overwrite this to 
+        /// add force to the body, for example.
+        /// </summary>
+        public virtual void PreStep()
+        {
+            //
+        }
+
+        /// <summary>
+        /// Called by the world, after each step.
+        /// </summary>
+        public virtual void PostStep()
+        {
+            //
+        }
+
+        /// <summary>
         /// The engine used the given values for inertia and mass and ignores
         /// the shape mass properties.
         /// </summary>

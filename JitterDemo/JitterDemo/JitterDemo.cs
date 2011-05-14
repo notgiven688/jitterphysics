@@ -571,6 +571,8 @@ namespace JitterDemo
 
             PhysicScenes[currentScene].Draw();
 
+            
+
             // Draw the debug data provided by Jitter
             //DrawIslands();
             DrawJitterDebugInfo();
