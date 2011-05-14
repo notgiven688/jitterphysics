@@ -426,6 +426,8 @@ namespace Jitter
 
 #if(WINDOWS_PHONE)
             if (this.PreStep != null) PreStep(timestep);
+            for (int i = 0; i < rigidBodies.Count; i++) rigidBodies[i].PreStep();
+
             UpdateContacts();
             CollisionSystem.Detect(multithread);
             BuildIslands();
@@ -433,10 +435,13 @@ namespace Jitter
             IntegrateForces();
             HandleArbiter(contactIterations, multithread);
             Integrate(multithread);
+
+            for (int i = 0; i < rigidBodies.Count; i++) rigidBodies[i].PostStep();
             if (this.PostStep != null) PostStep(timestep);
 #else
             sw.Reset(); sw.Start();
             if (this.PreStep != null) PreStep(timestep);
+            for (int i = 0; i < rigidBodies.Count; i++) rigidBodies[i].PreStep();
             sw.Stop(); debugTimes[(int)DebugType.PreStep] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
@@ -468,6 +473,7 @@ namespace Jitter
             sw.Stop(); debugTimes[(int)DebugType.Integrate] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
+            for (int i = 0; i < rigidBodies.Count; i++) rigidBodies[i].PostStep();
             if (this.PostStep != null) PostStep(timestep);
             sw.Stop(); debugTimes[(int)DebugType.PostStep] = sw.Elapsed.TotalMilliseconds;
 #endif
