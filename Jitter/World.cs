@@ -297,8 +297,9 @@ namespace Jitter
             {
                 islands.Remove(body.island);
                 CollisionIsland.Pool.GiveBack(body.island);
-                body.island = null;
             }
+
+            body.island = null;
 
             // remove all arbiters and contacts connected with this body
             List<Arbiter> orphanArbiters = new List<Arbiter>();
@@ -353,6 +354,7 @@ namespace Jitter
             if (index < 0)
             {
                 body.Update();
+                body.island = null;
                 rigidBodies.Insert(~index, body);
                 this.CollisionSystem.AddBody(body);
             }
