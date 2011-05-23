@@ -515,7 +515,7 @@ namespace Jitter.Dynamics
 
         }
 
-        public void Update()
+        public void Update(float timestep)
         {
             box = JBBox.SmallBox;
             volume = 0.0f;
@@ -537,7 +537,14 @@ namespace Jitter.Dynamics
                 // Update bounding box and move proxy in dynamic tree.
                 JVector prevCenter = t.boundingBox.Center;
                 t.UpdateBoundingBox();
-                dynamicTree.MoveProxy(t.dynamicTreeID, ref t.boundingBox, t.boundingBox.Center - prevCenter);
+
+                JVector linVel = t.VertexBody1.linearVelocity + 
+                    t.VertexBody2.linearVelocity + 
+                    t.VertexBody3.linearVelocity;
+
+                linVel *= 1.0f / 3.0f;
+
+                dynamicTree.MoveProxy(t.dynamicTreeID, ref t.boundingBox, linVel * timestep);
 
                 JVector v1 = points[t.indices.I0].position;
                 JVector v2 = points[t.indices.I1].position;
