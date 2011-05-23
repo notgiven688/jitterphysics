@@ -212,7 +212,7 @@ namespace JitterDemo
                 ray = JVector.Normalize(ray) * 100;
 
                 float fraction;
-                bool result = World.CollisionSystem.Raycast(camp, ray, null, out grabBody, out hitNormal, out fraction);
+                bool result = World.CollisionSystem.Raycast(camp, ray, RaycastCallback, out grabBody, out hitNormal, out fraction);
 
                 if (result)
                 {

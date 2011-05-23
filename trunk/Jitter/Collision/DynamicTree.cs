@@ -47,7 +47,7 @@ namespace Jitter.Collision
         /// </summary>
         public JBBox AABB;
 
-        public float AdditionalMinorRandomExtension;
+        public float MinorRandomExtension;
 
         public int Child1;
         public int Child2;
@@ -80,12 +80,11 @@ namespace Jitter.Collision
         private int _nodeCount;
         private DynamicTreeNode<T>[] _nodes;
 
-        private const float SettingsAABBExtension = 0.1f;
         private const float SettingsAABBMultiplier = 2.0f;
 
         // Added by 'noone' to prevent highly symmetric cases to
         // update the whole tree at once.
-        private const float SettingsRndExtension = 0.2f;
+        private const float SettingsRndExtension = 0.1f;
 
         private int _root;
 
@@ -124,10 +123,10 @@ namespace Jitter.Collision
         {
             int proxyId = AllocateNode();
 
-            _nodes[proxyId].AdditionalMinorRandomExtension = (float)rnd.NextDouble() * SettingsRndExtension;
+            _nodes[proxyId].MinorRandomExtension = (float)rnd.NextDouble() * SettingsRndExtension;
 
             // Fatten the aabb.
-            JVector r = new JVector(_nodes[proxyId].AdditionalMinorRandomExtension + SettingsAABBExtension);
+            JVector r = new JVector(_nodes[proxyId].MinorRandomExtension);
             _nodes[proxyId].AABB.Min = aabb.Min - r;
             _nodes[proxyId].AABB.Max = aabb.Max + r;
             _nodes[proxyId].UserData = userData;
@@ -176,7 +175,7 @@ namespace Jitter.Collision
 
             // Extend AABB.
             JBBox b = aabb;
-            JVector r = new JVector(SettingsAABBExtension + _nodes[proxyId].AdditionalMinorRandomExtension);
+            JVector r = new JVector(_nodes[proxyId].MinorRandomExtension);
             b.Min = b.Min - r;
             b.Max = b.Max + r;
 
