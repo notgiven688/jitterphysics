@@ -86,7 +86,7 @@ namespace JitterDemo.Scenes
 
             softBody3.TriangleExpansion = softBody.TriangleExpansion = 0.05f;
 
-            softBody3.Translate(new JVector(-4,5,-4));
+            softBody3.Translate(new JVector(0,5,0));
 
             softBody.Pressure = 500.0f;
             softBody3.Pressure = 500.0f;
