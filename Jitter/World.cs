@@ -529,7 +529,7 @@ namespace Jitter
             sw.Reset(); sw.Start();
             for (int i = 0; i < softbodies.Count; i++)
             {
-                softbodies[i].Update();
+                softbodies[i].Update(timestep);
                 softbodies[i].AddPressureForces(timestep);
             }
             sw.Stop(); debugTimes[(int)DebugType.ClothUpdate] = sw.Elapsed.TotalMilliseconds;

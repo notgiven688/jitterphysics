@@ -78,7 +78,7 @@ namespace JitterDemo.Scenes
             ConvexHullObject.ExtractData(vertices, indices, model);
             List<JVector> jvecs = new List<JVector>();
 
-            foreach (Vector3 vec in vertices) jvecs.Add(Conversion.ToJitterVector(vec) + new JVector(3, 5, 3));
+            foreach (Vector3 vec in vertices) jvecs.Add(Conversion.ToJitterVector(vec) + new JVector(10, 15, 3));
 
             RemoveDuplicateVertices(indices, jvecs);
             SoftBody softBody = new SoftBody(indices, jvecs);
@@ -86,7 +86,7 @@ namespace JitterDemo.Scenes
 
             softBody3.TriangleExpansion = softBody.TriangleExpansion = 0.05f;
 
-            softBody3.Translate(new JVector(0,5,0));
+            softBody3.Translate(new JVector(-10, -10, 0));
 
             softBody.Pressure = 500.0f;
             softBody3.Pressure = 500.0f;
@@ -105,25 +105,11 @@ namespace JitterDemo.Scenes
             softBody2.Pressure = 0.0f;
             Demo.World.AddBody(softBody2);
 
-            for (int i = 2; i < 3; i++)
-            {
-                softBody2.VertexBodies[i].IsStatic = true;
-            }
 
-            for (int i = 124; i < 125; i++)
-            {
-                softBody2.VertexBodies[i].IsStatic = true;
-            }
-
-            for (int i = 234; i < 235; i++)
-            {
-                softBody2.VertexBodies[i].IsStatic = true;
-            }
-
-            for (int i = 356; i < 357; i++)
-            {
-                softBody2.VertexBodies[i].IsStatic = true;
-            }
+            softBody2.VertexBodies[2].IsStatic = true;
+            softBody2.VertexBodies[124].IsStatic = true;
+            softBody2.VertexBodies[234].IsStatic = true;
+            softBody2.VertexBodies[356].IsStatic = true;
         }
 
 
