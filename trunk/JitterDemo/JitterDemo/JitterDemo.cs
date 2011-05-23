@@ -40,6 +40,8 @@ namespace JitterDemo
         private Color backgroundColor = new Color(63, 66, 73);
         private bool multithread = true;
 
+        private bool debugDraw = false;
+
         public Camera Camera { private set; get; }
         public Display Display { private set; get; }
         public DebugDrawer DebugDrawer { private set; get; }
@@ -50,12 +52,13 @@ namespace JitterDemo
         private int currentScene = 0;
 
         RasterizerState wireframe;
+        RasterizerState cullMode;
+        RasterizerState normal;
 
         public JitterDemo()
         {
             this.IsMouseVisible = true;
             graphics = new GraphicsDeviceManager(this);
-
 
             graphics.GraphicsProfile = GraphicsProfile.HiDef;
             graphics.PreferMultiSampling = true;
@@ -80,11 +83,17 @@ namespace JitterDemo
             wireframe = new RasterizerState();
             wireframe.FillMode = FillMode.WireFrame;
 
+            cullMode = new RasterizerState();
+            cullMode.CullMode = CullMode.None;
+
+            normal = new RasterizerState();
         }
 
 
         protected override void Initialize()
         {
+
+
             Camera = new Camera(this);
             Camera.Position = new Vector3(15, 15, 30);
             Camera.Target = Camera.Position + Vector3.Normalize(new Vector3(10, 5, 20));
@@ -109,19 +118,19 @@ namespace JitterDemo
 
             this.PhysicScenes = new List<Scenes.Scene>();
 
+
             foreach (Type type in Assembly.GetExecutingAssembly().GetTypes())
             {
                 if (type.Namespace == "JitterDemo.Scenes" && !type.IsAbstract)
                 {
+                    if (type.Name == "SoftBodyJenga") currentScene = PhysicScenes.Count;
                     Scenes.Scene scene = (Scenes.Scene)Activator.CreateInstance(type, this);
                     this.PhysicScenes.Add(scene);
                 }
             }
 
-         
-
             if (PhysicScenes.Count > 0)
-                this.PhysicScenes[0].Build();
+                this.PhysicScenes[currentScene].Build();
 
             base.Initialize();
         }
@@ -140,6 +149,7 @@ namespace JitterDemo
             Vector3 direction = farPoint - nearPoint;
             return direction;
         }
+
 
         #region update - global variables
         // Hold previous input states.
@@ -189,6 +199,9 @@ namespace JitterDemo
             if (keyState.IsKeyDown(Keys.M) && !keyboardPreviousState.IsKeyDown(Keys.M))
                 multithread = !multithread;
 
+            if (keyState.IsKeyDown(Keys.P) && !keyboardPreviousState.IsKeyDown(Keys.P))
+                debugDraw = !debugDraw;
+
             #region drag and drop physical objects with the mouse
             if (mouseState.LeftButton == ButtonState.Pressed &&
                 mousePreviousState.LeftButton == ButtonState.Released)
@@ -211,7 +224,8 @@ namespace JitterDemo
                     lanchor = JVector.Transform(lanchor, JMatrix.Transpose(grabBody.Orientation));
 
                     grabConstraint = new SingleBodyConstraints.PointOnPoint(grabBody, lanchor);
-                    grabConstraint.Softness = 0.1f;
+                    grabConstraint.Softness = 0.01f;
+                    grabConstraint.BiasFactor = 0.1f;
                     
                     World.AddConstraint(grabConstraint);
                     hitDistance = (Conversion.ToXNAVector(hitPoint) - Camera.Position).Length();
@@ -230,6 +244,11 @@ namespace JitterDemo
                     Vector3 ray = RayTo(mouseState.X, mouseState.Y); ray.Normalize();
                     grabConstraint.Anchor = Conversion.ToJitterVector(Camera.Position + ray * hitDistance);
                     grabBody.IsActive = true;
+                    if (!grabBody.IsStatic)
+                    {
+                        grabBody.LinearVelocity *= 0.98f;
+                        grabBody.AngularVelocity *= 0.98f;
+                    }
                 }
             }
             else
@@ -285,7 +304,7 @@ namespace JitterDemo
 
             if (step > 1.0f / 100.0f) step = 1.0f / 100.0f;
 
-            World.Step(step, multithread);
+            World.Step(1.0f/100.0f, multithread);
 
             //if(!keyboardPreviousState.IsKeyDown(Keys.Space) && keyState.IsKeyDown(Keys.Space))
             //    World.Step(step,multithread);
@@ -508,10 +527,11 @@ namespace JitterDemo
             //    }
             //}
 
+
             for (int i = 0; i < lineList.Count; i += 2)
             {
                 DebugDrawer.DrawLine(Conversion.ToXNAVector(lineList[i]),
-                    Conversion.ToXNAVector(lineList[i + 1]), Color.Blue);
+                    Conversion.ToXNAVector(lineList[i + 1]), Color.Black);
             }
 
             for (int i = 0; i < pointList.Count; i++)
@@ -523,6 +543,38 @@ namespace JitterDemo
                 DebugDrawer.DrawLine(Conversion.ToXNAVector(pointList[i] + JVector.Backward * 0.3f),
                     Conversion.ToXNAVector(pointList[i] + JVector.Forward * 0.3f), Color.Red);
             }
+        }
+
+        private void Walk(DynamicTree<SoftBody.Triangle> tree, int index)
+        {
+            DynamicTreeNode<SoftBody.Triangle> tn = tree.Nodes[index];
+            if (tn.IsLeaf()) return;
+            else
+            {
+                Walk(tree,tn.Child1);
+                Walk(tree,tn.Child2);
+
+                DebugDrawer.DrawAabb(Conversion.ToXNAVector(tn.AABB.Min),
+                    Conversion.ToXNAVector(tn.AABB.Max), Color.Red);
+            }
+        }
+
+        private void DrawDynamicTree(SoftBody cloth)
+        {
+            if(!debugDraw) return;
+            Walk(cloth.DynamicTree,cloth.DynamicTree.Root);
+
+       //     foreach (Cloth.Triangle t in cloth.triangles)
+       //     {
+       //         JBBox box = JBBox.SmallBox;
+
+       //         box.AddPoint(cloth.clothPoints[t.GetIndex(0)].Position);
+       //         box.AddPoint(cloth.clothPoints[t.GetIndex(1)].Position);
+       //         box.AddPoint(cloth.clothPoints[t.GetIndex(2)].Position);
+
+       //         DebugDrawer.DrawAabb(Conversion.ToXNAVector(box.Min),
+       //Conversion.ToXNAVector(box.Max),Color.Green);
+       //     }
         }
 
         private void DrawIslands()
@@ -548,10 +600,40 @@ namespace JitterDemo
 
         int activeBodies = 0;
 
+        VertexPositionColor[] triangles = new VertexPositionColor[8000];
+
+        private void DrawCloth()
+        {
+            foreach (SoftBody body in World.SoftBodies)
+            {
+                this.GraphicsDevice.RasterizerState = cullMode;
+
+                
+                for (int i = 0; i < body.Triangles.Count; i++)
+                {
+                    triangles[i * 3 + 0] = new VertexPositionColor(
+                        Conversion.ToXNAVector(body.Triangles[i].VertexBody1.Position), new Color(0, 0.95f, 0, 0.5f));
+
+                    triangles[i * 3 + 1] = new VertexPositionColor(
+                        Conversion.ToXNAVector(body.Triangles[i].VertexBody2.Position), new Color(0, 0.95f, 0, 0.5f));
+
+                    triangles[i * 3 + 2] = new VertexPositionColor(
+                        Conversion.ToXNAVector(body.Triangles[i].VertexBody3.Position), new Color(0, 0.95f, 0, 0.5f));
+                }
+
+                DebugDrawer.DrawTriangle(triangles,body.Triangles.Count);
+
+                this.GraphicsDevice.RasterizerState = normal;
+
+                DrawDynamicTree(body);
+            }
+        }
+
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(backgroundColor);
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            
             //GraphicsDevice.RasterizerState = wireframe;
 
             BasicEffect.View = Camera.View;
@@ -562,6 +644,7 @@ namespace JitterDemo
             // Draw all shapes
             foreach (RigidBody body in World.RigidBodies)
             {
+                if (body.Tag is int || body is SoftBody.MassPoint) continue;
                 if (body.IsActive) activeBodies++;
                 AddBodyToDrawList(body);
             }
@@ -569,12 +652,12 @@ namespace JitterDemo
             BasicEffect.DiffuseColor = Color.LightGray.ToVector3();
             foreach (Primitives3D.GeometricPrimitive prim in primitives) prim.Draw(BasicEffect);
 
+            DrawCloth();
+
             PhysicScenes[currentScene].Draw();
 
-            
-
             // Draw the debug data provided by Jitter
-            //DrawIslands();
+            // DrawIslands();
             DrawJitterDebugInfo();
             base.Draw(gameTime);
         }

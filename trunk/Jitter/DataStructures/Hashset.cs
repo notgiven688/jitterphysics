@@ -28,7 +28,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace Jitter.DataStructures
+namespace System.Collections.Generic
 {
     public class HashSet<T> : ICollection<T>
     {
@@ -55,7 +55,7 @@ namespace Jitter.DataStructures
 
         public HashSet<T> NullSet { get { return new HashSet<T>(); } }
 
-        #region ICollection<T> Members
+#region ICollection<T> Members
 
         public void Add(T item)
         {
@@ -133,7 +133,7 @@ namespace Jitter.DataStructures
             }
         }
 
-        #endregion
+#endregion
 
         public HashSet<T> Union(HashSet<T> set)
         {
@@ -289,7 +289,7 @@ namespace Jitter.DataStructures
 
         //#endregion
 
-        #region Implementation of IEnumerable
+#region Implementation of IEnumerable
 
         /// <summary>
         /// Returns an enumerator that iterates through the collection.
@@ -315,7 +315,7 @@ namespace Jitter.DataStructures
             return GetEnumerator();
         }
 
-        #endregion
+#endregion
     }
 
 }

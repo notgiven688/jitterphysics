@@ -35,7 +35,7 @@ namespace Jitter.Collision.Shapes
     public class TriangleMeshShape : Multishape
     {
         private List<int> potentialTriangles = new List<int>();
-        private JOctree octree = null;
+        private Octree octree = null;
 
         private float sphericalExpansion = 0.05f;
 
@@ -54,7 +54,7 @@ namespace Jitter.Collision.Shapes
         /// </summary>
         /// <param name="octree">The octree which holds the triangles
         /// of a mesh.</param>
-        public TriangleMeshShape(JOctree octree)
+        public TriangleMeshShape(Octree octree)
         {
             this.octree = octree;
             UpdateShape();

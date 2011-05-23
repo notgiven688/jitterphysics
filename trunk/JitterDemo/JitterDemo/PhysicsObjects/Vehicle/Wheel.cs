@@ -379,7 +379,7 @@ namespace JitterDemo
             torque += -fwdForce * Radius;
 
             // add force to car
-            car.AddForce(force, groundPos + JVector.Up * 0.5f);
+            car.AddForce(force, groundPos + 0.5f * JVector.Up);
 
             // add force to the world
             if (!worldBody.IsStatic)

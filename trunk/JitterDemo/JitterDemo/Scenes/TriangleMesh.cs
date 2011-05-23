@@ -8,6 +8,7 @@ using Jitter.LinearMath;
 using Jitter.Collision.Shapes;
 using Jitter.Dynamics;
 using JitterDemo.Vehicle;
+using Jitter.Collision;
 
 namespace JitterDemo.Scenes
 {
@@ -27,7 +28,7 @@ namespace JitterDemo.Scenes
         /// <param name="vertices"></param>
         /// <param name="indices"></param>
         /// <param name="model"></param>
-        public void ExtractData(List<Vector3> vertices, List<JOctree.TriangleVertexIndices> indices, Model model)
+        public void ExtractData(List<Vector3> vertices, List<TriangleVertexIndices> indices, Model model)
         {
             Matrix[] bones_ = new Matrix[model.Bones.Count];
             model.CopyAbsoluteBoneTransformsTo(bones_);
@@ -49,7 +50,7 @@ namespace JitterDemo.Scenes
                             String.Format("Model uses 32-bit indices, which are not supported."));
                     short[] s = new short[mmp.PrimitiveCount * 3];
                     mmp.IndexBuffer.GetData<short>(mmp.StartIndex * 2, s, 0, mmp.PrimitiveCount * 3);
-                    JOctree.TriangleVertexIndices[] tvi = new JOctree.TriangleVertexIndices[mmp.PrimitiveCount];
+                    TriangleVertexIndices[] tvi = new TriangleVertexIndices[mmp.PrimitiveCount];
                     for (int i = 0; i != tvi.Length; ++i)
                     {
                         tvi[i].I0 = s[i * 3 + 0] + offset;
@@ -90,7 +91,7 @@ namespace JitterDemo.Scenes
             boneTransforms = new Matrix[model.Bones.Count];
             model.CopyAbsoluteBoneTransformsTo(boneTransforms);
 
-            List<JOctree.TriangleVertexIndices> indices = new List<JOctree.TriangleVertexIndices>();
+            List<TriangleVertexIndices> indices = new List<TriangleVertexIndices>();
             List<Vector3> vertices = new List<Vector3>();
 
             ExtractData(vertices, indices, model);
@@ -98,7 +99,7 @@ namespace JitterDemo.Scenes
             List<JVector> jvertices = new List<JVector>(vertices.Count);
             foreach(Vector3 vertex in vertices) jvertices.Add(Conversion.ToJitterVector(vertex));
 
-            JOctree octree = new JOctree(jvertices, indices);
+            Octree octree = new Octree(jvertices, indices);
 
             TriangleMeshShape tms = new TriangleMeshShape(octree);
             RigidBody body = new RigidBody(tms);

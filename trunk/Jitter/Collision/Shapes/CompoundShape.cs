@@ -196,8 +196,8 @@ namespace Jitter.Collision.Shapes
         public override void SetCurrentShape(int index)
         {
             currentShape = index;
-			shapes[currentShape].Shape.SupportCenter(out geomCen);
-			geomCen += shapes[currentShape].Position;
+            shapes[currentShape].Shape.SupportCenter(out geomCen);
+            geomCen += shapes[currentShape].Position;
         }
 
         /// <summary>

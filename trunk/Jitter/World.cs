@@ -67,6 +67,36 @@ namespace Jitter
         internal List<RigidBody> rigidBodies = new List<RigidBody>();
         internal List<Constraint> constraints = new List<Constraint>();
 
+        private List<SoftBody> softbodies = new List<SoftBody>();
+        public ReadOnlyCollection<SoftBody> SoftBodies { get; private set; }
+
+        public void AddBody(SoftBody body)
+        {
+            this.softbodies.Add(body);
+            this.CollisionSystem.AddBody(body);
+
+            foreach (Constraint constraint in body.springs)
+                AddConstraint(constraint);
+
+            foreach (SoftBody.MassPoint massPoint in body.points)
+                AddBody(massPoint);
+        }
+
+        public bool RemoveBody(SoftBody body)
+        {
+            if(!this.softbodies.Remove(body)) return false;
+
+            this.CollisionSystem.RemoveBody(body);
+
+            foreach (Constraint constraint in body.springs)
+                RemoveConstraint(constraint);
+
+            foreach (SoftBody.MassPoint massPoint in body.points)
+                RemoveBody(massPoint);
+
+            return true;
+        }
+
         /// <summary>
         /// Gets the <see cref="CollisionSystem"/> used
         /// to detect collisions.
@@ -149,6 +179,8 @@ namespace Jitter
 
             this.arbiterMap = new ArbiterMap();
 
+            SoftBodies = softbodies.AsReadOnly();
+
             AllowDeactivation = true;
         }
 
@@ -174,13 +206,23 @@ namespace Jitter
         {
             // remove bodies from collision system
             foreach (RigidBody body in rigidBodies)
+            {
                 CollisionSystem.RemoveBody(body);
+                body.island = null;
+            }
+
+            foreach (SoftBody body in softbodies)
+            {
+                CollisionSystem.RemoveBody(body);
+            }
 
             // remove bodies from the world
             rigidBodies.Clear();
 
             // remove constraints
             constraints.Clear();
+
+            softbodies.Clear();
 
             // remove all islands
             islands.Clear();
@@ -353,9 +395,11 @@ namespace Jitter
             int index = rigidBodies.BinarySearch(body);
             if (index < 0)
             {
-                body.Update();
                 body.island = null;
+                body.Update();
                 rigidBodies.Insert(~index, body);
+
+                if(!(body is SoftBody.MassPoint))
                 this.CollisionSystem.AddBody(body);
             }
             else throw new ArgumentException("The body was already added to the world.", "body");
@@ -390,8 +434,11 @@ namespace Jitter
 #if(!WINDOWS_PHONE)
         Stopwatch sw = new Stopwatch();
 
-        public enum DebugType { CollisionDetect, BuildIslands, HandleArbiter, UpdateContacts,
-            PreStep, DeactivateBodies, IntegrateForces, Integrate, PostStep, Num }
+        public enum DebugType
+        {
+            CollisionDetect, BuildIslands, HandleArbiter, UpdateContacts,
+            PreStep, DeactivateBodies, IntegrateForces, Integrate, PostStep, ClothUpdate, Num
+        }
         
         /// <summary>
         /// Time in ms for every part of the <see cref="Step"/> method.
@@ -429,7 +476,6 @@ namespace Jitter
 #if(WINDOWS_PHONE)
             if (this.PreStep != null) PreStep(timestep);
             for (int i = 0; i < rigidBodies.Count; i++) rigidBodies[i].PreStep();
-
             UpdateContacts();
             CollisionSystem.Detect(multithread);
             BuildIslands();
@@ -437,6 +483,12 @@ namespace Jitter
             IntegrateForces();
             HandleArbiter(contactIterations, multithread);
             Integrate(multithread);
+
+            for (int i = 0; i < softbodies.Count; i++)
+            {
+                softbodies[i].Update();
+                softbodies[i].AddPressureForces(timestep);
+            }
 
             for (int i = 0; i < rigidBodies.Count; i++) rigidBodies[i].PostStep();
             if (this.PostStep != null) PostStep(timestep);
@@ -473,6 +525,14 @@ namespace Jitter
             sw.Reset(); sw.Start();
             Integrate(multithread);
             sw.Stop(); debugTimes[(int)DebugType.Integrate] = sw.Elapsed.TotalMilliseconds;
+
+            sw.Reset(); sw.Start();
+            for (int i = 0; i < softbodies.Count; i++)
+            {
+                softbodies[i].Update();
+                softbodies[i].AddPressureForces(timestep);
+            }
+            sw.Stop(); debugTimes[(int)DebugType.ClothUpdate] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
             for (int i = 0; i < rigidBodies.Count; i++) rigidBodies[i].PostStep();

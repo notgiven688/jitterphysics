@@ -26,60 +26,60 @@ using Jitter.LinearMath;
 using Jitter.Collision.Shapes;
 #endregion
 
-namespace Jitter.LinearMath
+namespace Jitter.Collision
 {
+
+    /// <summary>
+    /// structure used to set up the mesh
+    /// </summary>
+    #region public struct TriangleVertexIndices
+    public struct TriangleVertexIndices
+    {
+        /// <summary>
+        /// The first index.
+        /// </summary>
+        public int I0;
+        /// <summary>
+        /// The second index.
+        /// </summary>
+        public int I1;
+        /// <summary>
+        /// The third index.
+        /// </summary>
+        public int I2;
+
+        /// <summary>
+        /// Initializes a new instance of the TriangleVertexIndex structure.
+        /// </summary>
+        /// <param name="i0">The index of the first vertex.</param>
+        /// <param name="i1">The index of the second vertex.</param>
+        /// <param name="i2">The index of the third vertex.</param>
+        public TriangleVertexIndices(int i0, int i1, int i2)
+        {
+            this.I0 = i0;
+            this.I1 = i1;
+            this.I2 = i2;
+        }
+
+        /// <summary>
+        /// Sets the values for the indices.
+        /// </summary>
+        /// <param name="i0">The index of the first vertex.</param>
+        /// <param name="i1">The index of the second vertex.</param>
+        /// <param name="i2">The index of the third vertex.</param>
+        public void Set(int i0, int i1, int i2)
+        {
+            I0 = i0; I1 = i1; I2 = i2;
+        }
+    }
+    #endregion
+
 
     /// <summary>
     /// An octree implementation.
     /// </summary>
-    public class JOctree
+    public class Octree
     {
-
-        /// <summary>
-        /// structure used to set up the mesh
-        /// </summary>
-        #region public struct TriangleVertexIndices
-        public struct TriangleVertexIndices
-        {
-            /// <summary>
-            /// The first index.
-            /// </summary>
-            public int I0;
-            /// <summary>
-            /// The second index.
-            /// </summary>
-            public int I1;
-            /// <summary>
-            /// The third index.
-            /// </summary>
-            public int I2;
-
-            /// <summary>
-            /// Initializes a new instance of the TriangleVertexIndex structure.
-            /// </summary>
-            /// <param name="i0">The index of the first vertex.</param>
-            /// <param name="i1">The index of the second vertex.</param>
-            /// <param name="i2">The index of the third vertex.</param>
-            public TriangleVertexIndices(int i0, int i1, int i2)
-            {
-                this.I0 = i0;
-                this.I1 = i1;
-                this.I2 = i2;
-            }
-
-            /// <summary>
-            /// Sets the values for the indices.
-            /// </summary>
-            /// <param name="i0">The index of the first vertex.</param>
-            /// <param name="i1">The index of the second vertex.</param>
-            /// <param name="i2">The index of the third vertex.</param>
-            public void Set(int i0, int i1, int i2)
-            {
-                I0 = i0; I1 = i1; I2 = i2;
-            }
-        }
-        #endregion
-
         /// <summary>
         /// endices into the children - P means "plus" and M means "minus" and the
         /// letters are xyz. So PPM means +ve x, +ve y, -ve z
@@ -277,7 +277,7 @@ namespace Jitter.LinearMath
         /// <param name="positions">Vertices.</param>
         /// <param name="tris">Indices.</param>
         #region Constructor
-        public JOctree(List<JVector> positions, List<TriangleVertexIndices> tris)
+        public Octree(List<JVector> positions, List<TriangleVertexIndices> tris)
         {
             SetTriangles(positions, tris);
             BuildOctree();
@@ -445,6 +445,46 @@ namespace Jitter.LinearMath
             return triCount;
         }
         #endregion
+
+        //public int GetTrianglePoint(JVector point)
+        //{
+        //    if (nodes.Length == 0)
+        //        return 0;
+        //    int curStackIndex = 0;
+        //    int endStackIndex = 1;
+
+        //    UInt16[] nodeStack = nodeStackPool.GetNew();
+        //    nodeStack[0] = 0;
+
+        //    //int triCount = 0;
+
+        //    while (curStackIndex < endStackIndex)
+        //    {
+        //        UInt16 nodeIndex = nodeStack[curStackIndex];
+        //        curStackIndex++;
+        //        if (nodes[nodeIndex].box.Contains(ref point) != JBBox.ContainmentType.Disjoint)
+        //        {
+        //            for (int i = 0; i < nodes[nodeIndex].triIndices.Length; ++i)
+        //            {
+        //                if (triBoxes[nodes[nodeIndex].triIndices[i]].Contains(ref point) != JBBox.ContainmentType.Disjoint)
+        //                {
+        //                    //triangles.Add(nodes[nodeIndex].triIndices[i]);
+        //                    //triCount++;
+        //                    return nodes[nodeIndex].triIndices[i];
+        //                }
+        //            }
+
+        //            int numChildren = nodes[nodeIndex].nodeIndices.Length;
+        //            for (int i = 0; i < numChildren; ++i)
+        //            {
+        //                nodeStack[endStackIndex++] = nodes[nodeIndex].nodeIndices[i];
+        //            }
+        //        }
+        //    }
+
+        //    nodeStackPool.GiveBack(nodeStack);
+        //    return -1;
+        //}
 
         /// <summary>
         /// Gets the indices of a triangle by index.

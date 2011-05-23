@@ -22,9 +22,9 @@ namespace JitterDemo.Scenes
         {
             AddGround();
 
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 30; i++)
             {
-                for (int e = i; e < 20; e++)
+                for (int e = i; e < 30; e++)
                 {
                     RigidBody body = new RigidBody(new BoxShape(new JVector(1, 1, 1f)));
                     body.Position = new JVector((e - i * 0.5f) * 1.01f, 0.5f + i * 1.0f, 0.0f);

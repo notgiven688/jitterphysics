@@ -7,6 +7,7 @@ using Jitter.LinearMath;
 using Jitter.Dynamics;
 using Jitter.Collision.Shapes;
 using Microsoft.Xna.Framework.Graphics;
+using Jitter.Collision;
 
 namespace JitterDemo
 {
@@ -23,7 +24,7 @@ namespace JitterDemo
 
         }
 
-        public void ExtractData(List<Vector3> vertices, List<JOctree.TriangleVertexIndices> indices, Model model)
+        public static void ExtractData(List<Vector3> vertices, List<TriangleVertexIndices> indices, Model model)
         {
             Matrix[] bones_ = new Matrix[model.Bones.Count];
             model.CopyAbsoluteBoneTransformsTo(bones_);
@@ -88,7 +89,7 @@ namespace JitterDemo
                     0,
                     meshPart.PrimitiveCount * 3);
                     // Each TriangleVertexIndices holds the three indexes to each vertex that makes up a triangle 
-                    JOctree.TriangleVertexIndices[] tvi = new JOctree.TriangleVertexIndices[meshPart.PrimitiveCount];
+                    TriangleVertexIndices[] tvi = new TriangleVertexIndices[meshPart.PrimitiveCount];
                     for (int i = 0; i != tvi.Length; ++i)
                     {
                         // The offset is because we are storing them all in the one array and the 
@@ -114,7 +115,7 @@ namespace JitterDemo
             {
 
                 List<Vector3> vertices = new List<Vector3>();
-                List<JOctree.TriangleVertexIndices> indices = new List<JOctree.TriangleVertexIndices>();
+                List<TriangleVertexIndices> indices = new List<TriangleVertexIndices>();
 
                 ExtractData(vertices, indices, model);
 

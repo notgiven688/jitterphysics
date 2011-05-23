@@ -30,10 +30,18 @@ using Jitter.Collision;
 
 namespace Jitter.Dynamics
 {
+
+    public interface IBroadphaseEntity
+    {
+        JBBox BoundingBox { get; }
+        int BroadphaseTag { get; set; }
+        bool IsStaticOrInactive();
+    }
+
     /// <summary>
     /// The RigidBody class.
     /// </summary>
-    public class RigidBody : IEquatable<RigidBody>, IComparable<RigidBody>
+    public class RigidBody : IBroadphaseEntity, IEquatable<RigidBody>, IComparable<RigidBody>
     {
         [Flags]
         public enum DampingType { None = 0x00, Angular = 0x01, Linear = 0x02 }
@@ -62,6 +70,8 @@ namespace Jitter.Dynamics
         internal float inverseMass;
 
         internal JVector force, torque;
+
+        
 
         private int hashCode;
 
@@ -261,23 +271,6 @@ namespace Jitter.Dynamics
         }
 
         /// <summary>
-        /// Called by the world, before each step. Overwrite this to 
-        /// add force to the body, for example.
-        /// </summary>
-        public virtual void PreStep()
-        {
-            //
-        }
-
-        /// <summary>
-        /// Called by the world, after each step.
-        /// </summary>
-        public virtual void PostStep()
-        {
-            //
-        }
-
-        /// <summary>
         /// The engine used the given values for inertia and mass and ignores
         /// the shape mass properties.
         /// </summary>
@@ -340,23 +333,7 @@ namespace Jitter.Dynamics
 
         public DampingType Damping { get { return damping; } set { damping = value; } }
 
-
         public Material Material { get { return material; } set { material = value; } }
-
-        ///// <summary>
-        ///// Static Friction coefficient.
-        ///// </summary>
-        //public float StaticFriction { get; set; }
-
-        ///// <summary>
-        ///// Dynamic Friction coefficient.
-        ///// </summary>
-        //public float DynamicFriction { get; set; }
-
-        ///// <summary>
-        ///// Restitution coefficient.
-        ///// </summary>
-        //public float Restitution { set; get; }
 
         /// <summary>
         /// The inertia currently used for this body.
@@ -473,7 +450,7 @@ namespace Jitter.Dynamics
         /// Recalculates the axis aligned bounding box and the inertia
         /// values in world space.
         /// </summary>
-        public void Update()
+        public virtual void Update()
         {
             // Given: Orientation, Inertia
 
@@ -501,5 +478,23 @@ namespace Jitter.Dynamics
             else return 0;
         }
 
+
+        public bool IsStaticOrInactive()
+        {
+            return (!this.isActive || this.isStatic);
+        }
+
+        public int BroadphaseTag { get; set; }
+
+
+        public virtual void PreStep()
+        {
+            //
+        }
+
+        public virtual void PostStep()
+        {
+            //
+        }
     }
 }

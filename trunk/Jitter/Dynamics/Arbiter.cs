@@ -29,6 +29,10 @@ using System.Diagnostics;
 
 namespace Jitter.Dynamics
 {
+
+
+
+
     /// <summary>
     /// Represents a list of contacts. Every ContactList 
     /// has a maximum of four contacts.
