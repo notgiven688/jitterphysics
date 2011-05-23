@@ -98,6 +98,19 @@ namespace Jitter.LinearMath
             this.Max = max;
         }
 
+        //public static void CreateMerged(ref JBBox original, ref JBBox additional, out JBBox result)
+        //{
+        //    JVector vector;
+        //    JVector vector2;
+        //    JVector.Min(ref original.Min, ref additional.Min, out vector2);
+        //    JVector.Max(ref original.Max, ref additional.Max, out vector);
+        //    result.Min = vector2;
+        //    result.Max = vector;
+        //}
+
+ 
+
+
 
         /// <summary>
         /// Checks whether a point is inside, outside or intersecting
@@ -312,5 +325,17 @@ namespace Jitter.LinearMath
         #endregion
 
 
+
+        public JVector Center { get { return Min + (Max - Min)* (1.0f /2.0f); } }
+
+        internal float Perimeter
+        {
+            get
+            {
+                return 2.0f * ((Max.X - Min.X) * (Max.Y - Min.Y) +
+                    (Max.X - Min.X) * (Max.Z - Min.Z) +
+                    (Max.Z - Min.Z) * (Max.Y - Min.Y));
+            }
+        }
     }
 }

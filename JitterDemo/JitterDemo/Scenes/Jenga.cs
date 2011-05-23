@@ -7,6 +7,8 @@ using Microsoft.Xna.Framework;
 using Jitter.Collision.Shapes;
 using Jitter.Dynamics;
 using Jitter.LinearMath;
+using Microsoft.Xna.Framework.Graphics;
+using Jitter.Collision;
 
 namespace JitterDemo.Scenes
 {
@@ -30,13 +32,12 @@ namespace JitterDemo.Scenes
                 {
                     JVector size = (even) ? new JVector(1, 1, 3) : new JVector(3, 1, 1);
                     RigidBody body = new RigidBody(new BoxShape(size));
-                    body.Position = new JVector(even ? e : 1.0f, i + 0.5f, even ? 1.0f : e);
+                    body.Position = new JVector(3.0f + (even ? e : 1.0f), i + 0.5f,-13.0f +  (even ? 1.0f : e));
 
                     Demo.World.AddBody(body);
                 }
 
             }
-
             
         }
         

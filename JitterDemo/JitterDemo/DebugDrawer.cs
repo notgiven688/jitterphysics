@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-
 namespace JitterDemo
 {
 
@@ -12,6 +11,7 @@ namespace JitterDemo
     public class DebugDrawer : DrawableGameComponent
     {
         BasicEffect basicEffect;
+        BasicEffect basicEffect2;
 
         public DebugDrawer(Game game)
             : base(game)
@@ -22,7 +22,11 @@ namespace JitterDemo
         {
             base.Initialize();
             basicEffect = new BasicEffect(this.GraphicsDevice);
+            basicEffect2 = new BasicEffect(this.GraphicsDevice);
             basicEffect.VertexColorEnabled = true;
+            basicEffect2.VertexColorEnabled = true;
+            
+           // basicEffect2.LightingEnabled = true;
         }
 
         public void DrawLine(Vector3 p0, Vector3 p1, Color color)
@@ -97,6 +101,22 @@ namespace JitterDemo
 
         public VertexPositionColor[] LineList = new VertexPositionColor[50];
         private int index = 0;
+
+        public void DrawTriangle(VertexPositionColor[] triangles, int length)
+        {
+            JitterDemo demo = Game as JitterDemo;
+
+            basicEffect2.View = demo.Camera.View;
+            basicEffect2.Projection = demo.Camera.Projection;
+
+            foreach (EffectPass pass in basicEffect2.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+
+                GraphicsDevice.DrawUserPrimitives<VertexPositionColor>(
+                    PrimitiveType.TriangleList, triangles, 0, length);
+            }
+        }
 
         public override void Draw(GameTime gameTime)
         {

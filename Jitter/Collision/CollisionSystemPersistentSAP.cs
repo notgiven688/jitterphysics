@@ -129,11 +129,11 @@ namespace Jitter.Collision
         #region private class SweepPoint
         private class SweepPoint
         {
-            public RigidBody Body;
+            public IBroadphaseEntity Body;
             public bool Begin;
             public int Axis;
 
-            public SweepPoint(RigidBody body, bool begin, int axis)
+            public SweepPoint(IBroadphaseEntity body, bool begin, int axis)
             {
                 this.Body = body;
                 this.Begin = begin;
@@ -144,15 +144,15 @@ namespace Jitter.Collision
             {
                  if (Begin)
                 {
-                    if (Axis == 0) return Body.boundingBox.Min.X;
-                    else if (Axis == 1) return Body.boundingBox.Min.Y;
-                    else return Body.boundingBox.Min.Z;
+                    if (Axis == 0) return Body.BoundingBox.Min.X;
+                    else if (Axis == 1) return Body.BoundingBox.Min.Y;
+                    else return Body.BoundingBox.Min.Z;
                 }
                 else
                 {
-                    if (Axis == 0) return Body.boundingBox.Max.X;
-                    else if (Axis == 1) return Body.boundingBox.Max.Y;
-                    else return Body.boundingBox.Max.Z;
+                    if (Axis == 0) return Body.BoundingBox.Max.X;
+                    else if (Axis == 1) return Body.BoundingBox.Max.Y;
+                    else return Body.BoundingBox.Max.Z;
                 }
             }
         }
@@ -162,14 +162,14 @@ namespace Jitter.Collision
         private struct BodyPair
         {
             // internal values for faster access within the engine
-            internal RigidBody body1, body2;
+            internal IBroadphaseEntity body1, body2;
 
             /// <summary>
             /// Initializes a new instance of the BodyPair class.
             /// </summary>
             /// <param name="body1"></param>
             /// <param name="body2"></param>
-            public BodyPair(RigidBody body1, RigidBody body2)
+            public BodyPair(IBroadphaseEntity body1, IBroadphaseEntity body2)
             {
                 this.body1 = body1;
                 this.body2 = body2;
@@ -211,18 +211,15 @@ namespace Jitter.Collision
         }
         #endregion
 
-        private List<RigidBody> bodyList = new List<RigidBody>();
+        private List<IBroadphaseEntity> bodyList = new List<IBroadphaseEntity>();
         private List<SweepPoint> axis1 = new List<SweepPoint>();
         private List<SweepPoint> axis2 = new List<SweepPoint>();
         private List<SweepPoint> axis3 = new List<SweepPoint>();
 
         private Triangular2BitMatrix t2bM;
 
-#if NET_20 || WINDOWS_PHONE || XBOX
-        private DataStructures.HashSet<BodyPair> fullOverlaps = new DataStructures.HashSet<BodyPair>();   
-#else
-        private System.Collections.Generic.HashSet<BodyPair> fullOverlaps = new System.Collections.Generic.HashSet<BodyPair>();
-#endif
+
+        private HashSet<BodyPair> fullOverlaps = new HashSet<BodyPair>();
 
         Action<object> detectCallback, sortCallback;
 
@@ -246,7 +243,7 @@ namespace Jitter.Collision
             else return 0;
         }
 
-        List<RigidBody> activeList = new List<RigidBody>();
+        List<IBroadphaseEntity> activeList = new List<IBroadphaseEntity>();
 
         private void DirtySortAxis(List<SweepPoint> axis)
         {
@@ -259,9 +256,9 @@ namespace Jitter.Collision
 
                 if (keyelement.Begin)
                 {
-                    foreach (RigidBody body in activeList)
+                    foreach (IBroadphaseEntity body in activeList)
                     {
-                        int count = t2bM.IncrementCounter(body.internalIndex, keyelement.Body.internalIndex);
+                        int count = t2bM.IncrementCounter(body.BroadphaseTag, keyelement.Body.BroadphaseTag);
                         if (count == 3) fullOverlaps.Add(new BodyPair(body, keyelement.Body));
                     }
 
@@ -294,8 +291,8 @@ namespace Jitter.Collision
                     {
                         lock (t2bM)
                         {
-                            int count = t2bM.IncrementCounter(keyelement.Body.internalIndex,
-                                swapper.Body.internalIndex);
+                            int count = t2bM.IncrementCounter(keyelement.Body.BroadphaseTag,
+                                swapper.Body.BroadphaseTag);
 
                             if (count == 3)
                             {
@@ -309,8 +306,8 @@ namespace Jitter.Collision
                     {
                         lock (t2bM)
                         {
-                            int count = t2bM.DecrementCounter(keyelement.Body.internalIndex,
-                                swapper.Body.internalIndex);
+                            int count = t2bM.DecrementCounter(keyelement.Body.BroadphaseTag,
+                                swapper.Body.BroadphaseTag);
 
                             if (count == 2)
                             {
@@ -341,11 +338,11 @@ namespace Jitter.Collision
         }
 
         int addCounter = 0;
-        public override void AddBody(RigidBody body)
+        public override void AddBody(IBroadphaseEntity body)
         {
-            if (body.internalIndex < bodyList.Count && bodyList[body.internalIndex] == body) return;
+            if (body.BroadphaseTag < bodyList.Count && bodyList[body.BroadphaseTag] == body) return;
 
-            body.internalIndex = bodyList.Count;
+            body.BroadphaseTag = bodyList.Count;
 
             bodyList.Add(body);
 
@@ -359,9 +356,9 @@ namespace Jitter.Collision
         }
 
         Stack<BodyPair> depricated = new Stack<BodyPair>();
-        public override bool RemoveBody(RigidBody body)
+        public override bool RemoveBody(IBroadphaseEntity body)
         {
-            if (body.internalIndex > bodyList.Count || bodyList[body.internalIndex] != body) return false;
+            if (body.BroadphaseTag > bodyList.Count || bodyList[body.BroadphaseTag] != body) return false;
 
             int count;
 
@@ -380,29 +377,29 @@ namespace Jitter.Collision
             foreach (var pair in fullOverlaps) if (pair.body1 == body || pair.body2 == body) depricated.Push(pair);
             while (depricated.Count > 0) fullOverlaps.Remove(depricated.Pop());
 
-            RigidBody lastBody = bodyList[bodyList.Count - 1];
+            IBroadphaseEntity lastBody = bodyList[bodyList.Count - 1];
 
             if (body == lastBody)
             {
                 for (int i = 0; i < bodyList.Count; i++)
                 {
-                    t2bM.SetValue(body.internalIndex, i, 0);
+                    t2bM.SetValue(body.BroadphaseTag, i, 0);
                 }
 
-                bodyList.RemoveAt(body.internalIndex);
+                bodyList.RemoveAt(body.BroadphaseTag);
             }
             else
             {
                 for (int i = 0; i < bodyList.Count; i++)
                 {
-                    int value = t2bM.GetValue(lastBody.internalIndex, i);
-                    t2bM.SetValue(body.internalIndex, i, value);
+                    int value = t2bM.GetValue(lastBody.BroadphaseTag, i);
+                    t2bM.SetValue(body.BroadphaseTag, i, value);
                 }
 
-                bodyList.RemoveAt(lastBody.internalIndex);
-                bodyList[body.internalIndex] = lastBody;
+                bodyList.RemoveAt(lastBody.BroadphaseTag);
+                bodyList[body.BroadphaseTag] = lastBody;
 
-                lastBody.internalIndex = body.internalIndex;
+                lastBody.BroadphaseTag = body.BroadphaseTag;
             }
 
             ResizeMatrix(MatrixGrowFactor);
@@ -514,8 +511,12 @@ namespace Jitter.Collision
             bool result = false;
 
             // TODO: This can be done better in CollisionSystemPersistenSAP
-            foreach (RigidBody b in bodyList)
+            foreach (IBroadphaseEntity e in bodyList)
             {
+                if (!(e is RigidBody)) continue;
+
+                RigidBody b = e as RigidBody;
+
                 if (this.Raycast(b, rayOrigin, rayDirection, out tempNormal, out tempFraction))
                 {
                     if (tempFraction < fraction && (raycast == null || raycast(b,tempNormal,tempFraction)))
@@ -542,7 +543,7 @@ namespace Jitter.Collision
         {
             fraction = float.MaxValue; normal = JVector.Zero;
 
-            if (!body.boundingBox.RayIntersect(ref rayOrigin, ref rayDirection)) return false;
+            if (!body.BoundingBox.RayIntersect(ref rayOrigin, ref rayDirection)) return false;
 
             if (body.Shape is Multishape)
             {
@@ -598,5 +599,9 @@ namespace Jitter.Collision
 
         }
         #endregion
+
+
+
+
     }
 }

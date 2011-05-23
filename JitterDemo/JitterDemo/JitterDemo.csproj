@@ -144,6 +144,7 @@
     <Compile Include="Scenes\Restitution.cs" />
     <Compile Include="Scenes\Rope.cs" />
     <Compile Include="Scenes\Scene.cs" />
+    <Compile Include="Scenes\SoftBodyJenga.cs" />
     <Compile Include="Scenes\Terrain.cs" />
     <Compile Include="Scenes\Tower.cs" />
     <Compile Include="Scenes\TriangleMesh.cs" />

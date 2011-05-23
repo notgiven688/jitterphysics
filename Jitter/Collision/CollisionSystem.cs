@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using Jitter.Dynamics;
 using Jitter.LinearMath;
 using Jitter.Collision.Shapes;
+using System.Diagnostics;
 #endregion
 
 namespace Jitter.Collision
@@ -50,7 +51,7 @@ namespace Jitter.Collision
     /// <param name="body2">The second body.</param>
     /// <returns>If false is returned the collision information is dropped. The CollisionDetectedHandler
     /// is never called.</returns>
-    public delegate bool PassedBroadphaseHandler(RigidBody body1,RigidBody body2);
+    public delegate bool PassedBroadphaseHandler(IBroadphaseEntity body1, IBroadphaseEntity body2);
 
     /// <summary>
     /// A delegate to inform the user that a pair of bodies passed the narrowphase
@@ -91,11 +92,11 @@ namespace Jitter.Collision
             /// <summary>
             /// The first body.
             /// </summary>
-            public RigidBody body1;
+            public IBroadphaseEntity body1;
             /// <summary>
             /// The second body.
             /// </summary>
-            public RigidBody body2;
+            public IBroadphaseEntity body2;
 
             /// <summary>
             /// A resource pool of Pairs.
@@ -110,14 +111,14 @@ namespace Jitter.Collision
         /// </summary>
         /// <param name="body">The body to remove.</param>
         /// <returns>Returns true if the body was successfully removed, otherwise false.</returns>
-        public abstract bool RemoveBody(RigidBody body);
+        public abstract bool RemoveBody(IBroadphaseEntity body);
 
         /// <summary>
         /// Add a body to the collision system. Adding a body to the world
         /// does automatically add it to the collision system.
         /// </summary>
         /// <param name="body">The body to remove.</param>
-        public abstract void AddBody(RigidBody body);
+        public abstract void AddBody(IBroadphaseEntity body);
 
         /// <summary>
         /// Gets called when the broadphase system has detected possible collisions.
@@ -165,7 +166,83 @@ namespace Jitter.Collision
         /// <param name="body1">The first body.</param>
         /// <param name="body2">The second body.</param>
         #region  public void Detect(RigidBody body1, RigidBody body2)
-        public void Detect(RigidBody body1, RigidBody body2)
+        public void Detect(IBroadphaseEntity entity1, IBroadphaseEntity entity2)
+        {
+            Debug.Assert(entity1 != entity2, "CollisionSystem reports selfcollision. Something is wrong.");
+
+            RigidBody rigidBody1 = entity1 as RigidBody;
+            RigidBody rigidBody2 = entity2 as RigidBody;
+
+            if (rigidBody1 != null)
+            { 
+                if(rigidBody2 != null)
+                {
+                    // most common
+                    DetectRigidRigid(rigidBody1, rigidBody2);
+                }
+                else
+                {
+                    SoftBody softBody2 = entity2 as SoftBody;
+                    if(softBody2 != null) DetectSoftRigid(rigidBody1,softBody2);
+                }
+            }
+            else
+            {
+                SoftBody softBody1 = entity1 as SoftBody;
+
+                if(rigidBody2 != null)
+                {
+                    if(softBody1 != null) DetectSoftRigid(rigidBody2,softBody1);
+                }
+                else
+                {
+                    // less common
+                    SoftBody softBody2 = entity2 as SoftBody;
+                    if(softBody1 != null && softBody2 != null) DetectSoftSoft(softBody1,softBody2);
+                }
+            }
+        }
+
+        private ResourcePool<List<int>> potentialTriangleLists = new ResourcePool<List<int>>();
+
+        private void DetectSoftSoft(SoftBody body1, SoftBody body2)
+        {
+            List<int> my = potentialTriangleLists.GetNew();
+            List<int> other = potentialTriangleLists.GetNew();
+
+            body1.dynamicTree.Query(other, my, body2.dynamicTree);
+
+            for (int i = 0; i < other.Count; i++)
+            {
+                SoftBody.Triangle myTriangle = body1.dynamicTree.GetUserData(my[i]);
+                SoftBody.Triangle otherTriangle = body2.dynamicTree.GetUserData(other[i]);
+
+                JVector point, normal;
+                float penetration;
+                bool result;
+
+                result = XenoCollide.Detect(myTriangle, otherTriangle, ref JMatrix.InternalIdentity, ref JMatrix.InternalIdentity,
+                    ref JVector.InternalZero, ref JVector.InternalZero, out point, out normal, out penetration);
+
+                if (result)
+                {
+                    RaiseCollisionDetected(body1.points[myTriangle.indices.I0],
+                        body2.points[otherTriangle.indices.I0], ref point, ref point, ref normal, penetration);
+
+                    RaiseCollisionDetected(body1.points[myTriangle.indices.I1],
+                        body2.points[otherTriangle.indices.I1], ref point, ref point, ref normal, penetration);
+
+                    RaiseCollisionDetected(body1.points[myTriangle.indices.I2],
+                        body2.points[otherTriangle.indices.I2], ref point, ref point, ref normal, penetration);
+                }
+            }
+
+            my.Clear(); other.Clear();
+            potentialTriangleLists.GiveBack(my);
+            potentialTriangleLists.GiveBack(other);
+        }
+
+        private void DetectRigidRigid(RigidBody body1, RigidBody body2)
         {
             bool b1IsMulti = (body1.Shape is Multishape);
             bool b2IsMulti = (body2.Shape is Multishape);
@@ -183,7 +260,7 @@ namespace Jitter.Collision
                     {
                         JVector point1, point2;
                         FindSupportPoints(body1, body2, body1.Shape, body2.Shape, ref point, ref normal, out point1, out point2);
-                        RaiseCollisionDetected(body1, body2, ref point1,ref point2, ref normal, penetration);
+                        RaiseCollisionDetected(body1, body2, ref point1, ref point2, ref normal, penetration);
                     }
                 }
             }
@@ -322,7 +399,99 @@ namespace Jitter.Collision
 
                 ms.ReturnWorkingClone();
             }
-            
+        }
+
+        private void DetectSoftRigid(RigidBody rigidBody, SoftBody softBody)
+        {
+            if (rigidBody.Shape is Multishape)
+            {
+                Multishape ms = (rigidBody.Shape as Multishape);
+                ms = ms.RequestWorkingClone();
+
+                JVector[] corners = JBBox.CornersPool.GetNew();
+                softBody.BoundingBox.GetCorners(corners);
+
+                for (int i = 0; i < 8; i++)
+                {
+                    JVector.Subtract(ref corners[i], ref rigidBody.position, out corners[i]);
+                    JVector.Transform(ref corners[i], ref rigidBody.invOrientation, out corners[i]);
+                }
+
+                JBBox transformedBoundingBox = JBBox.CreateFromPoints(corners);
+                int msLength = ms.Prepare(ref transformedBoundingBox);
+
+                List<int> detected = potentialTriangleLists.GetNew();
+                softBody.dynamicTree.Query(detected, ref rigidBody.boundingBox);
+
+
+                foreach (int i in detected)
+                {
+                    SoftBody.Triangle t = softBody.dynamicTree.GetUserData(i);
+
+                    JVector point, normal;
+                    float penetration;
+                    bool result;
+
+                    for (int e = 0; e < msLength; e++)
+                    {
+                        ms.SetCurrentShape(e);
+
+                        result = XenoCollide.Detect(ms, t, ref rigidBody.orientation, ref JMatrix.InternalIdentity,
+                            ref rigidBody.position, ref JVector.InternalZero, out point, out normal, out penetration);
+
+
+
+                        if (result)
+                        {
+                            RaiseCollisionDetected(rigidBody,
+                                softBody.points[t.indices.I0], ref point, ref point, ref normal, penetration);
+
+                            RaiseCollisionDetected(rigidBody,
+                                softBody.points[t.indices.I1], ref point, ref point, ref normal, penetration);
+
+                            RaiseCollisionDetected(rigidBody,
+                                softBody.points[t.indices.I2], ref point, ref point, ref normal, penetration);
+                        }
+                    }
+
+                }
+
+                JBBox.CornersPool.GiveBack(corners);
+                detected.Clear(); potentialTriangleLists.GiveBack(detected);
+                ms.ReturnWorkingClone();      
+            }
+            else
+            {
+                List<int> detected = potentialTriangleLists.GetNew();
+                softBody.dynamicTree.Query(detected, ref rigidBody.boundingBox);
+
+                foreach (int i in detected)
+                {
+                    SoftBody.Triangle t = softBody.dynamicTree.GetUserData(i);
+
+                    JVector point, normal;
+                    float penetration;
+                    bool result;
+
+                    result = XenoCollide.Detect(rigidBody.Shape, t, ref rigidBody.orientation, ref JMatrix.InternalIdentity,
+                        ref rigidBody.position, ref JVector.InternalZero, out point, out normal, out penetration);
+
+                    if (result)
+                    {
+                        RaiseCollisionDetected(rigidBody,
+                            softBody.points[t.indices.I0], ref point, ref point, ref normal, penetration);
+
+                        RaiseCollisionDetected(rigidBody,
+                            softBody.points[t.indices.I1], ref point, ref point, ref normal, penetration);
+
+                        RaiseCollisionDetected(rigidBody,
+                            softBody.points[t.indices.I2], ref point, ref point, ref normal, penetration);
+                    }
+                }
+
+                detected.Clear();
+                potentialTriangleLists.GiveBack(detected);
+            }
         }
 
         private void FindSupportPoints(RigidBody body1, RigidBody body2,
@@ -379,10 +548,9 @@ namespace Jitter.Collision
         /// <param name="body1">The first body.</param>
         /// <param name="body2">The second body.</param>
         /// <returns>Returns true if both are static or inactive.</returns>
-        public bool CheckBothStaticOrInactive(RigidBody body1,RigidBody body2)
+        public bool CheckBothStaticOrInactive(IBroadphaseEntity body1, IBroadphaseEntity body2)
         {
-            return (!body1.isActive || body1.isStatic) &&
-                (!body2.isActive || body2.isStatic);
+            return (body1.IsStaticOrInactive() && body2.IsStaticOrInactive());
        }
 
         /// <summary>
@@ -405,7 +573,7 @@ namespace Jitter.Collision
         /// <param name="body2">The second body.</param>
         /// <returns>Returns false if the collision information
         /// should be dropped</returns>
-        public bool RaisePassedBroadphase(RigidBody body1, RigidBody body2)
+        public bool RaisePassedBroadphase(IBroadphaseEntity body1, IBroadphaseEntity body2)
         {
             if (this.PassedBroadphase != null)
                 return this.PassedBroadphase(body1, body2);

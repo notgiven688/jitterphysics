@@ -24,31 +24,11 @@ using System.Collections.Generic;
 using Jitter.Dynamics;
 using Jitter.LinearMath;
 using Jitter.Collision.Shapes;
+using Jitter.Dynamics.Constraints;
 #endregion
 
 namespace Jitter.Dynamics
 {
-
-    #region public interface IConstraint
-    public interface IConstraint
-    {
-
-        RigidBody Body1 { get; }
-
-        RigidBody Body2 { get; }
-
-        /// <summary>
-        /// Called once before iteration starts.
-        /// </summary>
-        /// <param name="timestep">The simulation timestep</param>
-        void PrepareForIteration(float timestep);
-
-        /// <summary>
-        /// Iteratively solve this constraint.
-        /// </summary>
-        void Iterate();
-    }
-    #endregion
 
     #region public class ContactSettings
     public class ContactSettings
