@@ -56,6 +56,9 @@ namespace Jitter
             public event Action<SoftBody> AddedSoftBody;
             public event Action<SoftBody> RemovedSoftBody;
 
+            public event Action<RigidBody, RigidBody> BodiesBeginCollide;
+            public event Action<RigidBody, RigidBody> BodiesEndCollide;
+
             internal WorldEvents() { }
 
             #region Raise Events
@@ -97,6 +100,16 @@ namespace Jitter
             internal void RaiseRemovedSoftBody(SoftBody body)
             {
                 if (RemovedSoftBody != null) RemovedSoftBody(body);
+            }
+
+            internal void RaiseBodiesBeginCollide(RigidBody body1,RigidBody body2)
+            {
+                if (BodiesBeginCollide != null) BodiesBeginCollide(body1,body2);
+            }
+
+            internal void RaiseBodiesEndCollide(RigidBody body1, RigidBody body2)
+            {
+                if (BodiesEndCollide != null) BodiesEndCollide(body1,body2);
             }
             #endregion
         }
@@ -668,6 +681,8 @@ namespace Jitter
                 Arbiter arbiter = garbageArbiterStack.Pop();
                 Arbiter.Pool.GiveBack(arbiter);
                 arbiterMap.Remove(arbiter);
+
+                events.RaiseBodiesEndCollide(arbiter.body1, arbiter.body2);
             }
 
         }
@@ -832,6 +847,8 @@ namespace Jitter
                     arbiter = Arbiter.Pool.GetNew();
                     arbiter.body1 = body1; arbiter.body2 = body2;
                     arbiterMap.Add(new ArbiterKey(body1, body2), arbiter);
+
+                    events.RaiseBodiesBeginCollide(body1, body2);
                 }
             }
 
