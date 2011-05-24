@@ -643,8 +643,8 @@ namespace JitterDemo
             // Draw all shapes
             foreach (RigidBody body in World.RigidBodies)
             {
-                if (body.Tag is int || body is SoftBody.MassPoint) continue;
                 if (body.IsActive) activeBodies++;
+                if (body.Tag is int || body is SoftBody.MassPoint) continue;
                 AddBodyToDrawList(body);
             }
 
@@ -656,7 +656,7 @@ namespace JitterDemo
             PhysicScenes[currentScene].Draw();
 
             // Draw the debug data provided by Jitter
-            // DrawIslands();
+             DrawIslands();
             DrawJitterDebugInfo();
             base.Draw(gameTime);
         }

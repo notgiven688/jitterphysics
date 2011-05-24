@@ -229,6 +229,8 @@ namespace Jitter.Dynamics
 
                 this.boundingBox.Min = new JVector(-sphereSize) + position;
                 this.boundingBox.Max = new JVector(sphereSize) + position;
+
+                angularVelocity.MakeZero();
             }
 
             // Setting angular velocity or inertia does not have any effect.
@@ -252,6 +254,7 @@ namespace Jitter.Dynamics
                 get { return angularVelocity; }
                 set { }
             }
+
 
         }
         #endregion
