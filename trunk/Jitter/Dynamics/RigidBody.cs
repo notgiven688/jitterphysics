@@ -71,8 +71,6 @@ namespace Jitter.Dynamics
 
         internal JVector force, torque;
 
-        
-
         private int hashCode;
 
         internal int internalIndex = 0;

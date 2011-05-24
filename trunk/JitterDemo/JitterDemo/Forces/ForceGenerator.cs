@@ -17,7 +17,7 @@ namespace Jitter.Forces
         /// </summary>
         protected World world;
 
-        private WorldStep preStep, postStep;
+        private World.WorldStep preStep, postStep;
 
         /// <summary>
         /// 
@@ -27,11 +27,11 @@ namespace Jitter.Forces
         {
             this.world = world;
 
-            preStep = new WorldStep(PreStep);
-            postStep = new WorldStep(PostStep);
+            preStep = new World.WorldStep(PreStep);
+            postStep = new World.WorldStep(PostStep);
 
-            world.PostStep += postStep;
-            world.PreStep += preStep;
+            world.Events.PostStep += postStep;
+            world.Events.PreStep += preStep;
         }
 
         /// <summary>
@@ -55,8 +55,8 @@ namespace Jitter.Forces
         /// </summary>
         public void RemoveEffect()
         {
-            world.PostStep -= postStep;
-            world.PreStep -= preStep;
+            world.Events.PostStep -= postStep;
+            world.Events.PreStep -= preStep;
         }
 
 

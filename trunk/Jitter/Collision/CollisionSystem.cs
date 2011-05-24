@@ -559,11 +559,14 @@ namespace Jitter.Collision
         /// <param name="body1">The first body.</param>
         /// <param name="body2">The second body.</param>
         /// <returns>Returns true if an intersection occours.</returns>
-        public bool CheckBoundingBoxes(RigidBody body1, RigidBody body2)
+        public bool CheckBoundingBoxes(IBroadphaseEntity body1, IBroadphaseEntity body2)
         {
-            return ((((body1.boundingBox.Max.Z >= body2.boundingBox.Min.Z) && (body1.boundingBox.Min.Z <= body2.boundingBox.Max.Z)) &&
-                ((body1.boundingBox.Max.Y >= body2.boundingBox.Min.Y) && (body1.boundingBox.Min.Y <= body2.boundingBox.Max.Y))) &&
-                ((body1.boundingBox.Max.X >= body2.boundingBox.Min.X) && (body1.boundingBox.Min.X <= body2.boundingBox.Max.X)));
+            JBBox box1 = body1.BoundingBox;
+            JBBox box2 = body2.BoundingBox;
+
+            return ((((box1.Max.Z >= box2.Min.Z) && (box1.Min.Z <= box2.Max.Z)) &&
+                ((box1.Max.Y >= box2.Min.Y) && (box1.Min.Y <= box2.Max.Y))) &&
+                ((box1.Max.X >= box2.Min.X) && (box1.Min.X <= box2.Max.X)));
         }
 
         /// <summary>
