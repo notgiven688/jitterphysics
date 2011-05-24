@@ -550,8 +550,8 @@ namespace Jitter
             currentLinearDampFactor = (float)Math.Pow(linearDamping, timestep);
 
 #if(WINDOWS_PHONE)
-            if (this.PreStep != null) PreStep(timestep);
-            for (int i = 0; i < rigidBodies.Count; i++) rigidBodies[i].PreStep();
+            events.RaiseWorldPreStep(timestep);
+            foreach (RigidBody body in rigidBodies) body.PreStep();
             UpdateContacts();
             CollisionSystem.Detect(multithread);
             BuildIslands();
@@ -560,17 +560,17 @@ namespace Jitter
             HandleArbiter(contactIterations, multithread);
             Integrate(multithread);
 
-            for (int i = 0; i < softbodies.Count; i++)
+            foreach (SoftBody body in softbodies)
             {
-                softbodies[i].Update();
-                softbodies[i].AddPressureForces(timestep);
+                body.Update(timestep);
+                body.AddPressureForces(timestep);
             }
 
-            for (int i = 0; i < rigidBodies.Count; i++) rigidBodies[i].PostStep();
-            if (this.PostStep != null) PostStep(timestep);
+            foreach (RigidBody body in rigidBodies) body.PostStep();
+            events.RaiseWorldPostStep(timestep);
 #else
             sw.Reset(); sw.Start();
-            Events.RaiseWorldPreStep(timestep);
+            events.RaiseWorldPreStep(timestep);
             foreach (RigidBody body in rigidBodies) body.PreStep();
             sw.Stop(); debugTimes[(int)DebugType.PreStep] = sw.Elapsed.TotalMilliseconds;
 
@@ -612,7 +612,7 @@ namespace Jitter
 
             sw.Reset(); sw.Start();
             foreach (RigidBody body in rigidBodies) body.PostStep();
-            Events.RaiseWorldPostStep(timestep);
+            events.RaiseWorldPostStep(timestep);
             sw.Stop(); debugTimes[(int)DebugType.PostStep] = sw.Elapsed.TotalMilliseconds;
 #endif
         }
