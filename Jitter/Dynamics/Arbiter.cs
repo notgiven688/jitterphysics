@@ -135,7 +135,7 @@ namespace Jitter.Dynamics
         /// <param name="point2">Point on body2. In world space.</param>
         /// <param name="normal">The normal pointing to body2.</param>
         /// <param name="penetration">The estimated penetration depth.</param>
-        public void AddContact(JVector point1, JVector point2, JVector normal, float penetration, 
+        public Contact AddContact(JVector point1, JVector point2, JVector normal, float penetration, 
             ContactSettings contactSettings)
         {
             JVector relPos1;
@@ -149,7 +149,7 @@ namespace Jitter.Dynamics
                 {
                     index = SortCachedPoints(ref relPos1, penetration);
                     ReplaceContact(ref point1, ref point2, ref normal, penetration, index, contactSettings);
-                    return;
+                    return null;
                 }
 
                 index = GetCacheEntry(ref relPos1, contactSettings.breakThreshold);
@@ -157,12 +157,14 @@ namespace Jitter.Dynamics
                 if (index >= 0)
                 {
                     ReplaceContact(ref point1, ref point2, ref normal, penetration, index, contactSettings);
+                    return null;
                 }
                 else
                 {
                     Contact contact = Contact.Pool.GetNew();
                     contact.Initialize(body1, body2, ref point1, ref point2, ref normal, penetration, true, contactSettings);
                     contactList.Add(contact);
+                    return contact;
                 }
             }
         }
