@@ -446,46 +446,6 @@ namespace Jitter.Collision
         }
         #endregion
 
-        //public int GetTrianglePoint(JVector point)
-        //{
-        //    if (nodes.Length == 0)
-        //        return 0;
-        //    int curStackIndex = 0;
-        //    int endStackIndex = 1;
-
-        //    UInt16[] nodeStack = nodeStackPool.GetNew();
-        //    nodeStack[0] = 0;
-
-        //    //int triCount = 0;
-
-        //    while (curStackIndex < endStackIndex)
-        //    {
-        //        UInt16 nodeIndex = nodeStack[curStackIndex];
-        //        curStackIndex++;
-        //        if (nodes[nodeIndex].box.Contains(ref point) != JBBox.ContainmentType.Disjoint)
-        //        {
-        //            for (int i = 0; i < nodes[nodeIndex].triIndices.Length; ++i)
-        //            {
-        //                if (triBoxes[nodes[nodeIndex].triIndices[i]].Contains(ref point) != JBBox.ContainmentType.Disjoint)
-        //                {
-        //                    //triangles.Add(nodes[nodeIndex].triIndices[i]);
-        //                    //triCount++;
-        //                    return nodes[nodeIndex].triIndices[i];
-        //                }
-        //            }
-
-        //            int numChildren = nodes[nodeIndex].nodeIndices.Length;
-        //            for (int i = 0; i < numChildren; ++i)
-        //            {
-        //                nodeStack[endStackIndex++] = nodes[nodeIndex].nodeIndices[i];
-        //            }
-        //        }
-        //    }
-
-        //    nodeStackPool.GiveBack(nodeStack);
-        //    return -1;
-        //}
-
         /// <summary>
         /// Gets the indices of a triangle by index.
         /// </summary>

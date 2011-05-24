@@ -150,7 +150,6 @@ namespace Jitter.Collision
             FreeNode(proxyId);
         }
 
-
         /// <summary>
         /// Move a proxy with a swepted AABB. If the proxy has moved outside of its fattened AABB,
         /// then the proxy is removed from the tree and re-inserted. Otherwise
@@ -249,6 +248,31 @@ namespace Jitter.Collision
         public int ComputeHeight()
         {
             return ComputeHeight(_root);
+        }
+
+        public void Query(JVector origin, JVector direction, List<int> collisions)
+        {
+            Stack<int> stack = stackPool.GetNew();
+
+            stack.Push(_root);
+
+            while (stack.Count > 0)
+            {
+                int nodeId = stack.Pop();
+                DynamicTreeNode<T> node = _nodes[nodeId];
+
+                if (node.AABB.RayIntersect(ref origin, ref direction))
+                {
+                    if (node.IsLeaf()) collisions.Add(nodeId);
+                    else
+                    {
+                        if (_nodes[node.Child1].AABB.RayIntersect(ref origin, ref direction)) stack.Push(node.Child1);
+                        if (_nodes[node.Child2].AABB.RayIntersect(ref origin, ref direction)) stack.Push(node.Child2);
+                    }
+                }
+            }
+
+            stackPool.GiveBack(stack);
         }
 
         public void Query(List<int> other, List<int> my, DynamicTree<T> tree)

@@ -215,7 +215,7 @@ namespace Jitter.Dynamics
         #region public class MassPoint : RigidBody
         public class MassPoint : RigidBody
         {
-            private const float sphereSize = 0.01f;
+            private const float sphereSize = 0.1f;
 
             private static Shape sphereShape = new SphereShape(sphereSize);
 
