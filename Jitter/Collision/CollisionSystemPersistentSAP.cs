@@ -513,18 +513,36 @@ namespace Jitter.Collision
             // TODO: This can be done better in CollisionSystemPersistenSAP
             foreach (IBroadphaseEntity e in bodyList)
             {
-                if (!(e is RigidBody)) continue;
-
-                RigidBody b = e as RigidBody;
-
-                if (this.Raycast(b, rayOrigin, rayDirection, out tempNormal, out tempFraction))
+                if (e is SoftBody)
                 {
-                    if (tempFraction < fraction && (raycast == null || raycast(b,tempNormal,tempFraction)))
+                    SoftBody softBody = e as SoftBody;
+                    foreach (RigidBody b in softBody.points)
                     {
-                        body = b;
-                        normal = tempNormal;
-                        fraction = tempFraction;
-                        result = true;
+                        if (this.Raycast(b, rayOrigin, rayDirection, out tempNormal, out tempFraction))
+                        {
+                            if (tempFraction < fraction && (raycast == null || raycast(b, tempNormal, tempFraction)))
+                            {
+                                body = b;
+                                normal = tempNormal;
+                                fraction = tempFraction;
+                                result = true;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    RigidBody b = e as RigidBody;
+
+                    if (this.Raycast(b, rayOrigin, rayDirection, out tempNormal, out tempFraction))
+                    {
+                        if (tempFraction < fraction && (raycast == null || raycast(b, tempNormal, tempFraction)))
+                        {
+                            body = b;
+                            normal = tempNormal;
+                            fraction = tempFraction;
+                            result = true;
+                        }
                     }
                 }
             }
@@ -532,6 +550,7 @@ namespace Jitter.Collision
             return result;
         }
         #endregion
+
 
         /// <summary>
         /// Raycasts a single body. NOTE: For performance reasons terrain and trianglemeshshape aren't checked
@@ -599,8 +618,6 @@ namespace Jitter.Collision
 
         }
         #endregion
-
-
 
 
     }
