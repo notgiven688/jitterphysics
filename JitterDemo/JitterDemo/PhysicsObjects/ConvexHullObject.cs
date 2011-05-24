@@ -24,13 +24,13 @@ namespace JitterDemo
 
         }
 
-        public static void ExtractData(List<Vector3> vertices, List<TriangleVertexIndices> indices, Model model)
+        public static void ExtractData(List<JVector> vertices, List<TriangleVertexIndices> indices, Model model)
         {
             Matrix[] bones_ = new Matrix[model.Bones.Count];
             model.CopyAbsoluteBoneTransformsTo(bones_);
             foreach (ModelMesh modelmesh in model.Meshes)
             {
-                Matrix xform = bones_[modelmesh.ParentBone.Index];
+                JMatrix xform = Conversion.ToJitterMatrix(bones_[modelmesh.ParentBone.Index]);
                 foreach (ModelMeshPart meshPart in modelmesh.MeshParts)
                 {
                     // Before we add any more where are we starting from 
@@ -59,9 +59,9 @@ namespace JitterDemo
                         throw new Exception("Model uses unsupported vertex format!");
                     }
                     // This where we store the vertices until transformed 
-                    Vector3[] allVertex = new Vector3[meshPart.NumVertices];
+                    JVector[] allVertex = new JVector[meshPart.NumVertices];
                     // Read the vertices from the buffer in to the array 
-                    meshPart.VertexBuffer.GetData<Vector3>(
+                    meshPart.VertexBuffer.GetData<JVector>(
                         meshPart.VertexOffset * declaration.VertexStride + vertexPosition.Offset,
                         allVertex,
                         0,
@@ -70,7 +70,7 @@ namespace JitterDemo
                     // Transform them based on the relative bone location and the world if provided 
                     for (int i = 0; i != allVertex.Length; ++i)
                     {
-                        Vector3.Transform(ref allVertex[i], ref xform, out allVertex[i]);
+                        JVector.Transform(ref allVertex[i], ref xform, out allVertex[i]);
                     }
                     // Store the transformed vertices with those from all the other meshes in this model 
                     vertices.AddRange(allVertex);
@@ -114,17 +114,10 @@ namespace JitterDemo
             if (cvhs == null)
             {
 
-                List<Vector3> vertices = new List<Vector3>();
+                List<JVector> jvecs = new List<JVector>();
                 List<TriangleVertexIndices> indices = new List<TriangleVertexIndices>();
 
-                ExtractData(vertices, indices, model);
-
-                List<JVector> jvecs = new List<JVector>();
-
-                foreach (Vector3 vec in vertices)
-                {
-                    jvecs.Add(Conversion.ToJitterVector(vec));
-                }
+                ExtractData(jvecs, indices, model);
 
                 int[] convexHullIndices = JConvexHull.Build(jvecs, JConvexHull.Approximation.Level6);
 

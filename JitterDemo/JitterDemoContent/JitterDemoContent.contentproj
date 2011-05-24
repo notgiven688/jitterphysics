@@ -119,6 +119,7 @@
       <Importer>XImporter</Importer>
       <Processor>ModelProcessor</Processor>
       <ProcessorParameters_Scale>10</ProcessorParameters_Scale>
+      <ProcessorParameters_RotationX>90</ProcessorParameters_RotationX>
     </Compile>
   </ItemGroup>
   <ItemGroup>
