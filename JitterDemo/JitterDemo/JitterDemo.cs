@@ -19,6 +19,7 @@ using System.Diagnostics;
 
 using SingleBodyConstraints = Jitter.Dynamics.Constraints.SingleBody;
 using System.IO;
+using Jitter.DataStructures;
 #endregion
 
 namespace JitterDemo
@@ -71,7 +72,7 @@ namespace JitterDemo
             this.IsFixedTimeStep = false;
             this.graphics.SynchronizeWithVerticalRetrace = false;
 
-            CollisionSystem collision = new CollisionSystemPersistentSAP();
+            CollisionSystem collision = new CollisionSystemSAP();
             World = new World(collision); World.AllowDeactivation = true;
 
             this.Window.AllowUserResizing = true;
@@ -607,7 +608,7 @@ namespace JitterDemo
             foreach (SoftBody body in World.SoftBodies)
             {
                 this.GraphicsDevice.RasterizerState = cullMode;
-
+                
                 
                 for (int i = 0; i < body.Triangles.Count; i++)
                 {

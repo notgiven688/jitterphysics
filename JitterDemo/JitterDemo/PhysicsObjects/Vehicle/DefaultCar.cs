@@ -67,7 +67,7 @@ namespace JitterDemo
         private const float dampingFrac = 0.5f;
         private const float springFrac = 0.1f;
 
-        WorldStep postStep;
+        World.WorldStep postStep;
 
         /// <summary>
         /// Initializes a new instance of the DefaultCar class.
@@ -77,9 +77,9 @@ namespace JitterDemo
         public DefaultCar(World world,Shape shape) : base(shape)
         {
             this.world = world;
-            postStep = new WorldStep(world_PostStep);
+            postStep = new World.WorldStep(world_PostStep);
 
-            world.PostStep += postStep;
+            world.Events.PostStep += postStep;
 
             // set some default values
             this.AccelerationRate = 5.0f;
@@ -98,7 +98,7 @@ namespace JitterDemo
 
         public void RemoveCar()
         {
-            world.PostStep -= postStep;
+            world.Events.PostStep -= postStep;
             foreach (Wheel w in wheels) w.RemoveWheel();
         }
 

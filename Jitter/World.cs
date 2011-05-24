@@ -28,15 +28,11 @@ using Jitter.LinearMath;
 using Jitter.Collision.Shapes;
 using Jitter.Collision;
 using Jitter.Dynamics.Constraints;
+using Jitter.DataStructures;
 #endregion
 
 namespace Jitter
 {
-
-    /// <summary>
-    /// </summary>
-    /// <param name="timeStep">The timestep of the step.</param>
-    public delegate void WorldStep(float timeStep);
 
     /// <summary>
     /// This class brings 'dynamics' and 'collisions' together. It handles
@@ -44,6 +40,66 @@ namespace Jitter
     /// </summary>
     public class World
     {
+        public delegate void WorldStep(float timestep);
+
+        public class WorldEvents
+        {
+            public event WorldStep PreStep;
+            public event WorldStep PostStep;
+
+            public event Action<RigidBody> AddedRigidBody;
+            public event Action<RigidBody> RemovedRigidBody;
+
+            public event Action<Constraint> AddedConstraint;
+            public event Action<Constraint> RemovedConstraint;
+
+            public event Action<SoftBody> AddedSoftBody;
+            public event Action<SoftBody> RemovedSoftBody;
+
+            internal WorldEvents() { }
+
+            #region Raise Events
+            internal void RaiseWorldPreStep(float timestep)
+            {
+                if (PreStep != null) PreStep(timestep);
+            }
+
+            internal void RaiseWorldPostStep(float timestep)
+            {
+                if (PostStep != null) PostStep(timestep);
+            }
+
+            internal void RaiseAddedRigidBody(RigidBody body)
+            {
+                if (AddedRigidBody != null) AddedRigidBody(body);
+            }
+
+            internal void RaiseRemovedRigidBody(RigidBody body)
+            {
+                if (RemovedRigidBody != null) RemovedRigidBody(body);
+            }
+
+            internal void RaiseAddedConstraint(Constraint constraint)
+            {
+                if (AddedConstraint != null) AddedConstraint(constraint);
+            }
+
+            internal void RaiseRemovedConstraint(Constraint constraint)
+            {
+                if (RemovedConstraint != null) RemovedConstraint(constraint);
+            }
+
+            internal void RaiseAddedSoftBody(SoftBody body)
+            {
+                if (AddedSoftBody != null) AddedSoftBody(body);
+            }
+
+            internal void RaiseRemovedSoftBody(SoftBody body)
+            {
+                if (RemovedSoftBody != null) RemovedSoftBody(body);
+            }
+            #endregion
+        }
 
         /// <summary>
         /// If a contact exceeds this breakThreshold it
@@ -64,16 +120,23 @@ namespace Jitter
 
         private List<CollisionIsland> islands = new List<CollisionIsland>();
 
-        internal List<RigidBody> rigidBodies = new List<RigidBody>();
-        internal List<Constraint> constraints = new List<Constraint>();
+        private HashSet<RigidBody> rigidBodies = new HashSet<RigidBody>();
+        private HashSet<Constraint> constraints = new HashSet<Constraint>();
+        private HashSet<SoftBody> softbodies = new HashSet<SoftBody>();
 
-        private List<SoftBody> softbodies = new List<SoftBody>();
-        public ReadOnlyCollection<SoftBody> SoftBodies { get; private set; }
+        public ReadOnlyHashset<RigidBody> RigidBodies { get; private set; }
+        public ReadOnlyHashset<Constraint> Constraints { get; private set; }
+        public ReadOnlyHashset<SoftBody> SoftBodies { get; private set; }
+
+        private WorldEvents events = new WorldEvents();
+        public WorldEvents Events { get { return events; } }
 
         public void AddBody(SoftBody body)
         {
             this.softbodies.Add(body);
             this.CollisionSystem.AddBody(body);
+
+            events.RaiseAddedSoftBody(body);
 
             foreach (Constraint constraint in body.springs)
                 AddConstraint(constraint);
@@ -85,8 +148,9 @@ namespace Jitter
         public bool RemoveBody(SoftBody body)
         {
             if(!this.softbodies.Remove(body)) return false;
-
             this.CollisionSystem.RemoveBody(body);
+
+            events.RaiseRemovedSoftBody(body);
 
             foreach (Constraint constraint in body.springs)
                 RemoveConstraint(constraint);
@@ -103,15 +167,6 @@ namespace Jitter
         /// </summary>
         public CollisionSystem CollisionSystem {  set; get; }
 
-        /// <summary>
-        /// It's a good idea to add force and torque here.
-        /// </summary>
-        public event WorldStep PreStep;
-
-        /// <summary>
-        /// Called at the end of every step.
-        /// </summary>
-        public event WorldStep PostStep;
 
         /// <summary>
         /// Holds a list of <see cref="Arbiter"/>. All currently
@@ -126,19 +181,6 @@ namespace Jitter
 
         public ContactSettings ContactSettings { get { return contactSettings; } }
 
-        /// <summary>
-        /// Gets a read only collection of the <see cref="Jitter.Dynamics.RigidBody"/> objects managed by
-        /// this class.
-        /// </summary>
-        public ReadOnlyCollection<RigidBody> RigidBodies { get { return readOnlyRigidBodies; } }
-        private ReadOnlyCollection<RigidBody> readOnlyRigidBodies;
-
-        /// <summary>
-        /// Gets a read only collection of the <see cref="Jitter.Dynamics.Constraints.Constraint"/> objects managed by
-        /// this class.
-        /// </summary>
-        public ReadOnlyCollection<Constraint> Constraints { get { return readOnlyConstraints; } }
-        private ReadOnlyCollection<Constraint> readOnlyConstraints;
 
         /// <summary>
         /// Gets a read only collection of the <see cref="Jitter.Collision.CollisionIsland"/> objects managed by
@@ -167,11 +209,11 @@ namespace Jitter
             arbiterCallback = new Action<object>(ArbiterCallback);
             integrateCallback = new Action<object>(IntegrateCallback);
 
-            this.constraints = new List<Constraint>();
-
             // Create the readonly wrappers
-            this.readOnlyRigidBodies = rigidBodies.AsReadOnly();
-            this.readOnlyConstraints = constraints.AsReadOnly();
+            this.RigidBodies = new ReadOnlyHashset<RigidBody>(rigidBodies);
+            this.Constraints = new ReadOnlyHashset<Constraint>(constraints);
+            this.SoftBodies = new ReadOnlyHashset<SoftBody>(softbodies);
+
             this.readOnlyIslands = islands.AsReadOnly();
 
             this.CollisionSystem = collision;
@@ -179,7 +221,6 @@ namespace Jitter
 
             this.arbiterMap = new ArbiterMap();
 
-            SoftBodies = softbodies.AsReadOnly();
 
             AllowDeactivation = true;
         }
@@ -220,6 +261,10 @@ namespace Jitter
             rigidBodies.Clear();
 
             // remove constraints
+            foreach (Constraint constraint in constraints)
+            {
+                events.RaiseRemovedConstraint(constraint);
+            }
             constraints.Clear();
 
             softbodies.Clear();
@@ -327,9 +372,7 @@ namespace Jitter
             // Its very important to clean up, after removing a body
 
             // remove the body from the world list
-            int index = rigidBodies.BinarySearch(body);
-            if (index < 0) return false;
-            else { rigidBodies.RemoveAt(index); }
+            if (!rigidBodies.Remove(body)) return false;
 
             // remove the body from the collision system
             CollisionSystem.RemoveBody(body);
@@ -391,18 +434,12 @@ namespace Jitter
         public void AddBody(RigidBody body)
         {
             if (body == null) throw new ArgumentNullException("body", "body can't be null.");
+            if(rigidBodies.Contains(body)) throw new ArgumentException("The body was already added to the world.", "body");
 
-            int index = rigidBodies.BinarySearch(body);
-            if (index < 0)
-            {
-                body.island = null;
-                body.Update();
-                rigidBodies.Insert(~index, body);
+            events.RaiseAddedRigidBody(body);
 
-                if(!(body is SoftBody.MassPoint))
-                this.CollisionSystem.AddBody(body);
-            }
-            else throw new ArgumentException("The body was already added to the world.", "body");
+            if(!(body is SoftBody.MassPoint)) this.CollisionSystem.AddBody(body);
+            rigidBodies.Add(body);
         }
 
         /// <summary>
@@ -412,9 +449,9 @@ namespace Jitter
         /// <returns>True if the constraint was successfully removed.</returns>
         public bool RemoveConstraint(Constraint constraint)
         {
-            int index = constraints.BinarySearch(constraint);
-            if (index < 0) return false;
-            else { constraints.RemoveAt(index); return true; }
+            if (!constraints.Remove(constraint)) return false;
+            events.RaiseRemovedConstraint(constraint);
+            return true;
         }
 
         /// <summary>
@@ -423,9 +460,12 @@ namespace Jitter
         /// <param name="constraint">The constraint which should be removed.</param>
         public void AddConstraint(Constraint constraint)
         {
-            int index = constraints.BinarySearch(constraint);
-            if (index < 0) constraints.Insert(~index, constraint);
-            else throw new ArgumentException("The constraint was already added to the world.", "constraint");
+            if(constraints.Contains(constraint)) 
+                throw new ArgumentException("The constraint was already added to the world.", "constraint");
+
+            constraints.Add(constraint);
+
+            events.RaiseAddedConstraint(constraint);
         }
 
         private float currentLinearDampFactor = 1.0f;
@@ -494,8 +534,8 @@ namespace Jitter
             if (this.PostStep != null) PostStep(timestep);
 #else
             sw.Reset(); sw.Start();
-            if (this.PreStep != null) PreStep(timestep);
-            for (int i = 0; i < rigidBodies.Count; i++) rigidBodies[i].PreStep();
+            Events.RaiseWorldPreStep(timestep);
+            foreach (RigidBody body in rigidBodies) body.PreStep();
             sw.Stop(); debugTimes[(int)DebugType.PreStep] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
@@ -527,16 +567,16 @@ namespace Jitter
             sw.Stop(); debugTimes[(int)DebugType.Integrate] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
-            for (int i = 0; i < softbodies.Count; i++)
+            foreach(SoftBody body in softbodies)
             {
-                softbodies[i].Update(timestep);
-                softbodies[i].AddPressureForces(timestep);
+                body.Update(timestep);
+                body.AddPressureForces(timestep);
             }
             sw.Stop(); debugTimes[(int)DebugType.ClothUpdate] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
-            for (int i = 0; i < rigidBodies.Count; i++) rigidBodies[i].PostStep();
-            if (this.PostStep != null) PostStep(timestep);
+            foreach (RigidBody body in rigidBodies) body.PostStep();
+            Events.RaiseWorldPostStep(timestep);
             sw.Stop(); debugTimes[(int)DebugType.PostStep] = sw.Elapsed.TotalMilliseconds;
 #endif
         }
@@ -691,9 +731,8 @@ namespace Jitter
 
         private void IntegrateForces()
         {
-            for (int i = 0; i < rigidBodies.Count; i++)
+            foreach(RigidBody body in rigidBodies)
             {
-                RigidBody body = rigidBodies[i];
 
                 if (!body.isStatic && body.IsActive)
                 {
@@ -764,20 +803,20 @@ namespace Jitter
         {
             if (multithread)
             {
-                for (int i = 0; i < rigidBodies.Count; i++)
+                foreach(RigidBody body in rigidBodies)
                 {
-                    if (rigidBodies[i].isStatic || !rigidBodies[i].IsActive) continue;
-                    ThreadManager.internalInstance.AddTask(integrateCallback, rigidBodies[i]);
+                    if (body.isStatic || !body.IsActive) continue;
+                    ThreadManager.internalInstance.AddTask(integrateCallback, body);
                 }
 
                 ThreadManager.internalInstance.Execute();
             }
             else
             {
-                for (int i = 0; i < rigidBodies.Count; i++)
+                foreach (RigidBody body in rigidBodies)
                 {
-                    if (rigidBodies[i].isStatic || !rigidBodies[i].IsActive) continue;
-                    integrateCallback(rigidBodies[i]);
+                    if (body.isStatic || !body.IsActive) continue;
+                    integrateCallback(body);
                 }
             }
         }
@@ -917,11 +956,8 @@ namespace Jitter
             }
 
             // Connect islands by constraints
-            int count = constraints.Count;
-            for (int i = 0; i < count; i++)
+            foreach (Constraint constraint in constraints)
             {
-                Constraint constraint = constraints[i];
-
                 RigidBody body0 = constraint.body1;
                 RigidBody body1 = constraint.body2;
 
@@ -933,11 +969,8 @@ namespace Jitter
             }
 
             // every single body gets an island
-            count = rigidBodies.Count;
-            for (int i = 0; i < count; i++)
+            foreach (RigidBody body in rigidBodies)
             {
-                RigidBody body = rigidBodies[i];
-
                 if (body.isStatic) continue;
 
                 if (body.island == null)
@@ -951,11 +984,8 @@ namespace Jitter
 
 
             #region Add Constraints to Collision Islands
-            count = constraints.Count;
-            for (int i = 0; i < count; i++)
+            foreach (Constraint constraint in constraints)
             {
-                Constraint constraint = constraints[i];
-
                 if (constraint.body1 != null && constraint.body1.CollisionIsland != null)
                     constraint.body1.island.constraints.Add(constraint);
             }

@@ -61,6 +61,7 @@
     <Compile Include="Collision\Shapes\TriangleMeshShape.cs" />
     <Compile Include="Collision\XenoCollide.cs" />
     <Compile Include="DataStructures\Hashset.cs" />
+    <Compile Include="DataStructures\ReadOnlyHashset.cs" />
     <Compile Include="Dynamics\Arbiter.cs" />
     <Compile Include="Dynamics\ArbiterMap.cs" />
     <Compile Include="Dynamics\Constraints\FixedAngle.cs" />

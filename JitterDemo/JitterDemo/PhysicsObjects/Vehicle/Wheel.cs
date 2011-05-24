@@ -126,7 +126,7 @@ namespace JitterDemo
         /// </summary>
         public JVector Position { get; set; }
 
-        WorldStep preStep, postStep;
+        World.WorldStep preStep, postStep;
 
         /// <summary>
         /// Creates a new instance of the Wheel class.
@@ -143,11 +143,11 @@ namespace JitterDemo
             
             raycast = new RaycastCallback(RaycastCallback);
 
-            preStep = new WorldStep(PreStep);
-            postStep = new WorldStep(PostStep);
+            preStep = new World.WorldStep(PreStep);
+            postStep = new World.WorldStep(PostStep);
 
-            world.PreStep += preStep;
-            world.PostStep += postStep;
+            world.Events.PreStep += preStep;
+            world.Events.PostStep += postStep;
 
             // set some default values.
             this.SideFriction = 1.5f;
@@ -391,8 +391,8 @@ namespace JitterDemo
 
         public void RemoveWheel()
         {
-            world.PreStep -= preStep;
-            world.PostStep -= postStep;
+            world.Events.PreStep -= preStep;
+            world.Events.PostStep -= postStep;
         }
 
         private bool RaycastCallback(RigidBody body, JVector normal, float frac)
