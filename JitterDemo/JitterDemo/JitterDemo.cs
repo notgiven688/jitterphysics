@@ -93,8 +93,6 @@ namespace JitterDemo
 
         protected override void Initialize()
         {
-
-
             Camera = new Camera(this);
             Camera.Position = new Vector3(15, 15, 30);
             Camera.Target = Camera.Position + Vector3.Normalize(new Vector3(10, 5, 20));
