@@ -72,44 +72,46 @@ namespace JitterDemo.Scenes
             }
 
             Model model = this.Demo.Content.Load<Model>("torus");
-            List<Vector3> vertices = new List<Vector3>();
+
             List<TriangleVertexIndices> indices = new List<TriangleVertexIndices>();
+            List<JVector> vertices = new List<JVector>();
 
             ConvexHullObject.ExtractData(vertices, indices, model);
-            List<JVector> jvecs = new List<JVector>();
+            RemoveDuplicateVertices(indices, vertices);
 
-            foreach (Vector3 vec in vertices) jvecs.Add(Conversion.ToJitterVector(vec) + new JVector(-10, 15, 3));
+            for (int i = 0; i < 5; i++)
+            {
+                SoftBody softBody = new SoftBody(indices, vertices);
 
-            RemoveDuplicateVertices(indices, jvecs);
-            SoftBody softBody = new SoftBody(indices, jvecs);
-            SoftBody softBody3 = new SoftBody(indices, jvecs);
+                if (i % 2 == 0) softBody.Rotate(JMatrix.CreateRotationY(JMath.PiOver2), JVector.Zero);
+                softBody.Translate(new JVector(10, 20 - i * 3, 0));
+                softBody.Pressure =1000.0f;
+                softBody.SetSpringValues(0.1f, 0.001f);
 
-            softBody3.TriangleExpansion = softBody.TriangleExpansion = 0.05f;
+                Demo.World.AddBody(softBody);
 
-            softBody3.Translate(new JVector(-10, -10, 0));
+                if (i == 0)
+                {
+                    foreach (SoftBody.MassPoint point in softBody.VertexBodies) point.IsStatic = true;
+                }
+            }
 
-            softBody.Pressure = 500.0f;
-            softBody3.Pressure = 500.0f;
-
-            Demo.World.AddBody(softBody);
-            Demo.World.AddBody(softBody3);
-
+            indices.Clear(); vertices.Clear();
             model = this.Demo.Content.Load<Model>("cloth");
-            vertices.Clear(); indices.Clear(); jvecs.Clear();
 
             ConvexHullObject.ExtractData(vertices, indices, model);
-            foreach (Vector3 vec in vertices) jvecs.Add(Conversion.ToJitterVector(vec) + new JVector(10, 10, 3));
-            RemoveDuplicateVertices(indices, jvecs);
+            RemoveDuplicateVertices(indices, vertices);
 
-            SoftBody softBody2 = new SoftBody(indices, jvecs);
-            softBody2.Pressure = 0.0f;
-            Demo.World.AddBody(softBody2);
+            SoftBody cloth = new SoftBody(indices, vertices);
 
+            cloth.Translate(new JVector(0, 10, 10));
 
-            softBody2.VertexBodies[2].IsStatic = true;
-            softBody2.VertexBodies[124].IsStatic = true;
-            softBody2.VertexBodies[234].IsStatic = true;
-            softBody2.VertexBodies[356].IsStatic = true;
+            cloth.VertexBodies[2].IsStatic = true;
+            cloth.VertexBodies[124].IsStatic = true;
+            cloth.VertexBodies[234].IsStatic = true;
+            cloth.VertexBodies[356].IsStatic = true;
+
+            Demo.World.AddBody(cloth);
         }
 
 

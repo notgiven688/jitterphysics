@@ -430,6 +430,8 @@ namespace Jitter.Dynamics
         public void Translate(JVector position)
         {
             foreach (MassPoint point in points) point.Position += position;
+
+            Update(float.Epsilon);
         }
 
         public void AddForce(JVector force)
@@ -440,8 +442,10 @@ namespace Jitter.Dynamics
 
         public void Rotate(JMatrix orientation, JVector center)
         {
-            // TODO
-            throw new NotImplementedException();
+            for (int i = 0; i < points.Length; i++)
+            {
+                points[i].position = JVector.Transform(points[i].position - center, orientation);
+            }
         }
 
         public JVector CalculateCenter()
