@@ -59,6 +59,7 @@ namespace Jitter
             // Collision
             public event Action<RigidBody, RigidBody> BodiesBeginCollide;
             public event Action<RigidBody, RigidBody> BodiesEndCollide;
+            public event Action<Contact> ContactCreated;
 
             // Deactivation
             public event Action<RigidBody> DeactivatedBody;
@@ -126,6 +127,12 @@ namespace Jitter
             {
                 if (DeactivatedBody != null) DeactivatedBody(body);
             }
+
+            internal void RaiseContactCreated(Contact contact)
+            {
+                if (ContactCreated != null) ContactCreated(contact);
+            }
+
             #endregion
         }
 
@@ -867,15 +874,19 @@ namespace Jitter
                 }
             }
 
+            Contact contact = null;
+
             if (arbiter.body1 == body1)
             {
                 JVector.Negate(ref normal, out normal);
-                arbiter.AddContact(point1, point2, normal, penetration, contactSettings);
+                contact = arbiter.AddContact(point1, point2, normal, penetration, contactSettings);
             }
-            else if(arbiter.body1 == body2)
+            else
             {
-                arbiter.AddContact(point2, point1, normal, penetration, contactSettings);
+                contact = arbiter.AddContact(point2, point1, normal, penetration, contactSettings);
             }
+
+            if (contact != null) events.RaiseContactCreated(contact);
 
         }
 

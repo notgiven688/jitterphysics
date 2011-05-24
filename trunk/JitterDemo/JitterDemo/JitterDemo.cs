@@ -72,7 +72,7 @@ namespace JitterDemo
             this.IsFixedTimeStep = false;
             this.graphics.SynchronizeWithVerticalRetrace = false;
 
-            CollisionSystem collision = new CollisionSystemSAP();
+            CollisionSystem collision = new CollisionSystemPersistentSAP();
             World = new World(collision); World.AllowDeactivation = true;
 
             this.Window.AllowUserResizing = true;
@@ -656,7 +656,7 @@ namespace JitterDemo
             PhysicScenes[currentScene].Draw();
 
             // Draw the debug data provided by Jitter
-             DrawIslands();
+            // DrawIslands();
             DrawJitterDebugInfo();
             base.Draw(gameTime);
         }

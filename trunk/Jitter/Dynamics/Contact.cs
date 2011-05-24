@@ -33,11 +33,7 @@ namespace Jitter.Dynamics
     #region public class ContactSettings
     public class ContactSettings
     {
-        public enum MaterialCoefficientMixingType { TakeMaximum, TakeMinimum, UseAverage, Custom }
-
-        public delegate void MaterialMixing(Contact contact);
-
-        public event MaterialMixing CustomMaterialEvent;
+        public enum MaterialCoefficientMixingType { TakeMaximum, TakeMinimum, UseAverage }
 
         internal float maximumBias = 10.0f;
         internal float bias = 0.25f;
@@ -46,8 +42,6 @@ namespace Jitter.Dynamics
         internal float breakThreshold = 0.01f;
 
         internal MaterialCoefficientMixingType materialMode = MaterialCoefficientMixingType.UseAverage;
-
-        internal bool RaiseCustomMaterialEvent(Contact contact) { if (CustomMaterialEvent == null) return false; else { CustomMaterialEvent(contact); return true; } }
 
         public float MaximumBias { get { return maximumBias; } set { maximumBias = value; } }
 
@@ -770,27 +764,25 @@ namespace Jitter.Dynamics
                 accumulatedNormalImpulse = 0.0f;
                 accumulatedTangentImpulse = 0.0f;
 
-                if (!settings.RaiseCustomMaterialEvent(this))
+                switch (settings.MaterialCoefficientMixing)
                 {
-                    switch (settings.MaterialCoefficientMixing)
-                    {
-                        case ContactSettings.MaterialCoefficientMixingType.TakeMaximum:
-                            staticFriction = JMath.Max(body1.material.staticFriction, body2.material.staticFriction);
-                            dynamicFriction = JMath.Max(body1.material.kineticFriction, body2.material.kineticFriction);
-                            restitution = JMath.Max(body1.material.restitution, body2.material.restitution);
-                            break;
-                        case ContactSettings.MaterialCoefficientMixingType.TakeMinimum:
-                            staticFriction = JMath.Min(body1.material.staticFriction, body2.material.staticFriction);
-                            dynamicFriction = JMath.Min(body1.material.kineticFriction, body2.material.kineticFriction);
-                            restitution = JMath.Min(body1.material.restitution, body2.material.restitution);
-                            break;
-                        case ContactSettings.MaterialCoefficientMixingType.UseAverage:
-                            staticFriction = (body1.material.staticFriction + body2.material.staticFriction) / 2.0f;
-                            dynamicFriction = (body1.material.kineticFriction + body2.material.kineticFriction) / 2.0f;
-                            restitution = (body1.material.restitution + body2.material.restitution) / 2.0f;
-                            break;
-                    }
+                    case ContactSettings.MaterialCoefficientMixingType.TakeMaximum:
+                        staticFriction = JMath.Max(body1.material.staticFriction, body2.material.staticFriction);
+                        dynamicFriction = JMath.Max(body1.material.kineticFriction, body2.material.kineticFriction);
+                        restitution = JMath.Max(body1.material.restitution, body2.material.restitution);
+                        break;
+                    case ContactSettings.MaterialCoefficientMixingType.TakeMinimum:
+                        staticFriction = JMath.Min(body1.material.staticFriction, body2.material.staticFriction);
+                        dynamicFriction = JMath.Min(body1.material.kineticFriction, body2.material.kineticFriction);
+                        restitution = JMath.Min(body1.material.restitution, body2.material.restitution);
+                        break;
+                    case ContactSettings.MaterialCoefficientMixingType.UseAverage:
+                        staticFriction = (body1.material.staticFriction + body2.material.staticFriction) / 2.0f;
+                        dynamicFriction = (body1.material.kineticFriction + body2.material.kineticFriction) / 2.0f;
+                        restitution = (body1.material.restitution + body2.material.restitution) / 2.0f;
+                        break;
                 }
+
             }
 
             this.settings = settings;
