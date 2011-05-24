@@ -30,6 +30,14 @@ using System.Diagnostics;
 namespace Jitter.Collision
 {
 
+    public interface IBroadphaseEntity
+    {
+        JBBox BoundingBox { get; }
+        int BroadphaseTag { get; set; }
+        bool IsStaticOrInactive{ get; }
+    }
+
+
     /// <summary>
     /// A delegate for collision detection.
     /// </summary>
@@ -92,11 +100,11 @@ namespace Jitter.Collision
             /// <summary>
             /// The first body.
             /// </summary>
-            public IBroadphaseEntity body1;
+            public IBroadphaseEntity entity1;
             /// <summary>
             /// The second body.
             /// </summary>
-            public IBroadphaseEntity body2;
+            public IBroadphaseEntity entity2;
 
             /// <summary>
             /// A resource pool of Pairs.
@@ -111,14 +119,14 @@ namespace Jitter.Collision
         /// </summary>
         /// <param name="body">The body to remove.</param>
         /// <returns>Returns true if the body was successfully removed, otherwise false.</returns>
-        public abstract bool RemoveBody(IBroadphaseEntity body);
+        public abstract bool RemoveEntity(IBroadphaseEntity body);
 
         /// <summary>
         /// Add a body to the collision system. Adding a body to the world
         /// does automatically add it to the collision system.
         /// </summary>
         /// <param name="body">The body to remove.</param>
-        public abstract void AddBody(IBroadphaseEntity body);
+        public abstract void AddEntity(IBroadphaseEntity body);
 
         /// <summary>
         /// Gets called when the broadphase system has detected possible collisions.
@@ -165,7 +173,7 @@ namespace Jitter.Collision
         /// </summary>
         /// <param name="body1">The first body.</param>
         /// <param name="body2">The second body.</param>
-        #region  public void Detect(RigidBody body1, RigidBody body2)
+        #region  public void Detect(IBroadphaseEntity body1, IBroadphaseEntity body2)
         public void Detect(IBroadphaseEntity entity1, IBroadphaseEntity entity2)
         {
             Debug.Assert(entity1 != entity2, "CollisionSystem reports selfcollision. Something is wrong.");
@@ -545,24 +553,24 @@ namespace Jitter.Collision
         /// <summary>
         /// Checks the state of two bodies.
         /// </summary>
-        /// <param name="body1">The first body.</param>
-        /// <param name="body2">The second body.</param>
+        /// <param name="entity1">The first body.</param>
+        /// <param name="entity2">The second body.</param>
         /// <returns>Returns true if both are static or inactive.</returns>
-        public bool CheckBothStaticOrInactive(IBroadphaseEntity body1, IBroadphaseEntity body2)
+        public bool CheckBothStaticOrInactive(IBroadphaseEntity entity1, IBroadphaseEntity entity2)
         {
-            return (body1.IsStaticOrInactive() && body2.IsStaticOrInactive());
+            return (entity1.IsStaticOrInactive && entity2.IsStaticOrInactive);
        }
 
         /// <summary>
         /// Checks the AABB of the two rigid bodies.
         /// </summary>
-        /// <param name="body1">The first body.</param>
-        /// <param name="body2">The second body.</param>
+        /// <param name="entity1">The first body.</param>
+        /// <param name="entity2">The second body.</param>
         /// <returns>Returns true if an intersection occours.</returns>
-        public bool CheckBoundingBoxes(IBroadphaseEntity body1, IBroadphaseEntity body2)
+        public bool CheckBoundingBoxes(IBroadphaseEntity entity1, IBroadphaseEntity entity2)
         {
-            JBBox box1 = body1.BoundingBox;
-            JBBox box2 = body2.BoundingBox;
+            JBBox box1 = entity1.BoundingBox;
+            JBBox box2 = entity2.BoundingBox;
 
             return ((((box1.Max.Z >= box2.Min.Z) && (box1.Min.Z <= box2.Max.Z)) &&
                 ((box1.Max.Y >= box2.Min.Y) && (box1.Min.Y <= box2.Max.Y))) &&
@@ -572,14 +580,14 @@ namespace Jitter.Collision
         /// <summary>
         /// Raises the PassedBroadphase event.
         /// </summary>
-        /// <param name="body1">The first body.</param>
-        /// <param name="body2">The second body.</param>
+        /// <param name="entity1">The first body.</param>
+        /// <param name="entity2">The second body.</param>
         /// <returns>Returns false if the collision information
         /// should be dropped</returns>
-        public bool RaisePassedBroadphase(IBroadphaseEntity body1, IBroadphaseEntity body2)
+        public bool RaisePassedBroadphase(IBroadphaseEntity entity1, IBroadphaseEntity entity2)
         {
             if (this.PassedBroadphase != null)
-                return this.PassedBroadphase(body1, body2);
+                return this.PassedBroadphase(entity1, entity2);
 
             // allow this detection by default
             return true;
@@ -592,7 +600,7 @@ namespace Jitter.Collision
         /// <param name="body2">The second body.</param>
         /// <returns>Returns false if the collision information
         /// should be dropped</returns>
-        public bool RaisePassedNarrowphase(RigidBody body1, RigidBody body2, ref  JVector point,ref JVector normal, float penetration)
+        public bool RaisePassedNarrowphase(RigidBody body1, RigidBody body2, ref JVector point,ref JVector normal, float penetration)
         {
             if (this.PassedNarrowphase != null)
                 return this.PassedNarrowphase(body1, body2,ref point,ref normal,penetration);

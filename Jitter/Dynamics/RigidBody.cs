@@ -30,14 +30,6 @@ using Jitter.Collision;
 
 namespace Jitter.Dynamics
 {
-
-    public interface IBroadphaseEntity
-    {
-        JBBox BoundingBox { get; }
-        int BroadphaseTag { get; set; }
-        bool IsStaticOrInactive();
-    }
-
     /// <summary>
     /// The RigidBody class.
     /// </summary>
@@ -476,12 +468,6 @@ namespace Jitter.Dynamics
             else return 0;
         }
 
-
-        public bool IsStaticOrInactive()
-        {
-            return (!this.isActive || this.isStatic);
-        }
-
         public int BroadphaseTag { get; set; }
 
 
@@ -493,6 +479,12 @@ namespace Jitter.Dynamics
         public virtual void PostStep()
         {
             //
+        }
+
+
+        public bool IsStaticOrInactive
+        {
+            get { return (!this.isActive || this.isStatic); }
         }
     }
 }

@@ -66,7 +66,7 @@ namespace Jitter.Collision
         /// </summary>
         /// <param name="body">The body to remove.</param>
         /// <returns>Returns true if the body was successfully removed, otherwise false.</returns>
-        public override bool RemoveBody(IBroadphaseEntity body)
+        public override bool RemoveEntity(IBroadphaseEntity body)
         {
             return bodyList.Remove(body);
         }
@@ -76,7 +76,7 @@ namespace Jitter.Collision
         /// does automatically add it to the collision system.
         /// </summary>
         /// <param name="body">The body to remove.</param>
-        public override void AddBody(IBroadphaseEntity body)
+        public override void AddEntity(IBroadphaseEntity body)
         {
             if (bodyList.Contains(body))
                 throw new ArgumentException("The body was already added to the collision system.", "body");
@@ -118,7 +118,7 @@ namespace Jitter.Collision
             float xmin = body.BoundingBox.Min.X;
             int n = active.Count;
 
-            bool thisInactive = body.IsStaticOrInactive();
+            bool thisInactive = body.IsStaticOrInactive;
 
             JBBox acBox, bodyBox;
 
@@ -136,7 +136,7 @@ namespace Jitter.Collision
                 {
                     bodyBox = body.BoundingBox;
 
-                    if (!(thisInactive && ac.IsStaticOrInactive()) &&
+                    if (!(thisInactive && ac.IsStaticOrInactive) &&
                         (((bodyBox.Max.Z >= acBox.Min.Z) && (bodyBox.Min.Z <= acBox.Max.Z)) &&
                         ((bodyBox.Max.Y >= acBox.Min.Y) && (bodyBox.Min.Y <= acBox.Max.Y))))
                     {
@@ -162,7 +162,7 @@ namespace Jitter.Collision
             float xmin = body.BoundingBox.Min.X;
             int n = active.Count;
 
-            bool thisInactive = body.IsStaticOrInactive();
+            bool thisInactive = body.IsStaticOrInactive;
 
             JBBox acBox, bodyBox;
 
@@ -181,7 +181,7 @@ namespace Jitter.Collision
                 {
                     bodyBox = body.BoundingBox;
 
-                    if (!(thisInactive && ac.IsStaticOrInactive()) &&
+                    if (!(thisInactive && ac.IsStaticOrInactive) &&
                         (((bodyBox.Max.Z >= acBox.Min.Z) && (bodyBox.Min.Z <= acBox.Max.Z)) &&
                         ((bodyBox.Max.Y >= acBox.Min.Y) && (bodyBox.Min.Y <= acBox.Max.Y))))
                     {
@@ -189,8 +189,8 @@ namespace Jitter.Collision
                         {
                             Pair pair = Pair.Pool.GetNew();
 
-                            if (swapOrder) { pair.body1 = body; pair.body2 = ac; }
-                            else { pair.body2 = body; pair.body1 = ac; }
+                            if (swapOrder) { pair.entity1 = body; pair.entity2 = ac; }
+                            else { pair.entity2 = body; pair.entity1 = ac; }
                             swapOrder = !swapOrder;
 
                             ThreadManager.internalInstance.AddTask(detectCallback, pair);
@@ -208,7 +208,7 @@ namespace Jitter.Collision
         private void DetectCallback(object obj)
         {
             Pair pair = obj as Pair;
-            base.Detect(pair.body1, pair.body2);
+            base.Detect(pair.entity1, pair.entity2);
             Pair.Pool.GiveBack(pair);
         }
 

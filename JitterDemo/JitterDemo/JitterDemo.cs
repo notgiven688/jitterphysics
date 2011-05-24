@@ -77,7 +77,6 @@ namespace JitterDemo
 
             this.Window.AllowUserResizing = true;
 
-
             this.Window.Title = "Jitter Physics Demo - Jitter "
                 + Assembly.GetAssembly(typeof(Jitter.World)).GetName().Version.ToString();
 
@@ -300,7 +299,6 @@ namespace JitterDemo
 
             //World.StepFixed(step, true, 1.0f / 60.0f, 1);
 
-
             if (step > 1.0f / 100.0f) step = 1.0f / 100.0f;
 
             World.Step(1.0f/100.0f, multithread);
@@ -332,7 +330,8 @@ namespace JitterDemo
             int rndn = random.Next(7);
 
             // less of the more advanced objects
-            if (rndn == 5 || rndn == 6 || rndn == 7) rndn = random.Next(7);
+            if (rndn == 5 || rndn == 6) rndn = random.Next(7);
+            if (rndn == 5 || rndn == 6) rndn = random.Next(7);
 
             switch (rndn)
             {
