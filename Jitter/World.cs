@@ -44,20 +44,25 @@ namespace Jitter
 
         public class WorldEvents
         {
+            // Post&Prestep
             public event WorldStep PreStep;
             public event WorldStep PostStep;
 
+            // Add&Remove
             public event Action<RigidBody> AddedRigidBody;
             public event Action<RigidBody> RemovedRigidBody;
-
             public event Action<Constraint> AddedConstraint;
             public event Action<Constraint> RemovedConstraint;
-
             public event Action<SoftBody> AddedSoftBody;
             public event Action<SoftBody> RemovedSoftBody;
 
+            // Collision
             public event Action<RigidBody, RigidBody> BodiesBeginCollide;
             public event Action<RigidBody, RigidBody> BodiesEndCollide;
+
+            // Deactivation
+            public event Action<RigidBody> DeactivatedBody;
+            public event Action<RigidBody> ActivatedBody;
 
             internal WorldEvents() { }
 
@@ -110,6 +115,16 @@ namespace Jitter
             internal void RaiseBodiesEndCollide(RigidBody body1, RigidBody body2)
             {
                 if (BodiesEndCollide != null) BodiesEndCollide(body1,body2);
+            }
+
+            internal void RaiseActivatedBody(RigidBody body)
+            {
+                if (ActivatedBody != null) ActivatedBody(body);
+            }
+
+            internal void RaiseDeactivatedBody(RigidBody body)
+            {
+                if (DeactivatedBody != null) DeactivatedBody(body);
             }
             #endregion
         }
@@ -1063,7 +1078,20 @@ namespace Jitter
 
                 foreach (RigidBody body in island.bodies)
                 {
-                    body.IsActive = !deactivateIsland;
+                    if (body.isActive == deactivateIsland)
+                    {
+                        if (body.isActive)
+                        {
+                            body.IsActive = false;
+                            events.RaiseDeactivatedBody(body);
+                        }
+                        else
+                        {
+                            body.IsActive = true;
+                            events.RaiseActivatedBody(body);
+                        }
+                    }
+                    
                 }
             }
         }

@@ -78,7 +78,7 @@ namespace JitterDemo.Scenes
             ConvexHullObject.ExtractData(vertices, indices, model);
             List<JVector> jvecs = new List<JVector>();
 
-            foreach (Vector3 vec in vertices) jvecs.Add(Conversion.ToJitterVector(vec) + new JVector(10, 15, 3));
+            foreach (Vector3 vec in vertices) jvecs.Add(Conversion.ToJitterVector(vec) + new JVector(-10, 15, 3));
 
             RemoveDuplicateVertices(indices, jvecs);
             SoftBody softBody = new SoftBody(indices, jvecs);
