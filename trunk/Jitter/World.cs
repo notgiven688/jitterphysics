@@ -136,10 +136,6 @@ namespace Jitter
             #endregion
         }
 
-        /// <summary>
-        /// If a contact exceeds this breakThreshold it
-        /// gets removed from the <see cref="ContactList"/> of an <see cref="Arbiter"/>.
-        /// </summary>
         private ContactSettings contactSettings = new ContactSettings();
 
         private float inactiveAngularThresholdSq = 0.1f;
@@ -168,8 +164,11 @@ namespace Jitter
 
         public void AddBody(SoftBody body)
         {
+            if (body == null) throw new ArgumentNullException("body", "body can't be null.");
+            if (softbodies.Contains(body)) throw new ArgumentException("The body was already added to the world.", "body");
+
             this.softbodies.Add(body);
-            this.CollisionSystem.AddBody(body);
+            this.CollisionSystem.AddEntity(body);
 
             events.RaiseAddedSoftBody(body);
 
@@ -183,7 +182,8 @@ namespace Jitter
         public bool RemoveBody(SoftBody body)
         {
             if(!this.softbodies.Remove(body)) return false;
-            this.CollisionSystem.RemoveBody(body);
+
+            this.CollisionSystem.RemoveEntity(body);
 
             events.RaiseRemovedSoftBody(body);
 
@@ -283,13 +283,13 @@ namespace Jitter
             // remove bodies from collision system
             foreach (RigidBody body in rigidBodies)
             {
-                CollisionSystem.RemoveBody(body);
+                CollisionSystem.RemoveEntity(body);
                 body.island = null;
             }
 
             foreach (SoftBody body in softbodies)
             {
-                CollisionSystem.RemoveBody(body);
+                CollisionSystem.RemoveEntity(body);
             }
 
             // remove bodies from the world
@@ -410,7 +410,7 @@ namespace Jitter
             if (!rigidBodies.Remove(body)) return false;
 
             // remove the body from the collision system
-            CollisionSystem.RemoveBody(body);
+            CollisionSystem.RemoveEntity(body);
 
             // remove the island
             if (body.island != null && body.island.bodies.Count == 1)
@@ -473,12 +473,13 @@ namespace Jitter
 
             events.RaiseAddedRigidBody(body);
 
-            if(!(body is SoftBody.MassPoint)) this.CollisionSystem.AddBody(body);
+            if(!(body is SoftBody.MassPoint)) this.CollisionSystem.AddEntity(body);
+
             rigidBodies.Add(body);
         }
 
         /// <summary>
-        /// Add a <see cref="Constraint"/> to the world. Fast, O(log(N)).
+        /// Add a <see cref="Constraint"/> to the world. Fast, O(1).
         /// </summary>
         /// <param name="constraint">The constraint which should be added.</param>
         /// <returns>True if the constraint was successfully removed.</returns>
@@ -490,7 +491,7 @@ namespace Jitter
         }
 
         /// <summary>
-        /// Add a <see cref="Constraint"/> to the world.  Fast, O(log(N)).
+        /// Add a <see cref="Constraint"/> to the world.  Fast, O(1).
         /// </summary>
         /// <param name="constraint">The constraint which should be removed.</param>
         public void AddConstraint(Constraint constraint)

@@ -51,7 +51,7 @@ namespace Jitter.Collision
         /// </summary>
         /// <param name="body">The body to remove.</param>
         /// <returns>Returns true if the body was successfully removed, otherwise false.</returns>
-        public override bool RemoveBody(IBroadphaseEntity body)
+        public override bool RemoveEntity(IBroadphaseEntity body)
         {
             // just keep our internal list in sync
             return bodyList.Remove(body);
@@ -62,7 +62,7 @@ namespace Jitter.Collision
         /// does automatically add it to the collision system.
         /// </summary>
         /// <param name="body">The body to remove.</param>
-        public override void AddBody(IBroadphaseEntity body)
+        public override void AddEntity(IBroadphaseEntity body)
         {
             if (bodyList.Contains(body))
                 throw new ArgumentException("The body was already added to the collision system.", "body");
@@ -96,8 +96,8 @@ namespace Jitter.Collision
                             {
                                 Pair pair = Pair.Pool.GetNew();
 
-                                if (swapOrder) { pair.body1 = bodyList[i]; pair.body2 = bodyList[e]; }
-                                else { pair.body2 = bodyList[e]; pair.body1 = bodyList[i]; }
+                                if (swapOrder) { pair.entity1 = bodyList[i]; pair.entity2 = bodyList[e]; }
+                                else { pair.entity2 = bodyList[e]; pair.entity1 = bodyList[i]; }
                                 swapOrder = !swapOrder;
 
                                 ThreadManager.internalInstance.AddTask(detectCallback, pair);
@@ -239,7 +239,7 @@ namespace Jitter.Collision
         private void DetectCallback(object obj)
         {
             Pair pair = obj as Pair;
-            base.Detect(pair.body1, pair.body2);
+            base.Detect(pair.entity1, pair.entity2);
             Pair.Pool.GiveBack(pair);
         }
 

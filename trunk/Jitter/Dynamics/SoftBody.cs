@@ -510,7 +510,6 @@ namespace Jitter.Dynamics
             {
                 Spring spring = new Spring(points[edge.Index1], points[edge.Index2]);
                 spring.Softness = 0.01f; spring.BiasFactor = 0.1f;
-                //spring.Behavior = Spring.DistanceBehavior.LimitMaximumDistance;
 
                 springs[count] = spring;
                 count++;
@@ -518,16 +517,29 @@ namespace Jitter.Dynamics
 
         }
 
+        public void SetSpringValues(float bias, float softness)
+        {
+            for (int i = 0; i < springs.Length; i++)
+            { springs[i].Softness = softness; springs[i].BiasFactor = bias; }
+        }
+
         public void Update(float timestep)
         {
-            box = JBBox.SmallBox;
-            volume = 0.0f;
-            mass = 0.0f;
             active = false;
 
             foreach (MassPoint point in points)
             {
-                if (point.isActive && !point.isStatic) active = true;
+                if (point.isActive && !point.isStatic) { active = true; break; }
+            }
+
+            if(!active) return;
+
+            box = JBBox.SmallBox;
+            volume = 0.0f;
+            mass = 0.0f;
+
+            foreach (MassPoint point in points)
+            {
                 mass += point.Mass;
                 box.AddPoint(point.position);
             }
@@ -584,9 +596,11 @@ namespace Jitter.Dynamics
 
         public int BroadphaseTag { get; set; }
 
-        public bool IsStaticOrInactive()
+        public object Tag { get; set; }
+
+        public bool IsStaticOrInactive
         {
-            return !active;
+            get { return !active; }
         }
     }
 

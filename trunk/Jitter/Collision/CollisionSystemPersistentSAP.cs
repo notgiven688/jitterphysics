@@ -338,7 +338,7 @@ namespace Jitter.Collision
         }
 
         int addCounter = 0;
-        public override void AddBody(IBroadphaseEntity body)
+        public override void AddEntity(IBroadphaseEntity body)
         {
             if (body.BroadphaseTag < bodyList.Count && bodyList[body.BroadphaseTag] == body) return;
 
@@ -356,7 +356,7 @@ namespace Jitter.Collision
         }
 
         Stack<BodyPair> depricated = new Stack<BodyPair>();
-        public override bool RemoveBody(IBroadphaseEntity body)
+        public override bool RemoveEntity(IBroadphaseEntity body)
         {
             if (body.BroadphaseTag > bodyList.Count || bodyList[body.BroadphaseTag] != body) return false;
 
@@ -456,8 +456,8 @@ namespace Jitter.Collision
                     {
                         Pair pair = Pair.Pool.GetNew();
 
-                        if (swapOrder) { pair.body1 = key.body1; pair.body2 = key.body2; }
-                        else { pair.body2 = key.body2; pair.body1 = key.body1; }
+                        if (swapOrder) { pair.entity1 = key.body1; pair.entity2 = key.body2; }
+                        else { pair.entity2 = key.body2; pair.entity1 = key.body1; }
                         swapOrder = !swapOrder;
 
                         ThreadManager.internalInstance.AddTask(detectCallback, pair);
@@ -492,7 +492,7 @@ namespace Jitter.Collision
         private void DetectCallback(object obj)
         {
             Pair pair = obj as Pair;
-            base.Detect(pair.body1, pair.body2);
+            base.Detect(pair.entity1, pair.entity2);
             Pair.Pool.GiveBack(pair);
         }
 
