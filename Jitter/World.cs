@@ -272,7 +272,6 @@ namespace Jitter
             CollisionIsland.Pool.ResetResourcePool();
             Arbiter.Pool.ResetResourcePool();
             Contact.Pool.ResetResourcePool();
-            JBBox.CornersPool.ResetResourcePool();
         }
 
         /// <summary>

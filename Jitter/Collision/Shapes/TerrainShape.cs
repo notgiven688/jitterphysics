@@ -232,15 +232,7 @@ namespace Jitter.Collision.Shapes
         /// <param name="box">The axis aligned bounding box of the shape.</param>
         public override void GetBoundingBox(ref JMatrix orientation, out JBBox box)
         {
-            JVector[] corners = JBBox.CornersPool.GetNew();
-            boundings.GetCorners(corners);
-
-            for (int i = 0; i < 8; i++)
-            {
-                JVector.Transform(ref corners[i], ref orientation, out corners[i]);
-            }
-
-            box = JBBox.CreateFromPoints(corners);
+            box = boundings;
 
             #region Expand Spherical
             box.Min.X -= sphericalExpansion;
@@ -251,7 +243,7 @@ namespace Jitter.Collision.Shapes
             box.Max.Z += sphericalExpansion;
             #endregion
 
-            JBBox.CornersPool.GiveBack(corners);
+            box.Transform(ref orientation);
         }
 
 

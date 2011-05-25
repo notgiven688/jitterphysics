@@ -170,16 +170,18 @@ namespace Jitter.Collision.Shapes
             box.Max.Z += sphericalExpansion;
             #endregion
 
-            JVector[] corners = JBBox.CornersPool.GetNew();
-            box.GetCorners(corners);
+            box.Transform(ref orientation);
 
-            for (int i = 0; i < 8; i++)
-            {
-                JVector.Transform(ref corners[i], ref orientation, out corners[i]);
-            }
+            //JVector[] corners = JBBox.CornersPool.GetNew();
+            //box.GetCorners(corners);
 
-            box = JBBox.CreateFromPoints(corners);
-            JBBox.CornersPool.GiveBack(corners);
+            //for (int i = 0; i < 8; i++)
+            //{
+            //    JVector.Transform(ref corners[i], ref orientation, out corners[i]);
+            //}
+
+            //box = JBBox.CreateFromPoints(corners);
+            //JBBox.CornersPool.GiveBack(corners);
         }
 
         private bool flipNormal = false;

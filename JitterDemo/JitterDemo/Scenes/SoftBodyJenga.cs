@@ -71,6 +71,7 @@ namespace JitterDemo.Scenes
 
             }
 
+
             Model model = this.Demo.Content.Load<Model>("torus");
 
             List<TriangleVertexIndices> indices = new List<TriangleVertexIndices>();
@@ -79,14 +80,15 @@ namespace JitterDemo.Scenes
             ConvexHullObject.ExtractData(vertices, indices, model);
             RemoveDuplicateVertices(indices, vertices);
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 3; i++)
             {
                 SoftBody softBody = new SoftBody(indices, vertices);
 
                 if (i % 2 == 0) softBody.Rotate(JMatrix.CreateRotationY(JMath.PiOver2), JVector.Zero);
-                softBody.Translate(new JVector(10, 20 - i * 3, 0));
+                softBody.Translate(new JVector(10, 10 - i * 3, 0));
                 softBody.Pressure =1000.0f;
                 softBody.SetSpringValues(0.1f, 0.001f);
+                //softBody.TriangleExpansion = 0.05f;
 
                 Demo.World.AddBody(softBody);
 
@@ -110,6 +112,8 @@ namespace JitterDemo.Scenes
             cloth.VertexBodies[124].IsStatic = true;
             cloth.VertexBodies[234].IsStatic = true;
             cloth.VertexBodies[356].IsStatic = true;
+
+            cloth.SetSpringValues(0.3f, 0.01f);
 
             Demo.World.AddBody(cloth);
         }

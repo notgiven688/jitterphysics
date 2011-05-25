@@ -330,8 +330,8 @@ namespace JitterDemo
             int rndn = random.Next(7);
 
             // less of the more advanced objects
-            if (rndn == 5 || rndn == 6) rndn = random.Next(7);
-            if (rndn == 5 || rndn == 6) rndn = random.Next(7);
+            //if (rndn == 5 || rndn == 6) rndn = random.Next(7);
+            //if (rndn == 5 || rndn == 6) rndn = random.Next(7);
 
             switch (rndn)
             {
@@ -421,7 +421,6 @@ namespace JitterDemo
             Display.DisplayText[8+entries] = "------------------------------";
             Display.DisplayText[9 + entries] = "Total Physics Time: " + total.ToString("0.00");
             Display.DisplayText[10 + entries] = "Physics Framerate: " + (1000.0d / total).ToString("0") + " fps";
-
 
 
             Display.DisplayText[6] = "gen0: " + GC.CollectionCount(0).ToString() +
