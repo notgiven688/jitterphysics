@@ -55,11 +55,6 @@ namespace Jitter.LinearMath
         }
 
         /// <summary>
-        /// Resource pool for JVector arrays.
-        /// </summary>
-        public static ArrayResourcePool<JVector> CornersPool = new ArrayResourcePool<JVector>(8);
-
-        /// <summary>
         /// The maximum point of the box.
         /// </summary>
         public JVector Min;
@@ -98,19 +93,47 @@ namespace Jitter.LinearMath
             this.Max = max;
         }
 
-        //public static void CreateMerged(ref JBBox original, ref JBBox additional, out JBBox result)
-        //{
-        //    JVector vector;
-        //    JVector vector2;
-        //    JVector.Min(ref original.Min, ref additional.Min, out vector2);
-        //    JVector.Max(ref original.Max, ref additional.Max, out vector);
-        //    result.Min = vector2;
-        //    result.Max = vector;
-        //}
+        /// <summary>
+        /// Transforms the bounding box into the space given by orientation and position.
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="orientation"></param>
+        /// <param name="result"></param>
+        internal void InverseTransform(ref JVector position, ref JMatrix orientation)
+        {
+            JVector.Subtract(ref Max, ref position, out Max);
+            JVector.Subtract(ref Min, ref position, out Min);
 
- 
+            JVector center;
+            JVector.Add(ref Max, ref Min, out center);
+            center.X *= 0.5f; center.Y *= 0.5f; center.Z *= 0.5f;
 
+            JVector halfExtents;
+            JVector.Subtract(ref Max, ref Min, out halfExtents);
+            halfExtents.X *= 0.5f; halfExtents.Y *= 0.5f; halfExtents.Z *= 0.5f;
 
+            JVector.TransposedTransform(ref center, ref orientation, out center);
+
+            JMatrix abs; JMath.Absolute(ref orientation, out abs);
+            JVector.TransposedTransform(ref halfExtents, ref abs, out halfExtents);
+
+            JVector.Add(ref center, ref halfExtents, out Max);
+            JVector.Subtract(ref center, ref halfExtents, out Min);
+        }
+
+        public void Transform(ref JMatrix orientation)
+        {
+            JVector halfExtents = 0.5f * (Max - Min);
+            JVector center = 0.5f * (Max + Min);
+
+            JVector.Transform(ref center, ref orientation, out center);
+
+            JMatrix abs; JMath.Absolute(ref orientation, out abs);
+            JVector.Transform(ref halfExtents, ref abs, out halfExtents);
+
+            Max = center + halfExtents;
+            Min = center - halfExtents;
+        }
 
         /// <summary>
         /// Checks whether a point is inside, outside or intersecting
@@ -323,8 +346,6 @@ namespace Jitter.LinearMath
         }
 
         #endregion
-
-
 
         public JVector Center { get { return Min + (Max - Min)* (1.0f /2.0f); } }
 

@@ -274,42 +274,24 @@ namespace Jitter.Collision
             }
             else if (b1IsMulti && b2IsMulti)
             {
-                JVector[] corners = JBBox.CornersPool.GetNew();
-
                 Multishape ms1 = (body1.Shape as Multishape);
                 Multishape ms2 = (body2.Shape as Multishape);
 
                 ms1 = ms1.RequestWorkingClone();
                 ms2 = ms2.RequestWorkingClone();
 
-                JBBox transformedBoundingBox;
+                JBBox transformedBoundingBox = body2.boundingBox;
+                transformedBoundingBox.InverseTransform(ref body1.position, ref body1.orientation);
 
-                body2.BoundingBox.GetCorners(corners);
-
-                for (int i = 0; i < 8; i++)
-                {
-                    JVector.Subtract(ref corners[i], ref body1.position, out corners[i]);
-                    JVector.Transform(ref corners[i], ref body1.invOrientation, out corners[i]);
-                }
-
-                transformedBoundingBox = JBBox.CreateFromPoints(corners);
                 int ms1Length = ms1.Prepare(ref transformedBoundingBox);
 
+                transformedBoundingBox = body1.boundingBox;
+                transformedBoundingBox.InverseTransform(ref body2.position, ref body2.orientation);
 
-                body1.BoundingBox.GetCorners(corners);
-
-                for (int i = 0; i < 8; i++)
-                {
-                    JVector.Subtract(ref corners[i], ref body2.position, out corners[i]);
-                    JVector.Transform(ref corners[i], ref body2.invOrientation, out corners[i]);
-                }
-
-                transformedBoundingBox = JBBox.CreateFromPoints(corners);
                 int ms2Length = ms2.Prepare(ref transformedBoundingBox);
 
                 if (ms1Length == 0 || ms2Length == 0)
                 {
-                    JBBox.CornersPool.GiveBack(corners);
                     ms1.ReturnWorkingClone();
                     ms2.ReturnWorkingClone();
                     return;
@@ -337,7 +319,6 @@ namespace Jitter.Collision
                     }
                 }
 
-                JBBox.CornersPool.GiveBack(corners);
                 ms1.ReturnWorkingClone();
                 ms2.ReturnWorkingClone();
 
@@ -353,23 +334,13 @@ namespace Jitter.Collision
 
                 ms = ms.RequestWorkingClone();
 
-                JVector[] corners = JBBox.CornersPool.GetNew();
-
-                b2.BoundingBox.GetCorners(corners);
-
-                for (int i = 0; i < 8; i++)
-                {
-                    JVector.Subtract(ref corners[i], ref b1.position, out corners[i]);
-                    JVector.Transform(ref corners[i], ref b1.invOrientation, out corners[i]);
-                }
-
-                JBBox transformedBoundingBox = JBBox.CreateFromPoints(corners);
+                JBBox transformedBoundingBox = b2.boundingBox;
+                transformedBoundingBox.InverseTransform(ref b1.position, ref b1.orientation);
 
                 int msLength = ms.Prepare(ref transformedBoundingBox);
 
                 if (msLength == 0)
                 {
-                    JBBox.CornersPool.GiveBack(corners);
                     ms.ReturnWorkingClone();
                     return;
                 }
@@ -403,8 +374,6 @@ namespace Jitter.Collision
                     }
                 }
 
-                JBBox.CornersPool.GiveBack(corners);
-
                 ms.ReturnWorkingClone();
             }
         }
@@ -416,21 +385,13 @@ namespace Jitter.Collision
                 Multishape ms = (rigidBody.Shape as Multishape);
                 ms = ms.RequestWorkingClone();
 
-                JVector[] corners = JBBox.CornersPool.GetNew();
-                softBody.BoundingBox.GetCorners(corners);
+                JBBox transformedBoundingBox = softBody.BoundingBox;
+                transformedBoundingBox.InverseTransform(ref rigidBody.position, ref rigidBody.orientation);
 
-                for (int i = 0; i < 8; i++)
-                {
-                    JVector.Subtract(ref corners[i], ref rigidBody.position, out corners[i]);
-                    JVector.Transform(ref corners[i], ref rigidBody.invOrientation, out corners[i]);
-                }
-
-                JBBox transformedBoundingBox = JBBox.CreateFromPoints(corners);
                 int msLength = ms.Prepare(ref transformedBoundingBox);
 
                 List<int> detected = potentialTriangleLists.GetNew();
                 softBody.dynamicTree.Query(detected, ref rigidBody.boundingBox);
-
 
                 foreach (int i in detected)
                 {
@@ -447,8 +408,6 @@ namespace Jitter.Collision
                         result = XenoCollide.Detect(ms, t, ref rigidBody.orientation, ref JMatrix.InternalIdentity,
                             ref rigidBody.position, ref JVector.InternalZero, out point, out normal, out penetration);
 
-
-
                         if (result)
                         {
                             RaiseCollisionDetected(rigidBody,
@@ -464,7 +423,6 @@ namespace Jitter.Collision
 
                 }
 
-                JBBox.CornersPool.GiveBack(corners);
                 detected.Clear(); potentialTriangleLists.GiveBack(detected);
                 ms.ReturnWorkingClone();      
             }
