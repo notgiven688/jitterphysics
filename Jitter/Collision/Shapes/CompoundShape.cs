@@ -143,7 +143,7 @@ namespace Jitter.Collision.Shapes
 
             for (int i = 0; i < Shapes.Length; i++)
             {
-                JMatrix currentInertia = Shapes[i].Shape.Inertia;
+                JMatrix currentInertia = Shapes[i].InverseOrientation * Shapes[i].Shape.Inertia * Shapes[i].Orientation;
                 JVector p = Shapes[i].Position * -1.0f;
                 float m = Shapes[i].Shape.Mass;
 
