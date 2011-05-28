@@ -151,14 +151,14 @@ namespace Jitter.Collision.Shapes
                 currentInertia.M22 += m * (p.X * p.X + p.Z * p.Z);
                 currentInertia.M33 += m * (p.X * p.X + p.Y * p.Y);
 
-                currentInertia.M12 += -p.X * p.Y;
-                currentInertia.M21 += -p.X * p.Y;
+                currentInertia.M12 += -p.X * p.Y * m;
+                currentInertia.M21 += -p.X * p.Y * m;
 
-                currentInertia.M31 += -p.X * p.Z;
-                currentInertia.M13 += -p.X * p.Z;
+                currentInertia.M31 += -p.X * p.Z * m;
+                currentInertia.M13 += -p.X * p.Z * m;
 
-                currentInertia.M32 += -p.Y * p.Z;
-                currentInertia.M23 += -p.Y * p.Z;
+                currentInertia.M32 += -p.Y * p.Z * m;
+                currentInertia.M23 += -p.Y * p.Z * m;
 
                 base.inertia += currentInertia;
                 base.mass += m;
