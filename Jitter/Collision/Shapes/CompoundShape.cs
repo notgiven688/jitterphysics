@@ -99,6 +99,9 @@ namespace Jitter.Collision.Shapes
         /// </summary>
         public TransformedShape[] Shapes { get { return this.shapes; } }
 
+        JVector shifted;
+        public JVector Shift { get { return -1.0f * this.shifted; } }
+
         private JBBox mInternalBBox;
 
         /// <summary>
@@ -120,6 +123,46 @@ namespace Jitter.Collision.Shapes
             Array.Copy(shapes, this.shapes, shapes.Length);
 
             this.UpdateShape();
+        }
+
+        /// <summary>
+        /// Translate all subshapes in the way that the center of mass is
+        /// in (0,0,0)
+        /// </summary>
+        private void DoShifting()
+        {
+            for (int i = 0; i < Shapes.Length; i++) shifted += Shapes[i].position;
+            shifted *= (1.0f / shapes.Length);
+
+            for (int i = 0; i < Shapes.Length; i++) Shapes[i].position -= shifted;
+        }
+
+        public override void CalculateMassInertia()
+        {
+            base.inertia = JMatrix.Zero;
+
+            for (int i = 0; i < Shapes.Length; i++)
+            {
+                JMatrix currentInertia = Shapes[i].Shape.Inertia;
+                JVector p = Shapes[i].Position * -1.0f;
+                float m = Shapes[i].Shape.Mass;
+
+                currentInertia.M11 += m * (p.Y * p.Y + p.Z * p.Z);
+                currentInertia.M22 += m * (p.X * p.X + p.Z * p.Z);
+                currentInertia.M33 += m * (p.X * p.X + p.Y * p.Y);
+
+                currentInertia.M12 += -p.X * p.Y;
+                currentInertia.M21 += -p.X * p.Y;
+
+                currentInertia.M31 += -p.X * p.Z;
+                currentInertia.M13 += -p.X * p.Z;
+
+                currentInertia.M32 += -p.Y * p.Z;
+                currentInertia.M23 += -p.Y * p.Z;
+
+                base.inertia += currentInertia;
+                base.mass += m;
+            }
         }
 
 
@@ -214,6 +257,7 @@ namespace Jitter.Collision.Shapes
 
         public override void UpdateShape()
         {
+            DoShifting();
             UpdateInternalBoundingBox();
             base.UpdateShape();
         }

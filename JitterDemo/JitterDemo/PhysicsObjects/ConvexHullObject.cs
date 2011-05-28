@@ -147,7 +147,7 @@ namespace JitterDemo
             // But this is not the center of our graphical represantion, use the
             // "shift" property of the more complex shapes to deal with this.
             world.Translation = Conversion.ToXNAVector(body.Position +
-                JVector.Transform(hullShape.Shift(),body.Orientation));
+                JVector.Transform(hullShape.Shift,body.Orientation));
 
 
             Matrix[] boneTransforms = new Matrix[model.Bones.Count];

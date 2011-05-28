@@ -87,6 +87,24 @@ namespace JitterDemo
             cullMode.CullMode = CullMode.None;
 
             normal = new RasterizerState();
+
+
+            CompoundShape.TransformedShape[] subShapes
+                = new CompoundShape.TransformedShape[9];
+
+            for (int i = 0; i < 8; i++)
+            {
+                subShapes[i] = new CompoundShape.TransformedShape(new BoxShape(1, 1, 1), JMatrix.Identity, new JVector(0, i, 0));
+            }
+
+            subShapes[8] = new CompoundShape.TransformedShape(new BoxShape(5, 3, 1), JMatrix.Identity, new JVector(1, 7, 0));
+
+            CompoundShape compound = new CompoundShape(subShapes);
+            RigidBody compoundBody = new RigidBody(compound);
+
+            World.AddBody(compoundBody);
+
+            compoundBody.Position = new JVector(0, 35, 0);
         }
 
 
