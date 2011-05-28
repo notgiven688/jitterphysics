@@ -90,17 +90,27 @@ namespace JitterDemo
 
 
             CompoundShape.TransformedShape[] subShapes
-                = new CompoundShape.TransformedShape[9];
+                = new CompoundShape.TransformedShape[12];
 
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 4; i++)
             {
                 subShapes[i] = new CompoundShape.TransformedShape(new BoxShape(1, 1, 1), JMatrix.Identity, new JVector(0, i, 0));
             }
 
-            subShapes[8] = new CompoundShape.TransformedShape(new BoxShape(5, 3, 1), JMatrix.Identity, new JVector(1, 7, 0));
+            for (int i = 4; i < 8; i++)
+            {
+                subShapes[i] = new CompoundShape.TransformedShape(new BoxShape(1, 1, 1), JMatrix.Identity, new JVector(0, i-4, 5));
+            }
+
+            for (int i = 8; i < 12; i++)
+            {
+                subShapes[i] = new CompoundShape.TransformedShape(new BoxShape(1, 1, 1), JMatrix.Identity, new JVector(0, 0, i-7));
+            }
 
             CompoundShape compound = new CompoundShape(subShapes);
             RigidBody compoundBody = new RigidBody(compound);
+
+            System.Diagnostics.Debug.WriteLine(compound.Shift.ToString());
 
             World.AddBody(compoundBody);
 
