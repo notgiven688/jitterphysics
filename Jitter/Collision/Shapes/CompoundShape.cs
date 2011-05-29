@@ -114,6 +114,9 @@ namespace Jitter.Collision.Shapes
             this.shapes = new TransformedShape[shapes.Count];
             shapes.CopyTo(this.shapes);
 
+            if (!TestValidity()) 
+                throw new ArgumentException("Multishapes are not supported!");
+
             this.UpdateShape();
         }
 
@@ -122,7 +125,20 @@ namespace Jitter.Collision.Shapes
             this.shapes = new TransformedShape[shapes.Length];
             Array.Copy(shapes, this.shapes, shapes.Length);
 
+            if (!TestValidity())
+                throw new ArgumentException("Multishapes are not supported!");
+
             this.UpdateShape();
+        }
+
+        private bool TestValidity()
+        {
+            for (int i = 0; i < shapes.Length; i++)
+            {
+                if (shapes[i].Shape is Multishape) return false;
+            }
+
+            return true;
         }
 
         /// <summary>
