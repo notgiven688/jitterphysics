@@ -156,6 +156,7 @@ namespace Jitter.Collision.Shapes
         public override void CalculateMassInertia()
         {
             base.inertia = JMatrix.Zero;
+            base.mass = 0.0f;
 
             for (int i = 0; i < Shapes.Length; i++)
             {
