@@ -66,6 +66,7 @@ namespace Jitter.Collision.Shapes
         protected override Multishape CreateWorkingClone()
         {
             TriangleMeshShape clone = new TriangleMeshShape(this.octree);
+            clone.sphericalExpansion = this.sphericalExpansion;
             return clone;
         }
 
