@@ -234,14 +234,11 @@ namespace Jitter.Collision
 
                 if (result)
                 {
-                    RaiseCollisionDetected(body1.points[myTriangle.indices.I0],
-                        body2.points[otherTriangle.indices.I0], ref point, ref point, ref normal, penetration);
+                    int minIndexMy = FindNearestTrianglePoint(body1, my[i], ref point);
+                    int minIndexOther = FindNearestTrianglePoint(body2, other[i], ref point);
 
-                    RaiseCollisionDetected(body1.points[myTriangle.indices.I1],
-                        body2.points[otherTriangle.indices.I1], ref point, ref point, ref normal, penetration);
-
-                    RaiseCollisionDetected(body1.points[myTriangle.indices.I2],
-                        body2.points[otherTriangle.indices.I2], ref point, ref point, ref normal, penetration);
+                    RaiseCollisionDetected(body1.points[minIndexMy],
+                        body2.points[minIndexOther], ref point, ref point, ref normal, penetration);
                 }
             }
 
@@ -410,14 +407,10 @@ namespace Jitter.Collision
 
                         if (result)
                         {
-                            RaiseCollisionDetected(rigidBody,
-                                softBody.points[t.indices.I0], ref point, ref point, ref normal, penetration);
+                            int minIndex = FindNearestTrianglePoint(softBody, i, ref point);
 
                             RaiseCollisionDetected(rigidBody,
-                                softBody.points[t.indices.I1], ref point, ref point, ref normal, penetration);
-
-                            RaiseCollisionDetected(rigidBody,
-                                softBody.points[t.indices.I2], ref point, ref point, ref normal, penetration);
+                                softBody.points[minIndex], ref point, ref point, ref normal, penetration);
                         }
                     }
 
@@ -444,19 +437,47 @@ namespace Jitter.Collision
 
                     if (result)
                     {
-                        RaiseCollisionDetected(rigidBody,
-                            softBody.points[t.indices.I0], ref point, ref point, ref normal, penetration);
+                        int minIndex = FindNearestTrianglePoint(softBody, i, ref point);
 
                         RaiseCollisionDetected(rigidBody,
-                            softBody.points[t.indices.I1], ref point, ref point, ref normal, penetration);
-
-                        RaiseCollisionDetected(rigidBody,
-                            softBody.points[t.indices.I2], ref point, ref point, ref normal, penetration);
+                            softBody.points[minIndex], ref point, ref point, ref normal, penetration);
                     }
                 }
 
                 detected.Clear();
                 potentialTriangleLists.GiveBack(detected);
+            }
+        }
+
+        private int FindNearestTrianglePoint(SoftBody sb, int id, ref JVector point)
+        {
+            SoftBody.Triangle triangle = sb.dynamicTree.GetUserData(id);
+            JVector p;
+
+            p = sb.points[triangle.indices.I0].position;
+            JVector.Subtract(ref p, ref point, out p);
+
+            float length0 = p.LengthSquared();
+
+            p = sb.points[triangle.indices.I1].position;
+            JVector.Subtract(ref p, ref point, out p);
+
+            float length1 = p.LengthSquared();
+
+            p = sb.points[triangle.indices.I2].position;
+            JVector.Subtract(ref p, ref point, out p);
+
+            float length2 = p.LengthSquared();
+
+            if (length0 < length1)
+            {
+                if (length0 < length2) return triangle.indices.I0;
+                else return triangle.indices.I2;
+            }
+            else
+            {
+                if (length1 < length2) return triangle.indices.I1;
+                else return triangle.indices.I2;
             }
         }
 

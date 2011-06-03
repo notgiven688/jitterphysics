@@ -294,14 +294,23 @@ namespace Jitter.Dynamics
         /// </summary>
         public void UpdatePosition()
         {
-            JVector.Transform(ref realRelPos1, ref body1.orientation, out p1);
+            if (!body1IsMassPoint)
+            {
+                JVector.Transform(ref realRelPos1, ref body1.orientation, out p1);
+            }
+
             JVector.Add(ref p1, ref body1.position, out p1);
 
-            JVector.Transform(ref realRelPos2, ref body2.orientation, out p2);
+
+            if (!body2IsMassPoint)
+            {
+                JVector.Transform(ref realRelPos2, ref body2.orientation, out p2);
+            }
+
             JVector.Add(ref p2, ref body2.position, out p2);
 
-            JVector dist; JVector.Subtract(ref p1, ref p2, out dist);
 
+            JVector dist; JVector.Subtract(ref p1, ref p2, out dist);
             penetration = JVector.Dot(ref dist, ref normal);
         }
 
@@ -747,8 +756,8 @@ namespace Jitter.Dynamics
             this.initialPen = penetration;
             this.penetration = penetration;
 
-            body1IsMassPoint = body1 is SoftBody.MassPoint;
-            body2IsMassPoint = body2 is SoftBody.MassPoint;
+            body1IsMassPoint = body1.isMassPoint;
+            body2IsMassPoint = body2.isMassPoint;
 
             // Material Properties
             if (newContact)

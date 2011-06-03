@@ -670,7 +670,7 @@ namespace JitterDemo
             foreach (RigidBody body in World.RigidBodies)
             {
                 if (body.IsActive) activeBodies++;
-                if (body.Tag is int || body is SoftBody.MassPoint) continue;
+                if (body.Tag is int || body.IsMassPoint) continue;
                 AddBodyToDrawList(body);
             }
 
