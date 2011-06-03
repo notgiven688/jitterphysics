@@ -472,7 +472,7 @@ namespace Jitter
 
             events.RaiseAddedRigidBody(body);
 
-            if(!(body is SoftBody.MassPoint)) this.CollisionSystem.AddEntity(body);
+            if(!(body.isMassPoint)) this.CollisionSystem.AddEntity(body);
 
             rigidBodies.Add(body);
         }
@@ -770,16 +770,18 @@ namespace Jitter
         {
             foreach(RigidBody body in rigidBodies)
             {
-
                 if (!body.isStatic && body.IsActive)
                 {
                     JVector temp;
                     JVector.Multiply(ref body.force, body.inverseMass * timestep, out temp);
                     JVector.Add(ref temp, ref body.linearVelocity, out body.linearVelocity);
 
-                    JVector.Multiply(ref body.torque, timestep, out temp);
-                    JVector.Transform(ref temp, ref body.invInertiaWorld, out temp);
-                    JVector.Add(ref temp, ref body.angularVelocity, out body.angularVelocity);
+                    if (!(body.isMassPoint))
+                    {
+                        JVector.Multiply(ref body.torque, timestep, out temp);
+                        JVector.Transform(ref temp, ref body.invInertiaWorld, out temp);
+                        JVector.Add(ref temp, ref body.angularVelocity, out body.angularVelocity);
+                    }
 
                     if (body.affectedByGravity)
                     {
@@ -803,28 +805,32 @@ namespace Jitter
             JVector.Multiply(ref body.linearVelocity, timestep, out temp);
             JVector.Add(ref temp, ref body.position, out body.position);
 
-            //exponential map
-            JVector axis;
-            float angle = body.angularVelocity.Length();
-
-            if (angle < 0.001f)
+            if (!(body.isMassPoint))
             {
-                // use Taylor's expansions of sync function
-                axis = body.angularVelocity * (0.5f * timestep - (timestep * timestep * timestep) * (0.020833333333f) * angle * angle);
-                JVector.Multiply(ref body.angularVelocity, (0.5f * timestep - (timestep * timestep * timestep) * (0.020833333333f) * angle * angle), out axis);
+
+                //exponential map
+                JVector axis;
+                float angle = body.angularVelocity.Length();
+
+                if (angle < 0.001f)
+                {
+                    // use Taylor's expansions of sync function
+                    axis = body.angularVelocity * (0.5f * timestep - (timestep * timestep * timestep) * (0.020833333333f) * angle * angle);
+                    JVector.Multiply(ref body.angularVelocity, (0.5f * timestep - (timestep * timestep * timestep) * (0.020833333333f) * angle * angle), out axis);
+                }
+                else
+                {
+                    // sync(fAngle) = sin(c*fAngle)/t
+                    JVector.Multiply(ref body.angularVelocity, ((float)Math.Sin(0.5f * angle * timestep) / angle), out axis);
+                }
+
+                JQuaternion dorn = new JQuaternion(axis.X, axis.Y, axis.Z, (float)Math.Cos(angle * timestep * 0.5f));
+                JQuaternion ornA; JQuaternion.CreateFromMatrix(ref body.orientation, out ornA);
+
+                JQuaternion.Multiply(ref dorn, ref ornA, out dorn);
+
+                dorn.Normalize(); JMatrix.CreateFromQuaternion(ref dorn, out body.orientation);
             }
-            else
-            {
-                // sync(fAngle) = sin(c*fAngle)/t
-                JVector.Multiply(ref body.angularVelocity, ((float)Math.Sin(0.5f * angle * timestep) / angle), out axis);
-            }
-
-            JQuaternion dorn = new JQuaternion(axis.X, axis.Y, axis.Z, (float)Math.Cos(angle * timestep * 0.5f));
-            JQuaternion ornA; JQuaternion.CreateFromMatrix(ref body.orientation, out ornA);
-
-            JQuaternion.Multiply(ref dorn, ref ornA, out dorn);
-
-            dorn.Normalize(); JMatrix.CreateFromQuaternion(ref dorn, out body.orientation);
 
             if ((body.Damping & RigidBody.DampingType.Linear) != 0)
                 JVector.Multiply(ref body.linearVelocity, currentLinearDampFactor, out body.linearVelocity);

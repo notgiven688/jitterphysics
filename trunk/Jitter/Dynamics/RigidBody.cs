@@ -99,6 +99,9 @@ namespace Jitter.Dynamics
         {
         }
 
+        internal bool isMassPoint = false;
+        public bool IsMassPoint { get { return isMassPoint; } }
+
         /// <summary>
         /// Initializes a new instance of the RigidBody class.
         /// </summary>

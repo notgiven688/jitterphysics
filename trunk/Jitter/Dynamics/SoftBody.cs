@@ -219,7 +219,7 @@ namespace Jitter.Dynamics
 
             private static Shape sphereShape = new SphereShape(sphereSize);
 
-            public MassPoint(Material material) : base(sphereShape, material) { }
+            public MassPoint(Material material) : base(sphereShape, material) { this.isMassPoint = true; }
 
             public override void Update()
             {
