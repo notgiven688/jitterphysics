@@ -555,15 +555,16 @@ namespace Jitter
             CollisionSystem.Detect(multithread);
             BuildIslands();
             CheckDeactivation();
-            IntegrateForces();
-            HandleArbiter(contactIterations, multithread);
-            Integrate(multithread);
 
             foreach (SoftBody body in softbodies)
             {
                 body.Update(timestep);
                 body.AddPressureForces(timestep);
             }
+
+            IntegrateForces();
+            HandleArbiter(contactIterations, multithread);
+            Integrate(multithread);
 
             foreach (RigidBody body in rigidBodies) body.PostStep();
             events.RaiseWorldPostStep(timestep);
@@ -590,6 +591,14 @@ namespace Jitter
             sw.Stop(); debugTimes[(int)DebugType.DeactivateBodies] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
+            foreach(SoftBody body in softbodies)
+            {
+                body.Update(timestep);
+                body.AddPressureForces(timestep);
+            }
+            sw.Stop(); debugTimes[(int)DebugType.ClothUpdate] = sw.Elapsed.TotalMilliseconds;
+
+            sw.Reset(); sw.Start();
             IntegrateForces();
             sw.Stop(); debugTimes[(int)DebugType.IntegrateForces] = sw.Elapsed.TotalMilliseconds;
 
@@ -601,13 +610,6 @@ namespace Jitter
             Integrate(multithread);
             sw.Stop(); debugTimes[(int)DebugType.Integrate] = sw.Elapsed.TotalMilliseconds;
 
-            sw.Reset(); sw.Start();
-            foreach(SoftBody body in softbodies)
-            {
-                body.Update(timestep);
-                body.AddPressureForces(timestep);
-            }
-            sw.Stop(); debugTimes[(int)DebugType.ClothUpdate] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
             foreach (RigidBody body in rigidBodies) body.PostStep();

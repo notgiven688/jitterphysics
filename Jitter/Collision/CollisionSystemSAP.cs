@@ -55,7 +55,6 @@ namespace Jitter.Collision
         /// </summary>
         public CollisionSystemSAP()
         {
-            //xComparer = new Comparison<IBroadphaseEntity>(Compare);
             xComparer = new IBroadphaseEntityXCompare();
             detectCallback = new Action<object>(DetectCallback);
         }
