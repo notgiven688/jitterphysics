@@ -80,23 +80,13 @@ namespace JitterDemo.Scenes
             ConvexHullObject.ExtractData(vertices, indices, model);
             RemoveDuplicateVertices(indices, vertices);
 
-            for (int i = 0; i < 3; i++)
-            {
-                SoftBody softBody = new SoftBody(indices, vertices);
+            SoftBody softBody = new SoftBody(indices, vertices);
 
-                if (i % 2 == 0) softBody.Rotate(JMatrix.CreateRotationY(JMath.PiOver2), JVector.Zero);
-                softBody.Translate(new JVector(10, 10 - i * 3, 0));
-                softBody.Pressure =1000.0f;
-                softBody.SetSpringValues(0.1f, 0.001f);
-                //softBody.TriangleExpansion = 0.05f;
+            softBody.Translate(new JVector(10, 5, 0));
+            softBody.Pressure = 1000.0f;
+            softBody.SetSpringValues(0.2f, 0.005f);
 
-                Demo.World.AddBody(softBody);
-
-                if (i == 0)
-                {
-                    foreach (SoftBody.MassPoint point in softBody.VertexBodies) point.IsStatic = true;
-                }
-            }
+            Demo.World.AddBody(softBody);
 
             indices.Clear(); vertices.Clear();
             model = this.Demo.Content.Load<Model>("cloth");
@@ -113,7 +103,7 @@ namespace JitterDemo.Scenes
             cloth.VertexBodies[234].IsStatic = true;
             cloth.VertexBodies[356].IsStatic = true;
 
-            cloth.SetSpringValues(0.3f, 0.01f);
+            cloth.SetSpringValues(0.1f, 0.01f);
 
             Demo.World.AddBody(cloth);
         }

@@ -40,6 +40,7 @@ namespace JitterDemo
 
         private Color backgroundColor = new Color(63, 66, 73);
         private bool multithread = true;
+        private int activeBodies = 0;
 
         private bool debugDraw = false;
 
@@ -87,34 +88,6 @@ namespace JitterDemo
             cullMode.CullMode = CullMode.None;
 
             normal = new RasterizerState();
-
-
-            CompoundShape.TransformedShape[] subShapes
-                = new CompoundShape.TransformedShape[12];
-
-            for (int i = 0; i < 4; i++)
-            {
-                subShapes[i] = new CompoundShape.TransformedShape(new BoxShape(1, 1, 1), JMatrix.Identity, new JVector(0, i, 0));
-            }
-
-            for (int i = 4; i < 8; i++)
-            {
-                subShapes[i] = new CompoundShape.TransformedShape(new BoxShape(1, 1, 1), JMatrix.Identity, new JVector(0, i-4, 5));
-            }
-
-            for (int i = 8; i < 12; i++)
-            {
-                subShapes[i] = new CompoundShape.TransformedShape(new BoxShape(1, 1, 1), JMatrix.Identity, new JVector(0, 0, i-7));
-            }
-
-            CompoundShape compound = new CompoundShape(subShapes);
-            RigidBody compoundBody = new RigidBody(compound);
-
-            System.Diagnostics.Debug.WriteLine(compound.Shift.ToString());
-
-            World.AddBody(compoundBody);
-
-            compoundBody.Position = new JVector(0, 35, 0);
         }
 
 
@@ -206,8 +179,6 @@ namespace JitterDemo
 
             }
         }
-
-       
 
         protected override void Update(GameTime gameTime)
         {
@@ -325,14 +296,9 @@ namespace JitterDemo
 
             float step = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            //World.StepFixed(step, true, 1.0f / 60.0f, 1);
-
             if (step > 1.0f / 100.0f) step = 1.0f / 100.0f;
 
             World.Step(1.0f/100.0f, multithread);
-
-            //if(!keyboardPreviousState.IsKeyDown(Keys.Space) && keyState.IsKeyDown(Keys.Space))
-            //    World.Step(step,multithread);
 
             gamePadPreviousState = padState;
             keyboardPreviousState = keyState;
@@ -358,8 +324,7 @@ namespace JitterDemo
             int rndn = random.Next(7);
 
             // less of the more advanced objects
-            //if (rndn == 5 || rndn == 6) rndn = random.Next(7);
-            //if (rndn == 5 || rndn == 6) rndn = random.Next(7);
+            if (rndn == 5 || rndn == 6) rndn = random.Next(7);
 
             switch (rndn)
             {
@@ -623,8 +588,7 @@ namespace JitterDemo
         }
         #endregion
 
-        int activeBodies = 0;
-
+        #region Draw Cloth
         VertexPositionColor[] triangles = new VertexPositionColor[8000];
 
         private void DrawCloth()
@@ -632,7 +596,6 @@ namespace JitterDemo
             foreach (SoftBody body in World.SoftBodies)
             {
                 this.GraphicsDevice.RasterizerState = cullMode;
-                
                 
                 for (int i = 0; i < body.Triangles.Count; i++)
                 {
@@ -653,14 +616,13 @@ namespace JitterDemo
                 DrawDynamicTree(body);
             }
         }
+        #endregion
 
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(backgroundColor);
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            
-            //GraphicsDevice.RasterizerState = wireframe;
-
+           
             BasicEffect.View = Camera.View;
             BasicEffect.Projection = Camera.Projection;
 

@@ -130,7 +130,7 @@ namespace JitterDemo.Vehicle
                 {
                     Matrix matrix = Conversion.ToXNAMatrix(carBody.Orientation);
                     matrix.Translation = Conversion.ToXNAVector(carBody.Position) -
-                        Vector3.Transform(new Vector3(0,0.5f,0),matrix);
+                        Vector3.Transform(new Vector3(0,1.0f,0),matrix);
 
                     effect.EnableDefaultLighting();
                     effect.World = matrix;
