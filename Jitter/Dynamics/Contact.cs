@@ -152,7 +152,7 @@ namespace Jitter.Dynamics
         /// Calculates relative velocity of body contact points on the bodies.
         /// </summary>
         /// <param name="relVel">The relative velocity of body contact points on the bodies.</param>
-        public void CalculateRelativeVelocity(out JVector relVel)
+        public JVector CalculateRelativeVelocity()
         {
             float x, y, z;
 
@@ -160,9 +160,12 @@ namespace Jitter.Dynamics
             y = (body2.angularVelocity.Z * relativePos2.X) - (body2.angularVelocity.X * relativePos2.Z) + body2.linearVelocity.Y;
             z = (body2.angularVelocity.X * relativePos2.Y) - (body2.angularVelocity.Y * relativePos2.X) + body2.linearVelocity.Z;
 
+            JVector relVel;
             relVel.X = x - (body1.angularVelocity.Y * relativePos1.Z) + (body1.angularVelocity.Z * relativePos1.Y) - body1.linearVelocity.X;
             relVel.Y = y - (body1.angularVelocity.Z * relativePos1.X) + (body1.angularVelocity.X * relativePos1.Z) - body1.linearVelocity.Y;
             relVel.Z = z - (body1.angularVelocity.X * relativePos1.Y) + (body1.angularVelocity.Y * relativePos1.X) - body1.linearVelocity.Z;
+
+            return relVel;
         }
 
         /// <summary>
@@ -557,10 +560,7 @@ namespace Jitter.Dynamics
             else
             {
                 kTangent += body1.inverseMass;
-                //JVector.Cross(ref relativePos1, ref tangent, out rantra);
-                //JVector.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
-                //JVector.Cross(ref rantra, ref relativePos1, out rantra);
-
+  
                 if (!body1IsMassPoint)
                 {
                     // JVector.Cross(ref relativePos1, ref normal, out rantra);
