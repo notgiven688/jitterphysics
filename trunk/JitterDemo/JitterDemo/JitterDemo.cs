@@ -296,18 +296,17 @@ namespace JitterDemo
 
             float step = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            if (step > 1.0f / 100.0f) step = 1.0f / 100.0f;
+            if (step > 1.0f / 60.0f) step = 1.0f / 60.0f;
 
-            World.Step(1.0f/100.0f, multithread);
+            World.Step(step, multithread);
 
             gamePadPreviousState = padState;
             keyboardPreviousState = keyState;
             mousePreviousState = mouseState;
 
-
-
             base.Update(gameTime);
         }
+
 
 
         private bool RaycastCallback(RigidBody body, JVector normal, float fraction)

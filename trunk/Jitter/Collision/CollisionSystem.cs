@@ -59,7 +59,7 @@ namespace Jitter.Collision
     /// <param name="body2">The second body.</param>
     /// <returns>If false is returned the collision information is dropped. The CollisionDetectedHandler
     /// is never called.</returns>
-    public delegate bool PassedBroadphaseHandler(IBroadphaseEntity body1, IBroadphaseEntity body2);
+    public delegate bool PassedBroadphaseHandler(IBroadphaseEntity entity1, IBroadphaseEntity entity2);
 
     /// <summary>
     /// A delegate to inform the user that a pair of bodies passed the narrowphase
@@ -237,8 +237,12 @@ namespace Jitter.Collision
                     int minIndexMy = FindNearestTrianglePoint(body1, my[i], ref point);
                     int minIndexOther = FindNearestTrianglePoint(body2, other[i], ref point);
 
-                    RaiseCollisionDetected(body1.points[minIndexMy],
-                        body2.points[minIndexOther], ref point, ref point, ref normal, penetration);
+                    if (this.RaisePassedNarrowphase(body1.points[minIndexMy], body2.points[minIndexOther],
+                        ref point, ref normal, penetration))
+                    {
+                        RaiseCollisionDetected(body1.points[minIndexMy],
+                            body2.points[minIndexOther], ref point, ref point, ref normal, penetration);
+                    }
                 }
             }
 
@@ -409,8 +413,13 @@ namespace Jitter.Collision
                         {
                             int minIndex = FindNearestTrianglePoint(softBody, i, ref point);
 
-                            RaiseCollisionDetected(rigidBody,
-                                softBody.points[minIndex], ref point, ref point, ref normal, penetration);
+                            if (this.RaisePassedNarrowphase(rigidBody, softBody.points[minIndex],
+                                ref point, ref normal, penetration))
+                            {
+
+                                RaiseCollisionDetected(rigidBody,
+                                    softBody.points[minIndex], ref point, ref point, ref normal, penetration);
+                            }
                         }
                     }
 
@@ -439,8 +448,12 @@ namespace Jitter.Collision
                     {
                         int minIndex = FindNearestTrianglePoint(softBody, i, ref point);
 
-                        RaiseCollisionDetected(rigidBody,
-                            softBody.points[minIndex], ref point, ref point, ref normal, penetration);
+                        if (this.RaisePassedNarrowphase(rigidBody, softBody.points[minIndex],
+                            ref point, ref normal, penetration))
+                        {
+                            RaiseCollisionDetected(rigidBody,
+                                softBody.points[minIndex], ref point, ref point, ref normal, penetration);
+                        }
                     }
                 }
 

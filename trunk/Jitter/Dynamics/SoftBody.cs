@@ -219,7 +219,9 @@ namespace Jitter.Dynamics
 
             private static Shape sphereShape = new SphereShape(sphereSize);
 
-            public MassPoint(Material material) : base(sphereShape, material) { this.isMassPoint = true; }
+            public SoftBody SoftBody { get; private set; }
+
+            public MassPoint(SoftBody owner, Material material) : base(sphereShape, material) { this.isMassPoint = true; this.SoftBody = owner; }
 
             public override void Update()
             {
@@ -345,11 +347,13 @@ namespace Jitter.Dynamics
         }
         #endregion
 
-        internal Spring[] springs;
-        internal MassPoint[] points;
+        internal List<Spring> springs = new List<Spring>();
+        internal List<MassPoint> points = new List<MassPoint>();
+        private List<Triangle> triangles = new List<Triangle>();
 
-        public Spring[] EdgeSprings { get { return springs; } }
-        public MassPoint[] VertexBodies { get { return points; } }
+        public ReadOnlyCollection<Spring> EdgeSprings { get; private set; }
+        public ReadOnlyCollection<MassPoint> VertexBodies { get; private set; }
+        public ReadOnlyCollection<Triangle> Triangles { private set; get; }
 
         protected float triangleExpansion = 0.1f;
 
@@ -367,13 +371,13 @@ namespace Jitter.Dynamics
 
         JBBox box = new JBBox();
 
-        private List<Triangle> triangles = new List<Triangle>();
-        public ReadOnlyCollection<Triangle> Triangles { private set; get; }
-
         bool active = true;
 
         public SoftBody(List<TriangleVertexIndices> indices, List<JVector> vertices)
         {
+            EdgeSprings = springs.AsReadOnly();
+            VertexBodies = points.AsReadOnly();
+
             AddPointsAndSprings(indices, vertices);
             Triangles = triangles.AsReadOnly();
         }
@@ -442,7 +446,7 @@ namespace Jitter.Dynamics
 
         public void Rotate(JMatrix orientation, JVector center)
         {
-            for (int i = 0; i < points.Length; i++)
+            for (int i = 0; i < points.Count; i++)
             {
                 points[i].position = JVector.Transform(points[i].position - center, orientation);
             }
@@ -477,15 +481,13 @@ namespace Jitter.Dynamics
 
         private void AddPointsAndSprings(List<TriangleVertexIndices> indices, List<JVector> vertices)
         {
-            points = new MassPoint[vertices.Count];
-
             for (int i = 0; i < vertices.Count; i++)
             {
-                MassPoint point = new MassPoint(material);
+                MassPoint point = new MassPoint(this,material);
                 point.Position = vertices[i];
                 point.Mass = 0.1f;
 
-                points[i] = point;
+                points.Add(point);
             }
 
             for (int i = 0; i < indices.Count; i++)
@@ -507,7 +509,6 @@ namespace Jitter.Dynamics
 
             HashSet<Edge> edges = GetEdges(indices);
 
-            springs = new Spring[edges.Count];
             int count = 0;
 
             foreach (Edge edge in edges)
@@ -515,7 +516,7 @@ namespace Jitter.Dynamics
                 Spring spring = new Spring(points[edge.Index1], points[edge.Index2]);
                 spring.Softness = 0.01f; spring.BiasFactor = 0.1f;
 
-                springs[count] = spring;
+                springs.Add(spring);
                 count++;
             }
 
@@ -523,7 +524,7 @@ namespace Jitter.Dynamics
 
         public void SetSpringValues(float bias, float softness)
         {
-            for (int i = 0; i < springs.Length; i++)
+            for (int i = 0; i < springs.Count; i++)
             { springs[i].Softness = softness; springs[i].BiasFactor = bias; }
         }
 
@@ -584,9 +585,9 @@ namespace Jitter.Dynamics
             }
             set
             {
-                for (int i = 0; i < points.Length; i++)
+                for (int i = 0; i < points.Count; i++)
                 {
-                    points[i].Mass = value / points.Length;
+                    points[i].Mass = value / points.Count;
                 }
             }
         }

@@ -191,7 +191,7 @@ namespace Jitter
                 RemoveConstraint(constraint);
 
             foreach (SoftBody.MassPoint massPoint in body.points)
-                RemoveBody(massPoint);
+                RemoveBody(massPoint,true);
 
             return true;
         }
@@ -403,7 +403,14 @@ namespace Jitter
         /// <returns>Returns false if the body could not be removed from the world.</returns>
         public bool RemoveBody(RigidBody body)
         {
+            return RemoveBody(body, false);
+        }
+
+        private bool RemoveBody(RigidBody body, bool removeMassPoints)
+        {
             // Its very important to clean up, after removing a body
+
+            if (!removeMassPoints && body.IsMassPoint) return false;
 
             // remove the body from the world list
             if (!rigidBodies.Remove(body)) return false;
@@ -421,16 +428,17 @@ namespace Jitter
             body.island = null;
 
             // remove all arbiters and contacts connected with this body
-            List<Arbiter> orphanArbiters = new List<Arbiter>();
+            Stack<Arbiter> orphanArbiters = new Stack<Arbiter>();
             foreach (Arbiter arbiter in arbiterMap.Values)
             {
                 if (arbiter.body1 == body || arbiter.body2 == body)
-                    orphanArbiters.Add(arbiter);
+                    orphanArbiters.Push(arbiter);
             }
 
-            foreach (Arbiter arbiter in orphanArbiters)
+            while (orphanArbiters.Count > 0)
             {
-                // Give the contacts of the arbiter back
+                Arbiter arbiter = orphanArbiters.Pop();
+
                 int contactCount = arbiter.contactList.Count;
                 for (int e = 0; e < contactCount; e++)
                 {
@@ -445,17 +453,16 @@ namespace Jitter
             }
 
             // remove all constraints connected with this body
-            List<Constraint> orphanConstraints = new List<Constraint>();
-
+            Stack<Constraint> orphanConstraints = new Stack<Constraint>();
             foreach (Constraint constraint in constraints)
             {
                 if (constraint.body1 == body || constraint.body2 == body)
-                    orphanConstraints.Add(constraint);
+                    orphanConstraints.Push(constraint);
             }
 
-            foreach (Constraint constraint in orphanConstraints)
+            while (orphanConstraints.Count > 0)
             {
-                constraints.Remove(constraint);
+                constraints.Remove(orphanConstraints.Pop());
             }
 
             return true;

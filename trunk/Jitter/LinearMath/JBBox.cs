@@ -347,7 +347,7 @@ namespace Jitter.LinearMath
 
         #endregion
 
-        public JVector Center { get { return Min + (Max - Min)* (1.0f /2.0f); } }
+        public JVector Center { get { return (Min + Max)* (1.0f /2.0f); } }
 
         internal float Perimeter
         {
