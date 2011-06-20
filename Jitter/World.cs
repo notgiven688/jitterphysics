@@ -465,6 +465,8 @@ namespace Jitter
                 constraints.Remove(orphanConstraints.Pop());
             }
 
+            events.RaiseRemovedRigidBody(body);
+
             return true;
         }
 
