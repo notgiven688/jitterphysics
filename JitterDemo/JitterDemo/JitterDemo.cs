@@ -368,7 +368,7 @@ namespace JitterDemo
 
             body.Position = position;
             body.LinearVelocity = velocity;
-
+            //body.EnableDebugDraw = true;
 
             lastBody = body;
         }
@@ -503,7 +503,6 @@ namespace JitterDemo
             foreach (Constraint constr in World.Constraints)
                 constr.DebugDraw(DebugDrawer);
 
-            
             //foreach (RigidBody body in World.RigidBodies)
             //    body.DebugDraw(DebugDrawer);
         }
@@ -516,8 +515,6 @@ namespace JitterDemo
             {
                 Walk(tree,tn.Child1);
                 Walk(tree,tn.Child2);
-
-
 
                 DebugDrawer.DrawAabb(tn.AABB.Min,tn.AABB.Max, Color.Red);
             }

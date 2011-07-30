@@ -125,7 +125,7 @@ namespace Jitter.Collision.Shapes
 
         public override void MakeHull(ref List<JVector> triangleList, int generationThreshold)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
 
