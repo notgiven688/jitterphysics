@@ -28,19 +28,22 @@ using Jitter.Collision.Shapes;
 
 namespace Jitter
 {
+
+    public interface IDebugDrawable
+    {
+        void DebugDraw(IDebugDrawer drawer);
+    }
+
     /// <summary>
     /// Interface for providing the possibility to get drawable debug information
     /// from an object.
     /// </summary>
-    public interface IDebugDraw
+    public interface IDebugDrawer
     {
-        /// <summary>
-        /// This method is used to debug draw the object.
-        /// </summary>
-        /// <param name="lineList">A list of <see cref="JVector"/> to which lines (definied trough two points)
-        /// are added.</param>
-        /// <param name="pointList">A list of <see cref="JVector"/> defining points.</param>
-        void AddToDebugDrawList(List<JVector> lineList, List<JVector> pointList);
+
+        void DrawLine(JVector start, JVector end);
+        void DrawPoint(JVector pos);
+        void DrawTriangle(JVector pos1,JVector pos2,JVector pos3);
 
         
     }

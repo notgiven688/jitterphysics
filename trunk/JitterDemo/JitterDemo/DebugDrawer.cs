@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Jitter.LinearMath;
 namespace JitterDemo
 {
 
     /// <summary>
     /// Draw axis aligned bounding boxes, points and lines.
     /// </summary>
-    public class DebugDrawer : DrawableGameComponent
+    public class DebugDrawer : DrawableGameComponent, Jitter.IDebugDrawer
     {
         BasicEffect basicEffect;
-        BasicEffect basicEffect2;
 
         public DebugDrawer(Game game)
             : base(game)
@@ -22,32 +22,49 @@ namespace JitterDemo
         {
             base.Initialize();
             basicEffect = new BasicEffect(this.GraphicsDevice);
-            basicEffect2 = new BasicEffect(this.GraphicsDevice);
             basicEffect.VertexColorEnabled = true;
-            basicEffect2.VertexColorEnabled = true;
-            
-           // basicEffect2.LightingEnabled = true;
         }
 
-        public void DrawLine(Vector3 p0, Vector3 p1, Color color)
+        public void DrawLine(JVector p0, JVector p1, Color color)
         {
-            index += 2;
+            lineIndex += 2;
 
-            if (index == LineList.Length)
+            if (lineIndex == LineList.Length)
             {
                 VertexPositionColor[] temp = new VertexPositionColor[LineList.Length + 50];
                 LineList.CopyTo(temp, 0);
                 LineList = temp;
             }
 
-            LineList[index - 2].Color = color;
-            LineList[index - 2].Position = p0;
+            LineList[lineIndex - 2].Color = color;
+            LineList[lineIndex - 2].Position = Conversion.ToXNAVector(p0);
 
-            LineList[index - 1].Color = color;
-            LineList[index - 1].Position = p1;
+            LineList[lineIndex - 1].Color = color;
+            LineList[lineIndex - 1].Position = Conversion.ToXNAVector(p1);
         }
 
-        private void SetElement(ref Vector3 v, int index, float value)
+        public void DrawTriangle(JVector p0, JVector p1, JVector p2, Color color)
+        {
+            triangleIndex += 3;
+
+            if (triangleIndex == TriangleList.Length)
+            {
+                VertexPositionColor[] temp = new VertexPositionColor[TriangleList.Length + 300];
+                TriangleList.CopyTo(temp, 0);
+                TriangleList = temp;
+            }
+
+            TriangleList[triangleIndex - 3].Color = color;
+            TriangleList[triangleIndex - 3].Position = Conversion.ToXNAVector(p0);
+
+            TriangleList[triangleIndex - 2].Color = color;
+            TriangleList[triangleIndex - 2].Position = Conversion.ToXNAVector(p1);
+
+            TriangleList[triangleIndex - 1].Color = color;
+            TriangleList[triangleIndex - 1].Position = Conversion.ToXNAVector(p2);
+        }
+
+        private void SetElement(ref JVector v, int index, float value)
         {
             if (index == 0)
                 v.X = value;
@@ -59,7 +76,7 @@ namespace JitterDemo
                 throw new ArgumentOutOfRangeException("index");
         }
 
-        private float GetElement(Vector3 v, int index)
+        private float GetElement(JVector v, int index)
         {
             if (index == 0)
                 return v.X;
@@ -71,57 +88,42 @@ namespace JitterDemo
             throw new ArgumentOutOfRangeException("index");
         }
 
-        public void DrawAabb(Vector3 from, Vector3 to, Color color)
+        public void DrawAabb(JVector from, JVector to, Color color)
         {
-            Vector3 halfExtents = (to - from) * 0.5f;
-            Vector3 center = (to + from) * 0.5f;
+            JVector halfExtents = (to - from) * 0.5f;
+            JVector center = (to + from) * 0.5f;
 
-            Vector3 edgecoord = new Vector3(1f, 1f, 1f), pa, pb;
+            JVector edgecoord = new JVector(1f, 1f, 1f), pa, pb;
             for (int i = 0; i < 4; i++)
             {
                 for (int j = 0; j < 3; j++)
                 {
-                    pa = new Vector3(edgecoord.X * halfExtents.X, edgecoord.Y * halfExtents.Y,
+                    pa = new JVector(edgecoord.X * halfExtents.X, edgecoord.Y * halfExtents.Y,
                         edgecoord.Z * halfExtents.Z);
                     pa += center;
 
                     int othercoord = j % 3;
                     SetElement(ref edgecoord, othercoord, GetElement(edgecoord, othercoord) * -1f);
-                    pb = new Vector3(edgecoord.X * halfExtents.X, edgecoord.Y * halfExtents.Y,
+                    pb = new JVector(edgecoord.X * halfExtents.X, edgecoord.Y * halfExtents.Y,
                         edgecoord.Z * halfExtents.Z);
                     pb += center;
 
                     DrawLine(pa, pb, color);
                 }
-                edgecoord = new Vector3(-1f, -1f, -1f);
+                edgecoord = new JVector(-1f, -1f, -1f);
                 if (i < 3)
                     SetElement(ref edgecoord, i, GetElement(edgecoord, i) * -1f);
             }
         }
 
+        public VertexPositionColor[] TriangleList = new VertexPositionColor[99];
         public VertexPositionColor[] LineList = new VertexPositionColor[50];
-        private int index = 0;
-
-        public void DrawTriangle(VertexPositionColor[] triangles, int length)
-        {
-            JitterDemo demo = Game as JitterDemo;
-
-            basicEffect2.View = demo.Camera.View;
-            basicEffect2.Projection = demo.Camera.Projection;
-
-            foreach (EffectPass pass in basicEffect2.CurrentTechnique.Passes)
-            {
-                pass.Apply();
-
-                GraphicsDevice.DrawUserPrimitives<VertexPositionColor>(
-                    PrimitiveType.TriangleList, triangles, 0, length);
-            }
-        }
+        
+        private int lineIndex = 0;
+        private int triangleIndex = 0;
 
         public override void Draw(GameTime gameTime)
         {
-            if (index == 0) return;
-
             JitterDemo demo = Game as JitterDemo;
 
             basicEffect.View = demo.Camera.View;
@@ -131,14 +133,35 @@ namespace JitterDemo
             {
                 pass.Apply();
 
+                if(lineIndex > 0)
                 GraphicsDevice.DrawUserPrimitives<VertexPositionColor>(
-                    PrimitiveType.LineList, LineList, 0, index / 2);
+                    PrimitiveType.LineList, LineList, 0, lineIndex / 2);
+
+                if(triangleIndex > 0)
+                GraphicsDevice.DrawUserPrimitives<VertexPositionColor>(
+                    PrimitiveType.TriangleList, TriangleList, 0, triangleIndex / 3);
             }
 
-            index = 0;
+            lineIndex = 0;
+            triangleIndex = 0;
  
             base.Draw(gameTime);
         }
 
+
+        public void DrawLine(JVector start, JVector end)
+        {
+            DrawLine(start, end, Color.Black);
+        }
+
+        public void DrawPoint(JVector pos)
+        {
+           // DrawPoint(pos, Color.Red);
+        }
+
+        public void DrawTriangle(JVector pos1, JVector pos2, JVector pos3)
+        {
+            DrawTriangle(pos1, pos2, pos3, Color.Green);
+        }
     }
 }

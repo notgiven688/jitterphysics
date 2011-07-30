@@ -366,7 +366,6 @@ namespace JitterDemo
 
             World.AddBody(body);
 
- 
             body.Position = position;
             body.LinearVelocity = velocity;
 
@@ -498,40 +497,15 @@ namespace JitterDemo
 
         #region draw jitter debug data
 
-        List<JVector> pointList = new List<JVector>();
-        List<JVector> lineList = new List<JVector>();
 
         private void DrawJitterDebugInfo()
         {
-            pointList.Clear(); lineList.Clear();
             foreach (Constraint constr in World.Constraints)
-                constr.AddToDebugDrawList(lineList, pointList);
+                constr.DebugDraw(DebugDrawer);
 
-            //foreach (Arbiter arbiter in World.ArbiterMap.Values)
-            //{
-            //    foreach (Contact contact in arbiter.ContactList)
-            //    {
-            //        pointList.Add(contact.Position1);
-            //        pointList.Add(contact.Position2);
-            //    }
-            //}
-
-
-            for (int i = 0; i < lineList.Count; i += 2)
-            {
-                DebugDrawer.DrawLine(Conversion.ToXNAVector(lineList[i]),
-                    Conversion.ToXNAVector(lineList[i + 1]), Color.Black);
-            }
-
-            for (int i = 0; i < pointList.Count; i++)
-            {
-                DebugDrawer.DrawLine(Conversion.ToXNAVector(pointList[i] + JVector.Up * 0.3f),
-                    Conversion.ToXNAVector(pointList[i] + JVector.Down * 0.3f), Color.Red);
-                DebugDrawer.DrawLine(Conversion.ToXNAVector(pointList[i] + JVector.Left*0.3f),
-                    Conversion.ToXNAVector(pointList[i] + JVector.Right * 0.3f), Color.Red);
-                DebugDrawer.DrawLine(Conversion.ToXNAVector(pointList[i] + JVector.Backward * 0.3f),
-                    Conversion.ToXNAVector(pointList[i] + JVector.Forward * 0.3f), Color.Red);
-            }
+            
+            //foreach (RigidBody body in World.RigidBodies)
+            //    body.DebugDraw(DebugDrawer);
         }
 
         private void Walk(DynamicTree<SoftBody.Triangle> tree, int index)
@@ -543,8 +517,9 @@ namespace JitterDemo
                 Walk(tree,tn.Child1);
                 Walk(tree,tn.Child2);
 
-                DebugDrawer.DrawAabb(Conversion.ToXNAVector(tn.AABB.Min),
-                    Conversion.ToXNAVector(tn.AABB.Max), Color.Red);
+
+
+                DebugDrawer.DrawAabb(tn.AABB.Min,tn.AABB.Max, Color.Red);
             }
         }
 
@@ -552,18 +527,6 @@ namespace JitterDemo
         {
             if(!debugDraw) return;
             Walk(cloth.DynamicTree,cloth.DynamicTree.Root);
-
-       //     foreach (Cloth.Triangle t in cloth.triangles)
-       //     {
-       //         JBBox box = JBBox.SmallBox;
-
-       //         box.AddPoint(cloth.clothPoints[t.GetIndex(0)].Position);
-       //         box.AddPoint(cloth.clothPoints[t.GetIndex(1)].Position);
-       //         box.AddPoint(cloth.clothPoints[t.GetIndex(2)].Position);
-
-       //         DebugDrawer.DrawAabb(Conversion.ToXNAVector(box.Min),
-       //Conversion.ToXNAVector(box.Max),Color.Green);
-       //     }
         }
 
         private void DrawIslands()
@@ -579,8 +542,7 @@ namespace JitterDemo
                     box = JBBox.CreateMerged(box, body.BoundingBox);
                 }
 
-                DebugDrawer.DrawAabb(Conversion.ToXNAVector(box.Min),
-                    Conversion.ToXNAVector(box.Max),
+                DebugDrawer.DrawAabb(box.Min, box.Max,
                     island.IsActive() ? Color.Red : Color.Green);
 
             }
@@ -588,7 +550,6 @@ namespace JitterDemo
         #endregion
 
         #region Draw Cloth
-        VertexPositionColor[] triangles = new VertexPositionColor[8000];
 
         private void DrawCloth()
         {
@@ -598,17 +559,11 @@ namespace JitterDemo
                 
                 for (int i = 0; i < body.Triangles.Count; i++)
                 {
-                    triangles[i * 3 + 0] = new VertexPositionColor(
-                        Conversion.ToXNAVector(body.Triangles[i].VertexBody1.Position), new Color(0, 0.95f, 0, 0.5f));
-
-                    triangles[i * 3 + 1] = new VertexPositionColor(
-                        Conversion.ToXNAVector(body.Triangles[i].VertexBody2.Position), new Color(0, 0.95f, 0, 0.5f));
-
-                    triangles[i * 3 + 2] = new VertexPositionColor(
-                        Conversion.ToXNAVector(body.Triangles[i].VertexBody3.Position), new Color(0, 0.95f, 0, 0.5f));
+                    DebugDrawer.DrawTriangle(body.Triangles[i].VertexBody1.Position,
+                        body.Triangles[i].VertexBody2.Position,
+                        body.Triangles[i].VertexBody3.Position,
+                        new Color(0, 0.95f, 0, 0.5f));
                 }
-
-                DebugDrawer.DrawTriangle(triangles,body.Triangles.Count);
 
                 this.GraphicsDevice.RasterizerState = normal;
 

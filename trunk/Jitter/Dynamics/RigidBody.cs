@@ -33,7 +33,7 @@ namespace Jitter.Dynamics
     /// <summary>
     /// The RigidBody class.
     /// </summary>
-    public class RigidBody : IBroadphaseEntity, IEquatable<RigidBody>, IComparable<RigidBody>
+    public class RigidBody : IBroadphaseEntity, IDebugDrawable, IEquatable<RigidBody>, IComparable<RigidBody>
     {
         [Flags]
         public enum DampingType { None = 0x00, Angular = 0x01, Linear = 0x02 }
@@ -294,6 +294,7 @@ namespace Jitter.Dynamics
         {
             if (useShapeMassProperties) SetMassProperties();
             Update();
+            UpdateHullData();
         }
 
         /// <summary>
@@ -488,6 +489,50 @@ namespace Jitter.Dynamics
         public bool IsStaticOrInactive
         {
             get { return (!this.isActive || this.isStatic); }
+        }
+
+        private bool enableDebugDraw = false;
+        public bool EnableDebugDraw
+        {
+            get { return enableDebugDraw; }
+            set
+            {
+                enableDebugDraw = value;
+                UpdateHullData();
+            }
+        }
+
+        private List<JVector> hullPoints = new List<JVector>();
+
+        private void UpdateHullData()
+        {
+            hullPoints.Clear();
+
+            if(enableDebugDraw) shape.MakeHull(ref hullPoints, 4);
+        }
+
+
+        public void DebugDraw(IDebugDrawer drawer)
+        {
+            JVector pos1,pos2,pos3;
+
+            for(int i = 0;i<hullPoints.Count;i+=3)
+            {
+                pos1 = hullPoints[i + 0];
+                pos2 = hullPoints[i + 1];
+                pos3 = hullPoints[i + 2];
+
+                JVector.Transform(ref pos1, ref orientation, out pos1);
+                JVector.Add(ref pos1, ref position, out pos1);
+
+                JVector.Transform(ref pos2, ref orientation, out pos2);
+                JVector.Add(ref pos2, ref position, out pos2);
+
+                JVector.Transform(ref pos3, ref orientation, out pos3);
+                JVector.Add(ref pos3, ref position, out pos3);
+
+                drawer.DrawTriangle(pos1, pos2, pos3);
+            }
         }
     }
 }
