@@ -166,15 +166,5 @@ namespace Jitter.Dynamics.Constraints
             if(!body2.IsStatic) body2.angularVelocity += JVector.Transform(-1.0f * lambda, body2.invInertiaWorld);
         }
 
-        /// <summary>
-        /// This method is used to debug draw the constraints.
-        /// </summary>
-        /// <param name="lineList">A list of <see cref="JVector"/> to which lines (definied trough two points)
-        /// are added.</param>
-        /// <param name="pointList">A list of <see cref="JVector"/> defining points.</param>
-        public override void AddToDebugDrawList(List<JVector> lineList, List<JVector> pointList)
-        {
-            // not used
-        }
     }
 }

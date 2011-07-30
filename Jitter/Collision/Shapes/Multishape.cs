@@ -123,6 +123,11 @@ namespace Jitter.Collision.Shapes
             }
         }
 
+        public override void MakeHull(ref List<JVector> triangleList, int generationThreshold)
+        {
+            throw new NotImplementedException();
+        }
+
 
         /// <summary>
         /// Calculates the inertia of a box with the sides of the multishape.

@@ -46,7 +46,7 @@ namespace Jitter.Dynamics.Constraints
     /// <summary>
     /// A constraints forces a body to behave in a specific way.
     /// </summary>
-    public abstract class Constraint : IConstraint, IDebugDraw, IComparable<Constraint>
+    public abstract class Constraint : IConstraint, IDebugDrawable, IComparable<Constraint>
     {
         internal RigidBody body1;
         internal RigidBody body2;
@@ -85,14 +85,6 @@ namespace Jitter.Dynamics.Constraints
         }
 
         /// <summary>
-        /// This method is used to debug draw the constraints.
-        /// </summary>
-        /// <param name="lineList">A list of <see cref="JVector"/> to which lines (definied trough two points)
-        /// are added.</param>
-        /// <param name="pointList">A list of <see cref="JVector"/> defining points.</param>
-        public abstract void AddToDebugDrawList(List<JVector> lineList,List<JVector> pointList);
-
-        /// <summary>
         /// Called once before iteration starts.
         /// </summary>
         /// <param name="timestep">The simulation timestep</param>
@@ -109,6 +101,11 @@ namespace Jitter.Dynamics.Constraints
             if (other.instance < this.instance) return -1;
             else if (other.instance > this.instance) return 1;
             else return 0;
+        }
+
+        public virtual void DebugDraw(IDebugDrawer drawer)
+        {
+            //throw new NotImplementedException();
         }
     }
 }

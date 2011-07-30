@@ -172,18 +172,11 @@ namespace Jitter.Dynamics.Constraints
             }
         }
 
-        /// <summary>
-        /// This method is used to debug draw the constraints.
-        /// </summary>
-        /// <param name="lineList">A list of <see cref="JVector"/> to which lines (definied trough two points)
-        /// are added.</param>
-        /// <param name="pointList">A list of <see cref="JVector"/> defining points.</param>
-        public override void AddToDebugDrawList(List<JVector> lineList, List<JVector> pointList)
+        public override void DebugDraw(IDebugDrawer drawer)
         {
-            lineList.Add(body1.position + r1);
-            lineList.Add(body1.position + r1 + JVector.Transform(lineNormal, body1.orientation) * 100.0f);
+            drawer.DrawLine(body1.position + r1,
+                body1.position + r1 + JVector.Transform(lineNormal, body1.orientation) * 100.0f);
         }
-
 
     }
 }
