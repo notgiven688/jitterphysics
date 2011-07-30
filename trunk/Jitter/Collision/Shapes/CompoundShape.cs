@@ -141,6 +141,24 @@ namespace Jitter.Collision.Shapes
             return true;
         }
 
+        public override void MakeHull(ref List<JVector> triangleList, int generationThreshold)
+        {
+            List<JVector> triangles = new List<JVector>();
+
+            for (int i = 0; i < shapes.Length; i++)
+            {
+                shapes[i].Shape.MakeHull(ref triangles, 4);
+                for (int e = 0; e < triangles.Count; e++)
+                {
+                    JVector pos = triangles[e];
+                    JVector.Transform(ref pos,ref shapes[i].orientation,out pos);
+                    JVector.Add(ref pos, ref shapes[i].position,out pos);
+                    triangleList.Add(pos);
+                }
+                triangles.Clear();
+            }
+        }
+
         /// <summary>
         /// Translate all subshapes in the way that the center of mass is
         /// in (0,0,0)
