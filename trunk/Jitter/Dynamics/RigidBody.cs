@@ -508,7 +508,7 @@ namespace Jitter.Dynamics
         {
             hullPoints.Clear();
 
-            if(enableDebugDraw) shape.MakeHull(ref hullPoints, 4);
+            if(enableDebugDraw) shape.MakeHull(ref hullPoints, 3);
         }
 
 
