@@ -150,7 +150,7 @@ namespace Jitter.Collision.Shapes
             // surfaceTriList
             while (activeTriList.Count > 0)
             {
-                ClipTriangle tri = (ClipTriangle)activeTriList.Pop();
+                ClipTriangle tri = activeTriList.Pop();
 
                 JVector p1; SupportMapping(ref tri.n1, out p1);
                 JVector p2; SupportMapping(ref tri.n2, out p2);
@@ -204,9 +204,12 @@ namespace Jitter.Collision.Shapes
                 }
                 else
                 {
-                    triangleList.Add(p1);
-                    triangleList.Add(p2);
-                    triangleList.Add(p3);
+                    if (((p3 - p1) % (p2 - p1)).LengthSquared() > JMath.Epsilon)
+                    {
+                        triangleList.Add(p1);
+                        triangleList.Add(p2);
+                        triangleList.Add(p3);
+                    }
                 }
             }
         }
@@ -265,101 +268,66 @@ namespace Jitter.Collision.Shapes
         }
         
         /// <summary>
-        /// Calculated the inertia of the shape relative to the center of mass.
+        /// Calculates the inertia of the shape relative to the center of mass.
         /// </summary>
         /// <param name="shape"></param>
         /// <param name="centerOfMass"></param>
-        /// <param name="inertia"></param>
+        /// <param name="inertia">Returns the inertia relative to the center of mass, not to the origin</param>
         /// <returns></returns>
         #region  public static float CalculateMassInertia(Shape shape, out JVector centerOfMass, out JMatrix inertia)
         public static float CalculateMassInertia(Shape shape, out JVector centerOfMass,
             out JMatrix inertia)
         {
-            // TODO: do something smarter here ...
-
-            if (shape is Multishape) throw new ArgumentException("Can't calculate inertia of multishapes.","shape");
-
             float mass = 0.0f;
+            centerOfMass = JVector.Zero; inertia = JMatrix.Zero;
 
-            List<JVector> massPoints = new List<JVector>();
-            JVector testVector;
+            if (shape is Multishape) throw new ArgumentException("Can't calculate inertia of multishapes.", "shape");
 
-            int subdivision = 25;
+            // build a triangle hull around the shape
+            List<JVector> hullTriangles = new List<JVector>();
+            shape.MakeHull(ref hullTriangles, 3);
 
-            JVector diff; JVector.Subtract(ref shape.boundingBox.Max, ref shape.boundingBox.Min, out diff);
+            // create inertia of tetrahedron with vertices at
+            // (0,0,0) (1,0,0) (0,1,0) (0,0,1)
+            float a = 1.0f / 60.0f, b = 1.0f / 120.0f;
+            JMatrix C = new JMatrix(a, b, b, b, a, b, b, b, a);
 
-            if (diff.IsNearlyZero())
-                throw new InvalidOperationException("BoundingBox volume of the shape is zero. Try to call CalculateLocalBoundingBox first.");
-
-            for (int i = 0; i < subdivision; i++)
+            for (int i = 0; i < hullTriangles.Count; i += 3)
             {
-                for (int e = 0; e < subdivision; e++)
-                {
-                    for (int k = 0; k < subdivision; k++)
-                    {
-                        testVector.X = shape.boundingBox.Min.X + (diff.X / (float)subdivision) * ((float)i);
-                        testVector.Y = shape.boundingBox.Min.Y + (diff.Y / (float)subdivision) * ((float)e);
-                        testVector.Z = shape.boundingBox.Min.Z + (diff.Z / (float)subdivision) * ((float)k);
+                JVector column0 = hullTriangles[i + 0];
+                JVector column1 = hullTriangles[i + 1];
+                JVector column2 = hullTriangles[i + 2];
 
-                        if (GJKCollide.Pointcast(shape, ref JMatrix.InternalIdentity, ref JVector.InternalZero, ref testVector))
-                        {
-                            massPoints.Add(testVector);
-                        }
-                    }
-                }
+                JMatrix A = new JMatrix(column0.X, column1.X, column2.X,
+                    column0.Y, column1.Y, column2.Y,
+                    column0.Z, column1.Z, column2.Z);
+
+                float detA = A.Determinant();
+
+                // now transform this canonical tetrahedron to the target tetrahedron
+                // inertia by a linear transformation A
+                JMatrix tetrahedronInertia = JMatrix.Multiply(A * C * JMatrix.Transpose(A), detA);
+
+                JVector tetrahedronCOM = (1.0f / 4.0f) * (hullTriangles[i + 0] + hullTriangles[i + 1] + hullTriangles[i + 2]);
+                float tetrahedronMass = (1.0f / 6.0f) * detA;
+
+                inertia += tetrahedronInertia;
+                centerOfMass += tetrahedronMass * tetrahedronCOM;
+                mass += tetrahedronMass;
             }
 
-            float m11 = 0.0f; float m22 = 0.0f; float m33 = 0.0f;
-            float m21 = 0.0f; float m31 = 0.0f; float m32 = 0.0f;
+            inertia = JMatrix.Multiply(JMatrix.Identity, inertia.Trace()) - inertia;
+            centerOfMass = centerOfMass * (1.0f / mass);
 
-            float x = 0.0f; float y = 0.0f; float z = 0.0f;
-
-            for (int i = 0; i < massPoints.Count; i++)
-            {
-                x += massPoints[i].X;
-                y += massPoints[i].Y;
-                z += massPoints[i].Z;
-
-                m11 += (massPoints[i].Y * massPoints[i].Y + massPoints[i].Z * massPoints[i].Z);
-                m22 += (massPoints[i].X * massPoints[i].X + massPoints[i].Z * massPoints[i].Z);
-                m33 += (massPoints[i].X * massPoints[i].X + massPoints[i].Y * massPoints[i].Y);
-                m21 += -massPoints[i].Y * massPoints[i].X;
-                m31 += -massPoints[i].Z * massPoints[i].X;
-                m32 += -massPoints[i].Z * massPoints[i].Y;
-            }
-
-            m11 /= (float)massPoints.Count;
-            m22 /= (float)massPoints.Count;
-            m33 /= (float)massPoints.Count;
-            m21 /= (float)massPoints.Count;
-            m31 /= (float)massPoints.Count;
-            m32 /= (float)massPoints.Count;
-
-            x /= (float)massPoints.Count;
-            y /= (float)massPoints.Count;
-            z /= (float)massPoints.Count;
-
-            inertia = JMatrix.Identity;
-            inertia.M11 = m11;
-            inertia.M22 = m22;
-            inertia.M33 = m33;
-            inertia.M21 = inertia.M12 = m21;
-            inertia.M31 = inertia.M13 = m31;
-            inertia.M32 = inertia.M23 = m32;
-
-            mass = (diff.X * diff.Y * diff.Z) * ((float)massPoints.Count / ((float)(subdivision * subdivision * subdivision)));
-            JMatrix.Multiply(ref inertia, mass, out inertia);
-
-            centerOfMass.X = x;
-            centerOfMass.Y = y;
-            centerOfMass.Z = z;
+            float x = centerOfMass.X;
+            float y = centerOfMass.Y;
+            float z = centerOfMass.Z;
 
             // now translate the inertia by the center of mass
-
             JMatrix t = new JMatrix(
-                mass * (y * y + z * z), -mass * x * y, -mass * x * z,
-                -mass * y * x, mass * (z * z + x * x), -mass * y * z,
-                -mass * z * x, -mass * z * y, mass * (x * x + y * y));
+                -mass * (y * y + z * z), mass * x * y, mass * x * z,
+                mass * y * x, -mass * (z * z + x * x), mass * y * z,
+                mass * z * x, mass * z * y, -mass * (x * x + y * y));
 
             JMatrix.Add(ref inertia, ref t, out inertia);
 

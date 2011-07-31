@@ -524,6 +524,12 @@ namespace Jitter.LinearMath
         }
         #endregion
 
+
+        public float Trace()
+        {
+            return this.M11 + this.M22 + this.M33;
+        }
+
         /// <summary>
         /// Adds two matrices.
         /// </summary>
