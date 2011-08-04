@@ -19,7 +19,8 @@ namespace JitterDemo
 
         Model model;
 
-        public ConvexHullObject(Game game) : base(game)
+        public ConvexHullObject(Game game)
+            : base(game)
         {
 
         }
@@ -103,7 +104,7 @@ namespace JitterDemo
                 }
             }
         }
-        
+
         static ConvexHullShape cvhs = null;
 
 
@@ -142,12 +143,12 @@ namespace JitterDemo
             ConvexHullShape hullShape = body.Shape as ConvexHullShape;
 
             Matrix world = Conversion.ToXNAMatrix(body.Orientation);
-            
+
             // RigidBody.Position gives you the position of the center of mass of the shape.
             // But this is not the center of our graphical represantion, use the
             // "shift" property of the more complex shapes to deal with this.
             world.Translation = Conversion.ToXNAVector(body.Position +
-                JVector.Transform(hullShape.Shift,body.Orientation));
+                JVector.Transform(hullShape.Shift, body.Orientation));
 
 
             Matrix[] boneTransforms = new Matrix[model.Bones.Count];

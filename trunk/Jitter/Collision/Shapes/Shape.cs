@@ -97,9 +97,12 @@ namespace Jitter.Collision.Shapes
         };
 
         /// <summary>
-        /// Hull making. Based/Completely from
-        /// http://www.xbdev.net/physics/MinkowskiDifference/index.php
+        /// Hull making.
         /// </summary>
+        /// <remarks>Based/Completely from
+        /// http://www.xbdev.net/physics/MinkowskiDifference/index.php
+        /// I don't (100%) see why this should always work.
+        /// </remarks>
         /// <param name="triangleList"></param>
         /// <param name="generationThreshold"></param>
         public virtual void MakeHull(ref List<JVector> triangleList, int generationThreshold)

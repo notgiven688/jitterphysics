@@ -57,23 +57,8 @@ namespace JitterDemo
         RasterizerState cullMode;
         RasterizerState normal;
 
-        private class TestShape : Shape
-        {
-            public override void SupportMapping(ref JVector direction, out JVector result)
-            {
-                result.X = (float)Math.Sign(direction.X) * 0.5f;
-                result.Y = (float)Math.Sign(direction.Y) * 0.5f;
-                result.Z = (float)Math.Sign(direction.Z) * 0.5f;
-
-                result += new JVector(3f);
-            }
-        }
-
         public JitterDemo()
         {
-            JVector com;JMatrix inertia;
-            float mass = Shape.CalculateMassInertia(new TestShape(), out com, out inertia);
-
             this.IsMouseVisible = true;
             graphics = new GraphicsDeviceManager(this);
 
@@ -613,11 +598,7 @@ namespace JitterDemo
             // DrawIslands();
             DrawJitterDebugInfo();
 
-            //GraphicsDevice.RasterizerState = wireframe;
-
             base.Draw(gameTime);
-
-           // GraphicsDevice.RasterizerState = normal;
         }
 
 
