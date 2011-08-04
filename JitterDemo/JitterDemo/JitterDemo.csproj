@@ -115,7 +115,6 @@
     <Compile Include="Forces\ForceGenerator.cs" />
     <Compile Include="JitterDemo.cs" />
     <Compile Include="PhysicsObjects\ConvexHullObject.cs" />
-    <Compile Include="PhysicsObjects\TerrainObject.cs" />
     <Compile Include="PhysicsObjects\Vehicle\CarObject.cs" />
     <Compile Include="PhysicsObjects\Vehicle\DefaultCar.cs" />
     <Compile Include="PhysicsObjects\Vehicle\Wheel.cs" />

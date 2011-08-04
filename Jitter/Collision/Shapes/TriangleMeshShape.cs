@@ -98,6 +98,22 @@ namespace Jitter.Collision.Shapes
             return potentialTriangles.Count;
         }
 
+        public override void MakeHull(ref List<JVector> triangleList, int generationThreshold)
+        {
+            JBBox large = JBBox.LargeBox;
+
+            List<int> indices = new List<int>();
+            octree.GetTrianglesIntersectingtAABox(indices, ref large);
+
+            for (int i = 0; i < indices.Count; i++)
+            {
+                triangleList.Add(octree.GetVertex(octree.GetTriangleVertexIndex(i).I0));
+                triangleList.Add(octree.GetVertex(octree.GetTriangleVertexIndex(i).I1));
+                triangleList.Add(octree.GetVertex(octree.GetTriangleVertexIndex(i).I2));
+            }
+
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -172,17 +188,6 @@ namespace Jitter.Collision.Shapes
             #endregion
 
             box.Transform(ref orientation);
-
-            //JVector[] corners = JBBox.CornersPool.GetNew();
-            //box.GetCorners(corners);
-
-            //for (int i = 0; i < 8; i++)
-            //{
-            //    JVector.Transform(ref corners[i], ref orientation, out corners[i]);
-            //}
-
-            //box = JBBox.CreateFromPoints(corners);
-            //JBBox.CornersPool.GiveBack(corners);
         }
 
         private bool flipNormal = false;

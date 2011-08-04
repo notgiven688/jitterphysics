@@ -246,6 +246,22 @@ namespace Jitter.Collision.Shapes
             box.Transform(ref orientation);
         }
 
+        public override void MakeHull(ref List<JVector> triangleList, int generationThreshold)
+        {
+            for (int index = 0; index < (heightsLength0 - 1) * (heightsLength1 - 1); index++)
+            {
+                int quadIndexX = index % (heightsLength0 - 1);
+                int quadIndexZ = index / (heightsLength0 - 1);
+
+                triangleList.Add(new JVector((0 + quadIndexX + 0) * scaleX, heights[0 + quadIndexX + 0, 0 + quadIndexZ + 0], (0 + quadIndexZ + 0) * scaleZ));
+                triangleList.Add(new JVector((0 + quadIndexX + 1) * scaleX, heights[0 + quadIndexX + 1, 0 + quadIndexZ + 0], (0 + quadIndexZ + 0) * scaleZ));
+                triangleList.Add(new JVector((0 + quadIndexX + 0) * scaleX, heights[0 + quadIndexX + 0, 0 + quadIndexZ + 1], (0 + quadIndexZ + 1) * scaleZ));
+
+                triangleList.Add(new JVector((0 + quadIndexX + 1) * scaleX, heights[0 + quadIndexX + 1, 0 + quadIndexZ + 0], (0 + quadIndexZ + 0) * scaleZ));
+                triangleList.Add(new JVector((0 + quadIndexX + 1) * scaleX, heights[0 + quadIndexX + 1, 0 + quadIndexZ + 1], (0 + quadIndexZ + 1) * scaleZ));
+                triangleList.Add(new JVector((0 + quadIndexX + 0) * scaleX, heights[0 + quadIndexX + 0, 0 + quadIndexZ + 1], (0 + quadIndexZ + 1) * scaleZ));
+            }
+        }
 
         /// <summary>
         /// SupportMapping. Finds the point in the shape furthest away from the given direction.

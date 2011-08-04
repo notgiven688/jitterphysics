@@ -34,6 +34,7 @@ namespace JitterDemo.Scenes
             body.Position -= new JVector(50, 0, 50);
             body.IsStatic = true;
             body.Tag = BodyTag.DontDrawMe;
+            //body.EnableDebugDraw = true;
             Demo.World.AddBody(body);
 
             AddCar(new JVector(0, 4, 0));

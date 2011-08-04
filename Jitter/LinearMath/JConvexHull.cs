@@ -69,7 +69,7 @@ namespace Jitter.LinearMath
                     {
                         JMatrix rot = JMatrix.CreateRotationX(JMath.PiOver2 / iterations * i) *
                          JMatrix.CreateRotationY(JMath.PiOver2 / iterations * e) *
-                         JMatrix.CreateRotationY(JMath.PiOver2 / iterations * k);
+                         JMatrix.CreateRotationZ(JMath.PiOver2 / iterations * k);
 
                         JVector vec0 = JVector.Transform(JVector.Right, rot);
                         JVector vec1 = JVector.Transform(JVector.Up, rot);

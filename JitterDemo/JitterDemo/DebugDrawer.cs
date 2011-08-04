@@ -54,14 +54,14 @@ namespace JitterDemo
                 TriangleList = temp;
             }
 
-            TriangleList[triangleIndex - 3].Color = color;
-            TriangleList[triangleIndex - 3].Position = Conversion.ToXNAVector(p0);
-
             TriangleList[triangleIndex - 2].Color = color;
-            TriangleList[triangleIndex - 2].Position = Conversion.ToXNAVector(p1);
+            TriangleList[triangleIndex - 2].Position = Conversion.ToXNAVector(p0);
 
             TriangleList[triangleIndex - 1].Color = color;
-            TriangleList[triangleIndex - 1].Position = Conversion.ToXNAVector(p2);
+            TriangleList[triangleIndex - 1].Position = Conversion.ToXNAVector(p1);
+
+            TriangleList[triangleIndex - 3].Color = color;
+            TriangleList[triangleIndex - 3].Position = Conversion.ToXNAVector(p2);
         }
 
         private void SetElement(ref JVector v, int index, float value)
@@ -128,7 +128,7 @@ namespace JitterDemo
 
             basicEffect.View = demo.Camera.View;
             basicEffect.Projection = demo.Camera.Projection;
-            
+  
 
             foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
             {

@@ -104,6 +104,7 @@ namespace JitterDemo.Scenes
             TriangleMeshShape tms = new TriangleMeshShape(octree);
             RigidBody body = new RigidBody(tms);
             body.IsStatic = true;
+            //body.EnableDebugDraw = true;
             body.Tag = BodyTag.DontDrawMe;
 
             Demo.World.AddBody(body);
