@@ -84,18 +84,24 @@ namespace Jitter.Collision
 
         // Added by 'noone' to prevent highly symmetric cases to
         // update the whole tree at once.
-        private const float SettingsRndExtension = 0.1f;
+        private float settingsRndExtension = 0.1f;
 
         private int _root;
 
         public int Root { get { return _root; } }
         public DynamicTreeNode<T>[] Nodes { get { return _nodes; } }
 
+        public DynamicTree()
+            : this(0.1f)
+        {
+        }
+
         /// <summary>
         /// Constructing the tree initializes the node pool.
         /// </summary>
-        public DynamicTree()
+        public DynamicTree(float rndExtension)
         {
+            settingsRndExtension = rndExtension;
             _root = NullNode;
 
             _nodeCapacity = 16;
@@ -123,7 +129,7 @@ namespace Jitter.Collision
         {
             int proxyId = AllocateNode();
 
-            _nodes[proxyId].MinorRandomExtension = (float)rnd.NextDouble() * SettingsRndExtension;
+            _nodes[proxyId].MinorRandomExtension = (float)rnd.NextDouble() * settingsRndExtension;
 
             // Fatten the aabb.
             JVector r = new JVector(_nodes[proxyId].MinorRandomExtension);
