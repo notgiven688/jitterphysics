@@ -37,42 +37,54 @@ namespace Jitter.Dynamics
     /// Represents a list of contacts. Every ContactList 
     /// has a maximum of four contacts.
     /// </summary>
-    public class ContactList : List<Contact>
+    public class ContactList
     {
-        public ContactList() : base(4) { }
+        // #region TODO: Write an implementation which only has 4 elements.
+        Contact[] contacts = new Contact[4];
+        int count = 0;
 
-        #region TODO: Write an implementation which only has 4 elements.
-        //Contact[] contacts = new Contact[4];
-        //int count = 0;
+        public void Add(Contact contact)
+        {
+            contacts[count] = contact;
+            count++;
+        }
 
-        //public void Add(Contact contact)
-        //{
-        //    contacts[count] = contact;
-        //    count++;
-        //}
+        public int Count { get { return count; } }
 
-        //public int Count { get { return count; } }
+        public Contact this[int index]
+        {
+            get
+            {
+                return contacts[index];
+            }
+        }
 
-        //public Contact this[int index]
-        //{
-        //    get
-        //    {
-        //        return contacts[index];
-        //    }
-        //}
+        public void RemoveAt(int index)
+        {
+            if (index == 2)
+            {
+                contacts[2] = contacts[3];
+            }
+            else if (index == 1)
+            {
+                contacts[1] = contacts[2];
+                contacts[2] = contacts[3];
+            }
+            else if (index == 0)
+            {
+                contacts[0] = contacts[1];
+                contacts[1] = contacts[2];
+                contacts[2] = contacts[3];
+            }
+            
+            count--;
+        }
 
-        //public void RemoveAt(int index)
-        //{
-        //    if (count == 0) return;
-        //    contacts[index] = contacts[count - 1];
-        //    count--;
-        //}
-
-        //public void Clear()
-        //{
-        //    count = 0;
-        //}
-        #endregion
+        public void Clear()
+        {
+            count = 0;
+        }
+        //#endregion
     }
 
     /// <summary>
