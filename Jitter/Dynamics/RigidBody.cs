@@ -239,6 +239,16 @@ namespace Jitter.Dynamics
         }
 
         /// <summary>
+        /// Returns the torque which acts this timestep on the body.
+        /// </summary>
+        public JVector Torque { get { return torque; } }
+
+        /// <summary>
+        /// Returns the force which acts this timestep on the body.
+        /// </summary>
+        public JVector Force { get { return force; } }
+
+        /// <summary>
         /// Adds torque to the body. The torque gets applied
         /// the next time <see cref="World.Step"/> is called. The 'impact'
         /// of the torque depends on the time it is applied to a body - so
