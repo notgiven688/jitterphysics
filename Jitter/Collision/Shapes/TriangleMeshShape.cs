@@ -209,6 +209,7 @@ namespace Jitter.Collision.Shapes
             JVector.Add(ref sum, ref vecs[2], out sum);
             JVector.Multiply(ref sum, 1.0f / 3.0f, out sum);
 
+      
             geomCen = sum;
 
             JVector.Subtract(ref vecs[1], ref vecs[0], out sum);

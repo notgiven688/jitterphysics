@@ -128,6 +128,7 @@ namespace JitterDemo
 
             basicEffect.View = demo.Camera.View;
             basicEffect.Projection = demo.Camera.Projection;
+
   
 
             foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)

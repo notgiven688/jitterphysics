@@ -52,6 +52,29 @@ namespace JitterDemo.Scenes
             unique.Clear();
         }
 
+        private void BuildLattice(List<TriangleVertexIndices> indices, List<JVector> vertices)
+        {
+            int count = 30;
+
+            for (int i = 0; i < count; i++)
+            {
+                for (int e = 0; e < count; e++)
+                {
+                    vertices.Add(new JVector(i, 0, e));
+                }
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                for (int e = 0; e < count; e++)
+                {
+
+                }
+            }
+
+
+        }
+
         public override void Build()
         {
             AddGround();
@@ -88,20 +111,20 @@ namespace JitterDemo.Scenes
 
             Demo.World.AddBody(softBody);
 
-            indices.Clear(); vertices.Clear();
-            model = this.Demo.Content.Load<Model>("cloth");
+            //indices.Clear(); vertices.Clear();
+            //model = this.Demo.Content.Load<Model>("cloth");
 
-            ConvexHullObject.ExtractData(vertices, indices, model);
-            RemoveDuplicateVertices(indices, vertices);
+            //ConvexHullObject.ExtractData(vertices, indices, model);
+            //RemoveDuplicateVertices(indices, vertices);
 
-            SoftBody cloth = new SoftBody(indices, vertices);
+            SoftBody cloth = new SoftBody(20,20,0.4f);
 
             cloth.Translate(new JVector(0, 10, 10));
 
-            cloth.VertexBodies[2].IsStatic = true;
-            cloth.VertexBodies[124].IsStatic = true;
-            cloth.VertexBodies[234].IsStatic = true;
-            cloth.VertexBodies[356].IsStatic = true;
+            cloth.VertexBodies[0].IsStatic = true;
+            cloth.VertexBodies[19].IsStatic = true;
+           // cloth.VertexBodies[399].IsStatic = true;
+           // cloth.VertexBodies[380].IsStatic = true;
 
             cloth.SetSpringValues(0.1f, 0.01f);
 

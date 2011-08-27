@@ -366,6 +366,81 @@ namespace Jitter.Dynamics
 
         bool active = true;
 
+
+        /// <summary>
+        /// Creates a 2D-Cloth. Connects Nearest Neighbours (4x) and adds additional
+        /// shear/bend constraints (8x).
+        /// </summary>
+        /// <param name="sizeX"></param>
+        /// <param name="sizeY"></param>
+        /// <param name="scale"></param>
+        public SoftBody(int sizeX,int sizeY, float scale)
+        {
+            List<TriangleVertexIndices> indices = new List<TriangleVertexIndices>();
+            List<JVector> vertices = new List<JVector>();
+
+            for (int i = 0; i < sizeY; i++)
+            {
+                for (int e = 0; e < sizeX; e++)
+                {
+                    vertices.Add(new JVector(i, 0, e) *scale);
+                }
+            }
+            
+            for (int i = 0; i < sizeX-1; i++)
+            {
+                for (int e = 0; e < sizeY-1; e++)
+                {
+                    TriangleVertexIndices index = new TriangleVertexIndices();
+
+                    index.I0 = (e + 0) * sizeX + i + 0;
+                    index.I1 = (e + 0) * sizeX + i + 1;
+                    index.I2 = (e + 1) * sizeX + i + 1;
+
+                    indices.Add(index);
+
+                    index.I0 = (e + 0) * sizeX + i + 0;
+                    index.I1 = (e + 1) * sizeX + i + 1;
+                    index.I2 = (e + 1) * sizeX + i + 0;
+
+                    indices.Add(index);
+
+                    index.I0 = (e + 0) * sizeX + i + 0;
+                    index.I1 = (e + 0) * sizeX + i + 1;
+                    index.I2 = (e + 1) * sizeX + i + 0;
+
+                    indices.Add(index);
+
+                    index.I0 = (e + 0) * sizeX + i + 1;
+                    index.I1 = (e + 1) * sizeX + i + 1;
+                    index.I2 = (e + 1) * sizeX + i + 0;
+
+                    indices.Add(index);    
+                }
+            }
+
+            EdgeSprings = springs.AsReadOnly();
+            VertexBodies = points.AsReadOnly();
+            Triangles = triangles.AsReadOnly();
+
+            AddPointsAndSprings(indices, vertices);
+
+            for (int i = 0; i < sizeX - 2; i++)
+            {
+                for (int e = 0; e < sizeY - 2; e++)
+                {
+                    Spring spring1 = new Spring(points[(e + 0) * sizeX + i + 0], points[(e + 0) * sizeX + i + 2]);
+                    spring1.Softness = 0.01f; spring1.BiasFactor = 0.1f;
+
+                    Spring spring2 = new Spring(points[(e + 0) * sizeX + i + 0], points[(e + 2) * sizeX + i + 0]);
+                    spring2.Softness = 0.01f; spring2.BiasFactor = 0.1f;
+
+                    springs.Add(spring1);
+                    springs.Add(spring2);
+                }
+            }
+        }
+
         public SoftBody(List<TriangleVertexIndices> indices, List<JVector> vertices)
         {
             EdgeSprings = springs.AsReadOnly();
@@ -374,6 +449,7 @@ namespace Jitter.Dynamics
             AddPointsAndSprings(indices, vertices);
             Triangles = triangles.AsReadOnly();
         }
+
 
         private float pressure = 0.0f;
         public float Pressure { get { return pressure; } set { pressure = value; } }
@@ -472,6 +548,30 @@ namespace Jitter.Dynamics
             return edges;
         }
 
+        private void AddBendEdges(HashSet<Edge> edges)
+        {
+            //Random rnd = new Random();
+
+            //for (int i = 0; i < 10000; i++)
+            //{
+            //    int rnd1 = 0, rnd2 = 0;
+
+            //    while (rnd1 == rnd2)
+            //    {
+            //        rnd1 = rnd.Next(0, points.Count);
+            //        rnd2 = rnd.Next(0, points.Count);
+            //    }
+
+            //    if ((points[rnd1].position - points[rnd2].position).Length() < 1.0f)
+            //    {
+
+            //        Edge edge = new Edge(rnd1, rnd2);
+            //        if (!edges.Contains(edge)) edges.Add(edge);
+            //    }
+            //}
+        }
+
+
         private void AddPointsAndSprings(List<TriangleVertexIndices> indices, List<JVector> vertices)
         {
             for (int i = 0; i < vertices.Count; i++)
@@ -501,6 +601,7 @@ namespace Jitter.Dynamics
             }
 
             HashSet<Edge> edges = GetEdges(indices);
+            AddBendEdges(edges);
 
             int count = 0;
 
