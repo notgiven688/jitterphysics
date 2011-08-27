@@ -552,8 +552,6 @@ namespace JitterDemo
         {
             foreach (SoftBody body in World.SoftBodies)
             {
-                this.GraphicsDevice.RasterizerState = cullMode;
-                
                 for (int i = 0; i < body.Triangles.Count; i++)
                 {
                     DebugDrawer.DrawTriangle(body.Triangles[i].VertexBody1.Position,
@@ -561,9 +559,6 @@ namespace JitterDemo
                         body.Triangles[i].VertexBody3.Position,
                         new Color(0, 0.95f, 0, 0.5f));
                 }
-
-                this.GraphicsDevice.RasterizerState = normal;
-
                 DrawDynamicTree(body);
             }
         }
@@ -598,7 +593,12 @@ namespace JitterDemo
             // DrawIslands();
             DrawJitterDebugInfo();
 
+            this.GraphicsDevice.RasterizerState = cullMode;
+                
+
             base.Draw(gameTime);
+
+            this.GraphicsDevice.RasterizerState = normal;
         }
 
 
