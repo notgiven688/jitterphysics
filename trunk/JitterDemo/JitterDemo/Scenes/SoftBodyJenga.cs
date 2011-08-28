@@ -119,14 +119,16 @@ namespace JitterDemo.Scenes
 
             SoftBody cloth = new SoftBody(20,20,0.4f);
 
-            cloth.Translate(new JVector(0, 10, 10));
+            cloth.Translate(new JVector(0, 11, 10));
 
             cloth.VertexBodies[0].IsStatic = true;
             cloth.VertexBodies[19].IsStatic = true;
            // cloth.VertexBodies[399].IsStatic = true;
            // cloth.VertexBodies[380].IsStatic = true;
 
-            cloth.SetSpringValues(0.1f, 0.01f);
+            cloth.SetSpringValues(SoftBody.SpringType.EdgeSpring, 0.1f, 0.01f);
+            cloth.SetSpringValues(SoftBody.SpringType.ShearSpring, 0.1f, 0.1f);
+            cloth.SetSpringValues(SoftBody.SpringType.BendSpring, 0.1f, 0.1f);
 
             Demo.World.AddBody(cloth);
         }
