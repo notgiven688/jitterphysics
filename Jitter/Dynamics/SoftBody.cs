@@ -34,6 +34,12 @@ namespace Jitter.Dynamics
 {
     public partial class SoftBody : IBroadphaseEntity
     {
+        [Flags]
+        public enum SpringType
+        {
+            EdgeSpring = 0x02, ShearSpring = 0x04, BendSpring = 0x08
+        }
+
         #region public class Spring : Constraint
         public class Spring : Constraint
         {
@@ -43,6 +49,8 @@ namespace Jitter.Dynamics
                 LimitMaximumDistance,
                 LimitMinimumDistance,
             }
+
+            public SpringType SpringType { get; set; }
 
             private float biasFactor = 0.1f;
             private float softness = 0.01f;
@@ -340,6 +348,7 @@ namespace Jitter.Dynamics
         }
         #endregion
 
+
         internal List<Spring> springs = new List<Spring>();
         internal List<MassPoint> points = new List<MassPoint>();
         private List<Triangle> triangles = new List<Triangle>();
@@ -368,8 +377,8 @@ namespace Jitter.Dynamics
 
 
         /// <summary>
-        /// Creates a 2D-Cloth. Connects Nearest Neighbours (4x) and adds additional
-        /// shear/bend constraints (8x).
+        /// Creates a 2D-Cloth. Connects Nearest Neighbours (4x, called EdgeSprings) and adds additional
+        /// shear/bend constraints (4xShear+4xBend).
         /// </summary>
         /// <param name="sizeX"></param>
         /// <param name="sizeY"></param>
@@ -425,6 +434,14 @@ namespace Jitter.Dynamics
 
             AddPointsAndSprings(indices, vertices);
 
+            foreach (Spring spring in springs)
+            {
+                JVector delta = spring.body1.position - spring.body2.position;
+
+                if (delta.Z != 0.0f && delta.X != 0.0f) spring.SpringType = SpringType.ShearSpring;
+                else spring.SpringType = SpringType.EdgeSpring;
+            }
+
             for (int i = 0; i < sizeX - 2; i++)
             {
                 for (int e = 0; e < sizeY - 2; e++)
@@ -434,6 +451,9 @@ namespace Jitter.Dynamics
 
                     Spring spring2 = new Spring(points[(e + 0) * sizeX + i + 0], points[(e + 2) * sizeX + i + 0]);
                     spring2.Softness = 0.01f; spring2.BiasFactor = 0.1f;
+
+                    spring1.SpringType = SpringType.BendSpring;
+                    spring2.SpringType = SpringType.BendSpring;
 
                     springs.Add(spring1);
                     springs.Add(spring2);
@@ -548,30 +568,6 @@ namespace Jitter.Dynamics
             return edges;
         }
 
-        private void AddBendEdges(HashSet<Edge> edges)
-        {
-            //Random rnd = new Random();
-
-            //for (int i = 0; i < 10000; i++)
-            //{
-            //    int rnd1 = 0, rnd2 = 0;
-
-            //    while (rnd1 == rnd2)
-            //    {
-            //        rnd1 = rnd.Next(0, points.Count);
-            //        rnd2 = rnd.Next(0, points.Count);
-            //    }
-
-            //    if ((points[rnd1].position - points[rnd2].position).Length() < 1.0f)
-            //    {
-
-            //        Edge edge = new Edge(rnd1, rnd2);
-            //        if (!edges.Contains(edge)) edges.Add(edge);
-            //    }
-            //}
-        }
-
-
         private void AddPointsAndSprings(List<TriangleVertexIndices> indices, List<JVector> vertices)
         {
             for (int i = 0; i < vertices.Count; i++)
@@ -601,7 +597,6 @@ namespace Jitter.Dynamics
             }
 
             HashSet<Edge> edges = GetEdges(indices);
-            AddBendEdges(edges);
 
             int count = 0;
 
@@ -609,6 +604,7 @@ namespace Jitter.Dynamics
             {
                 Spring spring = new Spring(points[edge.Index1], points[edge.Index2]);
                 spring.Softness = 0.01f; spring.BiasFactor = 0.1f;
+                spring.SpringType = SpringType.EdgeSpring;
 
                 springs.Add(spring);
                 count++;
@@ -618,8 +614,19 @@ namespace Jitter.Dynamics
 
         public void SetSpringValues(float bias, float softness)
         {
+            SetSpringValues(SpringType.EdgeSpring | SpringType.ShearSpring | SpringType.BendSpring,
+                bias, softness);
+        }
+
+        public void SetSpringValues(SpringType type, float bias, float softness)
+        {
             for (int i = 0; i < springs.Count; i++)
-            { springs[i].Softness = softness; springs[i].BiasFactor = bias; }
+            {
+                if ((springs[i].SpringType & type) != 0)
+                {
+                    springs[i].Softness = softness; springs[i].BiasFactor = bias;
+                }
+            }
         }
 
         public void Update(float timestep)
