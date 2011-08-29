@@ -222,6 +222,7 @@ namespace Jitter.Dynamics
                 : base(shape, material)
             {
                 this.isMassPoint = true; this.SoftBody = owner;
+                useShapeMassProperties = false;
             }
 
             public override void Update()
@@ -597,7 +598,6 @@ namespace Jitter.Dynamics
                 for (int e = 0; e < queryList.Count; e++)
                 {
                     Triangle t = this.dynamicTree.GetUserData(queryList[e]);
-                    JVector center; t.SupportCenter(out center);
 
                     if (!(t.VertexBody1 == points[i] || t.VertexBody2 == points[i] || t.VertexBody3 == points[i]))
                     {
@@ -605,9 +605,11 @@ namespace Jitter.Dynamics
                             ref JMatrix.InternalIdentity, ref points[i].position, ref JVector.InternalZero,
                             out point, out normal, out penetration))
                         {
-                            int nearest = CollisionSystem.FindNearestTrianglePoint(this, queryList[e], ref point);
+                            //int nearest = CollisionSystem.FindNearestTrianglePoint(this, queryList[e], ref point);
 
-                            collision(points[i], points[nearest], point, point, normal, penetration);
+                            collision(points[i], t.VertexBody1, point, point, normal, penetration);
+                            collision(points[i], t.VertexBody2, point, point, normal, penetration);
+                            collision(points[i], t.VertexBody3, point, point, normal, penetration);
                         }
                     }
                 }
@@ -622,6 +624,7 @@ namespace Jitter.Dynamics
             {
                 MassPoint point = new MassPoint(sphere, this,material);
                 point.Position = vertices[i];
+
                 point.Mass = 0.1f;
 
                 points.Add(point);
