@@ -260,7 +260,7 @@ namespace Jitter.Dynamics
             JVector.Add(ref torque, ref this.torque, out this.torque);
         }
 
-        private bool useShapeMassProperties = true;
+        protected bool useShapeMassProperties = true;
 
         /// <summary>
         /// By calling this method the shape inertia and mass is used.
