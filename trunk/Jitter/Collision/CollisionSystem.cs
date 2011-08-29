@@ -462,7 +462,7 @@ namespace Jitter.Collision
             }
         }
 
-        private int FindNearestTrianglePoint(SoftBody sb, int id, ref JVector point)
+        public static int FindNearestTrianglePoint(SoftBody sb, int id, ref JVector point)
         {
             SoftBody.Triangle triangle = sb.dynamicTree.GetUserData(id);
             JVector p;

@@ -227,6 +227,8 @@ namespace Jitter
         private Action<object> arbiterCallback;
         private Action<object> integrateCallback;
 
+        private CollisionDetectedHandler collisionDetectionHandler;
+
         /// <summary>
         /// Create a new instance of the <see cref="World"/> class.
         /// </summary>
@@ -252,7 +254,10 @@ namespace Jitter
             this.readOnlyIslands = islands.AsReadOnly();
 
             this.CollisionSystem = collision;
-            this.CollisionSystem.CollisionDetected += new CollisionDetectedHandler(CollisionDetected);
+
+            collisionDetectionHandler = new CollisionDetectedHandler(CollisionDetected);
+
+            this.CollisionSystem.CollisionDetected += collisionDetectionHandler;
 
             this.arbiterMap = new ArbiterMap();
 
@@ -561,15 +566,17 @@ namespace Jitter
             events.RaiseWorldPreStep(timestep);
             foreach (RigidBody body in rigidBodies) body.PreStep();
             UpdateContacts();
-            CollisionSystem.Detect(multithread);
-            BuildIslands();
-            CheckDeactivation();
 
             foreach (SoftBody body in softbodies)
             {
                 body.Update(timestep);
                 body.AddPressureForces(timestep);
+                body.DoSelfCollision(collisionDetectionHandler);
             }
+
+            CollisionSystem.Detect(multithread);
+            BuildIslands();
+            CheckDeactivation();
 
             IntegrateForces();
             HandleArbiter(contactIterations, multithread);
@@ -588,6 +595,15 @@ namespace Jitter
             sw.Stop(); debugTimes[(int)DebugType.UpdateContacts] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
+            foreach (SoftBody body in softbodies)
+            {
+                body.Update(timestep);
+                body.AddPressureForces(timestep);
+                body.DoSelfCollision(collisionDetectionHandler);
+            }
+            sw.Stop(); debugTimes[(int)DebugType.ClothUpdate] = sw.Elapsed.TotalMilliseconds;
+
+            sw.Reset(); sw.Start();
             CollisionSystem.Detect(multithread);
             sw.Stop(); debugTimes[(int)DebugType.CollisionDetect] = sw.Elapsed.TotalMilliseconds;
 
@@ -598,14 +614,6 @@ namespace Jitter
             sw.Reset(); sw.Start();
             CheckDeactivation();
             sw.Stop(); debugTimes[(int)DebugType.DeactivateBodies] = sw.Elapsed.TotalMilliseconds;
-
-            sw.Reset(); sw.Start();
-            foreach(SoftBody body in softbodies)
-            {
-                body.Update(timestep);
-                body.AddPressureForces(timestep);
-            }
-            sw.Stop(); debugTimes[(int)DebugType.ClothUpdate] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
             IntegrateForces();
