@@ -216,13 +216,13 @@ namespace Jitter.Dynamics
         #region public class MassPoint : RigidBody
         public class MassPoint : RigidBody
         {
-            private const float sphereSize = 0.1f;
-
-            private static Shape sphereShape = new SphereShape(sphereSize);
-
             public SoftBody SoftBody { get; private set; }
 
-            public MassPoint(SoftBody owner, Material material) : base(sphereShape, material) { this.isMassPoint = true; this.SoftBody = owner; }
+            public MassPoint(Shape shape, SoftBody owner, Material material)
+                : base(shape, material)
+            {
+                this.isMassPoint = true; this.SoftBody = owner;
+            }
 
             public override void Update()
             {
@@ -230,8 +230,9 @@ namespace Jitter.Dynamics
                 this.invInertia = this.invInertiaWorld = JMatrix.Zero;
                 this.invOrientation = this.orientation = JMatrix.Identity;
 
-                this.boundingBox.Min = new JVector(-sphereSize) + position;
-                this.boundingBox.Max = new JVector(sphereSize) + position;
+                this.boundingBox = base.Shape.boundingBox;
+                this.boundingBox.Min += position;
+                this.boundingBox.Max += position;
 
                 angularVelocity.MakeZero();
             }
@@ -272,6 +273,7 @@ namespace Jitter.Dynamics
             internal JBBox boundingBox;
             internal int dynamicTreeID;
             internal TriangleVertexIndices indices;
+
 
             public JBBox BoundingBox { get { return boundingBox; } }
             public int DynamicTreeID { get { return dynamicTreeID; } }
@@ -314,9 +316,6 @@ namespace Jitter.Dynamics
 
             public void SupportMapping(ref JVector direction, out JVector result)
             {
-                JVector exp;
-                JVector.Normalize(ref direction, out exp);
-                exp *= owner.triangleExpansion;
 
                 float min = JVector.Dot(ref owner.points[indices.I0].position, ref direction);
                 float dot = JVector.Dot(ref owner.points[indices.I1].position, ref direction);
@@ -335,7 +334,13 @@ namespace Jitter.Dynamics
                     minVertex = owner.points[indices.I2].position;
                 }
 
+
+                JVector exp;
+                JVector.Normalize(ref direction, out exp);
+                exp *= owner.triangleExpansion;
                 result = minVertex + exp;
+
+
             }
 
             public void SupportCenter(out JVector center)
@@ -348,6 +353,7 @@ namespace Jitter.Dynamics
         }
         #endregion
 
+        private SphereShape sphere = new SphereShape(0.1f);
 
         internal List<Spring> springs = new List<Spring>();
         internal List<MassPoint> points = new List<MassPoint>();
@@ -359,8 +365,14 @@ namespace Jitter.Dynamics
 
         protected float triangleExpansion = 0.1f;
 
+        private bool selfCollision = false;
+
+        public bool SelfCollision { get { return selfCollision; } set { selfCollision = value; } }
+
         public float TriangleExpansion { get { return triangleExpansion; } 
             set { triangleExpansion = value; } }
+
+        public float VertexExpansion { get { return sphere.Radius; } set { sphere.Radius = value; } }
 
         private float volume = 1.0f;
         private float mass = 1.0f;
@@ -568,11 +580,47 @@ namespace Jitter.Dynamics
             return edges;
         }
 
+        List<int> queryList = new List<int>();
+
+        public void DoSelfCollision(CollisionDetectedHandler collision)
+        {
+            if (!selfCollision) return;
+
+            JVector point, normal;
+            float penetration;
+
+            for (int i = 0; i < points.Count; i++)
+            {
+                queryList.Clear();
+                this.dynamicTree.Query(queryList, ref points[i].boundingBox);
+
+                for (int e = 0; e < queryList.Count; e++)
+                {
+                    Triangle t = this.dynamicTree.GetUserData(queryList[e]);
+                    JVector center; t.SupportCenter(out center);
+
+                    if (!(t.VertexBody1 == points[i] || t.VertexBody2 == points[i] || t.VertexBody3 == points[i]))
+                    {
+                        if (XenoCollide.Detect(points[i].Shape, t, ref points[i].orientation,
+                            ref JMatrix.InternalIdentity, ref points[i].position, ref JVector.InternalZero,
+                            out point, out normal, out penetration))
+                        {
+                            int nearest = CollisionSystem.FindNearestTrianglePoint(this, queryList[e], ref point);
+
+                            collision(points[i], points[nearest], point, point, normal, penetration);
+                        }
+                    }
+                }
+            }
+        }
+                    
+                
+
         private void AddPointsAndSprings(List<TriangleVertexIndices> indices, List<JVector> vertices)
         {
             for (int i = 0; i < vertices.Count; i++)
             {
-                MassPoint point = new MassPoint(this,material);
+                MassPoint point = new MassPoint(sphere, this,material);
                 point.Position = vertices[i];
                 point.Mass = 0.1f;
 

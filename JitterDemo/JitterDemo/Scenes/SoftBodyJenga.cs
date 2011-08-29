@@ -108,25 +108,25 @@ namespace JitterDemo.Scenes
             softBody.Translate(new JVector(10, 5, 0));
             softBody.Pressure = 1000.0f;
             softBody.SetSpringValues(0.2f, 0.005f);
+            //softBody.SelfCollision = true; ;
 
             Demo.World.AddBody(softBody);
 
-            //indices.Clear(); vertices.Clear();
-            //model = this.Demo.Content.Load<Model>("cloth");
+       
+            SoftBody cloth = new SoftBody(20,20,0.3f);
 
-            //ConvexHullObject.ExtractData(vertices, indices, model);
-            //RemoveDuplicateVertices(indices, vertices);
+            cloth.TriangleExpansion = 0.1f;
+            cloth.VertexExpansion = 0.1f;
 
-            SoftBody cloth = new SoftBody(20,20,0.4f);
+            // Uncomment for selfcollision
+            //cloth.SelfCollision = true;
 
             cloth.Translate(new JVector(0, 11, 10));
 
             cloth.VertexBodies[0].IsStatic = true;
             cloth.VertexBodies[19].IsStatic = true;
-           // cloth.VertexBodies[399].IsStatic = true;
-           // cloth.VertexBodies[380].IsStatic = true;
 
-            cloth.SetSpringValues(SoftBody.SpringType.EdgeSpring, 0.1f, 0.01f);
+            cloth.SetSpringValues(SoftBody.SpringType.EdgeSpring, 0.1f, 0.1f);
             cloth.SetSpringValues(SoftBody.SpringType.ShearSpring, 0.1f, 0.1f);
             cloth.SetSpringValues(SoftBody.SpringType.BendSpring, 0.1f, 0.1f);
 
