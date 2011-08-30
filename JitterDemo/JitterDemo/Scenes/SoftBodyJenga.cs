@@ -117,8 +117,8 @@ namespace JitterDemo.Scenes
 
             // ##### Uncomment for selfcollision, all 3 lines
             //cloth.SelfCollision = true;
-            //cloth.TriangleExpansion = 0.025f;
-            //cloth.VertexExpansion = 0.1f;
+            //cloth.TriangleExpansion = 0.05f;
+            //cloth.VertexExpansion = 0.05f;
 
             cloth.Translate(new JVector(0, 10, 10));
 
