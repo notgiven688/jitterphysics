@@ -114,6 +114,7 @@
     <Compile Include="Forces\Buoyancy.cs" />
     <Compile Include="Forces\ForceGenerator.cs" />
     <Compile Include="JitterDemo.cs" />
+    <Compile Include="PhysicsObjects\ClothObject.cs" />
     <Compile Include="PhysicsObjects\ConvexHullObject.cs" />
     <Compile Include="PhysicsObjects\Vehicle\CarObject.cs" />
     <Compile Include="PhysicsObjects\Vehicle\DefaultCar.cs" />

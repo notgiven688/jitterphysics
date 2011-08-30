@@ -414,30 +414,20 @@ namespace Jitter.Dynamics
                 for (int e = 0; e < sizeY-1; e++)
                 {
                     TriangleVertexIndices index = new TriangleVertexIndices();
+                    {
 
-                    index.I0 = (e + 0) * sizeX + i + 0;
-                    index.I1 = (e + 0) * sizeX + i + 1;
-                    index.I2 = (e + 1) * sizeX + i + 1;
+                        index.I0 = (e + 0) * sizeX + i + 0;
+                        index.I1 = (e + 0) * sizeX + i + 1;
+                        index.I2 = (e + 1) * sizeX + i + 1;
 
-                    indices.Add(index);
+                        indices.Add(index);
 
-                    index.I0 = (e + 0) * sizeX + i + 0;
-                    index.I1 = (e + 1) * sizeX + i + 1;
-                    index.I2 = (e + 1) * sizeX + i + 0;
+                        index.I0 = (e + 0) * sizeX + i + 0;
+                        index.I1 = (e + 1) * sizeX + i + 1;
+                        index.I2 = (e + 1) * sizeX + i + 0;
 
-                    indices.Add(index);
-
-                    index.I0 = (e + 0) * sizeX + i + 0;
-                    index.I1 = (e + 0) * sizeX + i + 1;
-                    index.I2 = (e + 1) * sizeX + i + 0;
-
-                    indices.Add(index);
-
-                    index.I0 = (e + 0) * sizeX + i + 1;
-                    index.I1 = (e + 1) * sizeX + i + 1;
-                    index.I2 = (e + 1) * sizeX + i + 0;
-
-                    indices.Add(index);    
+                        indices.Add(index);    
+                    }
                 }
             }
 
@@ -447,6 +437,16 @@ namespace Jitter.Dynamics
 
             AddPointsAndSprings(indices, vertices);
 
+            for (int i = 0; i < sizeX - 1; i++)
+            {
+                for (int e = 0; e < sizeY - 1; e++)
+                {
+                    Spring spring = new Spring(points[(e + 0) * sizeX + i + 1], points[(e + 1) * sizeX + i + 0]);
+                    spring.Softness = 0.01f; spring.BiasFactor = 0.1f;
+                    springs.Add(spring);
+                }
+            }
+
             foreach (Spring spring in springs)
             {
                 JVector delta = spring.body1.position - spring.body2.position;
@@ -454,6 +454,7 @@ namespace Jitter.Dynamics
                 if (delta.Z != 0.0f && delta.X != 0.0f) spring.SpringType = SpringType.ShearSpring;
                 else spring.SpringType = SpringType.EdgeSpring;
             }
+
 
             for (int i = 0; i < sizeX - 2; i++)
             {
