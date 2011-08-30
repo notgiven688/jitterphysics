@@ -550,8 +550,11 @@ namespace JitterDemo
 
         private void DrawCloth()
         {
+     
             foreach (SoftBody body in World.SoftBodies)
             {
+                if (body.Tag is BodyTag && ((BodyTag)body.Tag) == BodyTag.DontDrawMe) return;
+
                 for (int i = 0; i < body.Triangles.Count; i++)
                 {
                     DebugDrawer.DrawTriangle(body.Triangles[i].VertexBody1.Position,

@@ -9,6 +9,7 @@ using Jitter.Dynamics;
 using Jitter.LinearMath;
 using Microsoft.Xna.Framework.Graphics;
 using Jitter.Collision;
+using JitterDemo.PhysicsObjects;
 
 namespace JitterDemo.Scenes
 {
@@ -112,22 +113,27 @@ namespace JitterDemo.Scenes
 
             Demo.World.AddBody(softBody);
 
-            SoftBody cloth = new SoftBody(20,20,0.3f);
+            SoftBody cloth = new SoftBody(20,20,0.4f);
 
+            // ##### Uncomment for selfcollision, all 3 lines
+            //cloth.SelfCollision = true;
+            //cloth.TriangleExpansion = 0.025f;
+            //cloth.VertexExpansion = 0.1f;
 
-            // Uncomment for selfcollision, all 3 lines
-            // cloth.SelfCollision = true;
-            // cloth.TriangleExpansion = 0.05f;
-            // cloth.VertexExpansion = 0.05f;
+            cloth.Translate(new JVector(0, 10, 10));
 
-            cloth.Translate(new JVector(0, 11, 10));
+            cloth.Material.DynamicFriction = 0.9f;
+            cloth.Material.StaticFriction = 0.95f;
 
             cloth.VertexBodies[0].IsStatic = true;
-            cloth.VertexBodies[19].IsStatic = true;
+            cloth.VertexBodies[380].IsStatic = true;
 
             cloth.SetSpringValues(SoftBody.SpringType.EdgeSpring, 0.1f, 0.01f);
             cloth.SetSpringValues(SoftBody.SpringType.ShearSpring, 0.1f, 0.01f);
-            cloth.SetSpringValues(SoftBody.SpringType.BendSpring, 0.1f, 0.01f);
+            cloth.SetSpringValues(SoftBody.SpringType.BendSpring, 0.1f, 0.1f);
+
+            // ###### Uncomment here for a better visualization
+            // Demo.Components.Add(new ClothObject(Demo, cloth));
 
             Demo.World.AddBody(cloth);
         }
