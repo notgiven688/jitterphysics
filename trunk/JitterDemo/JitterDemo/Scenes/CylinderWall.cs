@@ -10,9 +10,10 @@ using Jitter.LinearMath;
 
 namespace JitterDemo.Scenes
 {
-    class Wall : Scene
+    class CylinderWall : Scene
     {
-        public Wall(JitterDemo demo)
+
+        public CylinderWall(JitterDemo demo)
             : base(demo)
         {
         }
@@ -25,8 +26,8 @@ namespace JitterDemo.Scenes
             {
                 for (int e = 0; e < 20; e++)
                 {
-                    RigidBody body = new RigidBody(new BoxShape(new JVector(1, 1, 1f)));
-                    body.Position = new JVector(e * 1.01f + ((i%2==0) ? 0.5f : 0.0f), 0.5f + i * 1.0f, 0.0f);
+                    RigidBody body = new RigidBody(new CylinderShape(1.0f,0.5f));
+                    body.Position = new JVector(e * 1.01f + ((i % 2 == 0) ? 0.5f : 0.0f), 0.5f + i * 1.0f, 0.0f);
                     Demo.World.AddBody(body);
                 }
             }
@@ -37,7 +38,6 @@ namespace JitterDemo.Scenes
             RemoveGround();
             Demo.World.Clear();
         }
-
 
     }
 }

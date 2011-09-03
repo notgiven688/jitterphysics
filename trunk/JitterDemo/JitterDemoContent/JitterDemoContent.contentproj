@@ -92,19 +92,12 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="bunny.x">
-      <Name>bunny</Name>
-      <Importer>XImporter</Importer>
-      <Processor>ModelProcessor</Processor>
-      <ProcessorParameters_Scale>4</ProcessorParameters_Scale>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="car.fbx">
       <Name>car</Name>
       <Importer>FbxImporter</Importer>
       <Processor>ModelProcessor</Processor>
       <ProcessorParameters_RotationY>90</ProcessorParameters_RotationY>
+      <ProcessorParameters_TextureFormat>NoChange</ProcessorParameters_TextureFormat>
     </Compile>
     <Compile Include="wheel.fbx">
       <Name>wheel</Name>
@@ -119,21 +112,6 @@
       <Importer>XImporter</Importer>
       <Processor>ModelProcessor</Processor>
       <ProcessorParameters_Scale>10</ProcessorParameters_Scale>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="sphere.x">
-      <Name>sphere</Name>
-      <Importer>XImporter</Importer>
-      <Processor>ModelProcessor</Processor>
-      <ProcessorParameters_Scale>0.5</ProcessorParameters_Scale>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="cloth.png">
-      <Name>cloth</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />

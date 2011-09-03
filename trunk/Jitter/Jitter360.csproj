@@ -42,7 +42,7 @@
   </PropertyGroup>
   <ItemGroup />
   <ItemGroup>
-     <Compile Include="Collision\CollisionIsland.cs" />
+    <Compile Include="Collision\CollisionIsland.cs" />
     <Compile Include="Collision\CollisionSystem.cs" />
     <Compile Include="Collision\CollisionSystemBrute.cs" />
     <Compile Include="Collision\CollisionSystemSAP.cs" />

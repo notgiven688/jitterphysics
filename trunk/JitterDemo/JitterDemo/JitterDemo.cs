@@ -186,8 +186,6 @@ namespace JitterDemo
             KeyboardState keyState = Keyboard.GetState();
             MouseState mouseState = Mouse.GetState();
 
-           // World.Step(
-
             // let the user escape the demo
             if (keyState.IsKeyDown(Keys.Escape) || 
                 padState.IsButtonDown(Buttons.Back)) this.Exit();
