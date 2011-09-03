@@ -110,7 +110,7 @@ namespace JitterDemo
 
         protected override void LoadContent()
         {
-            model = Game.Content.Load<Model>("bunny");
+            model = Game.Content.Load<Model>("convexhull");
 
             if (cvhs == null)
             {

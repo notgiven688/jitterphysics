@@ -127,6 +127,8 @@ namespace JitterDemo.Scenes
 
             cloth.VertexBodies[0].IsStatic = true;
             cloth.VertexBodies[380].IsStatic = true;
+            cloth.VertexBodies[19].IsStatic = true;
+            cloth.VertexBodies[399].IsStatic = true;
 
             cloth.SetSpringValues(SoftBody.SpringType.EdgeSpring, 0.1f, 0.01f);
             cloth.SetSpringValues(SoftBody.SpringType.ShearSpring, 0.1f, 0.01f);
