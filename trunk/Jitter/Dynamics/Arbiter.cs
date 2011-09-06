@@ -37,7 +37,7 @@ namespace Jitter.Dynamics
     /// Represents a list of contacts. Every ContactList 
     /// has a maximum of four contacts.
     /// </summary>
-    public class ContactList
+    public class ContactList : List<Contact>
     {
         // #region TODO: Write an implementation which only has 4 elements.
         Contact[] contacts = new Contact[4];
@@ -94,7 +94,7 @@ namespace Jitter.Dynamics
     /// only keeps the best four contacts based on the area spanned by
     /// the contact points.
     /// </summary>
-    public class Arbiter
+    public class Arbiter : IBodyConnection
     {
         /// <summary>
         /// The first body.

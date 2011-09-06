@@ -26,10 +26,18 @@ using Jitter.Dynamics;
 using Jitter.LinearMath;
 using Jitter.Collision.Shapes;
 using Jitter.Collision;
+using Jitter.Dynamics.Constraints;
 #endregion
 
 namespace Jitter.Dynamics
 {
+
+    public interface IBodyConnection
+    {
+        RigidBody Body1 { get; }
+        RigidBody Body2 { get; }
+    }
+
     /// <summary>
     /// The RigidBody class.
     /// </summary>
@@ -69,7 +77,11 @@ namespace Jitter.Dynamics
 
         private ShapeUpdatedHandler updatedHandler;
 
-        internal bool multigrid = false;
+        internal List<Constraint> constraints = new List<Constraint>();
+        internal List<Arbiter> arbiter = new List<Arbiter>();
+        internal List<RigidBody> bodies = new List<RigidBody>();
+
+        internal int marker = 0;
 
         /// <summary>
         /// Calculates a hashcode for this RigidBody.
@@ -396,6 +408,8 @@ namespace Jitter.Dynamics
             set { orientation = value; Update(); }
         }
 
+        internal bool becameStatic = false;
+
         /// <summary>
         /// If set to true the body can't be moved.
         /// </summary>
@@ -407,12 +421,13 @@ namespace Jitter.Dynamics
             }
             set
             {
-                isStatic = value;
-                if (isStatic)
+                if (value && !isStatic)
                 {
+                    becameStatic = true;
                     this.angularVelocity.MakeZero();
                     this.linearVelocity.MakeZero();
                 }
+                isStatic = value;
             }
         }
 

@@ -27,6 +27,7 @@ using Jitter.LinearMath;
 using Jitter.Collision.Shapes;
 using Jitter.Dynamics.Constraints;
 using System.Collections.ObjectModel;
+using Jitter.DataStructures;
 #endregion
 
 namespace Jitter.Collision
@@ -36,27 +37,31 @@ namespace Jitter.Collision
     /// </summary>
     public class CollisionIsland
     {
-        internal List<RigidBody> bodies = new List<RigidBody>();
-        internal List<Arbiter> arbiter = new List<Arbiter>();
-        internal List<Constraint> constraints = new List<Constraint>();
+
+        //internal HashSet<RigidBody> bbodies = new HashSet<RigidBody>();
+
+        internal HashSet<RigidBody> bodies = new HashSet<RigidBody>();
+        internal HashSet<Arbiter> arbiter = new HashSet<Arbiter>();
+        internal HashSet<Constraint> constraints = new HashSet<Constraint>();
+
 
         /// <summary>
         /// Gets a read only list of <see cref="RigidBody"/> which are in contact with each other.
         /// </summary>
-        public ReadOnlyCollection<RigidBody> Bodies { get { return readOnlyBodies; } }
-        private ReadOnlyCollection<RigidBody> readOnlyBodies;
+        public ReadOnlyHashset<RigidBody> Bodies { get { return readOnlyBodies; } }
+        private ReadOnlyHashset<RigidBody> readOnlyBodies;
 
         /// <summary>
         /// Gets a read only list of <see cref="Arbiter"/> which are involved in this island.
         /// </summary>
-        public ReadOnlyCollection<Arbiter> Arbiter { get { return readOnlyArbiter; } }
-        private ReadOnlyCollection<Arbiter> readOnlyArbiter;
+        public ReadOnlyHashset<Arbiter> Arbiter { get { return readOnlyArbiter; } }
+        private ReadOnlyHashset<Arbiter> readOnlyArbiter;
 
         /// <summary>
         /// Gets a read only list of <see cref="Constraint"/> which are involved in this island.
         /// </summary>
-        public ReadOnlyCollection<Constraint> Constraints { get { return readOnlyConstraints; } }
-        private ReadOnlyCollection<Constraint> readOnlyConstraints;
+        public ReadOnlyHashset<Constraint> Constraints { get { return readOnlyConstraints; } }
+        private ReadOnlyHashset<Constraint> readOnlyConstraints;
 
         /// <summary>
         /// A CollisionIsland pool.
@@ -73,9 +78,9 @@ namespace Jitter.Collision
         public CollisionIsland()
         {
             // Prepare readonly wrappers.
-            readOnlyConstraints = constraints.AsReadOnly();
-            readOnlyBodies = bodies.AsReadOnly();
-            readOnlyArbiter = arbiter.AsReadOnly();
+            readOnlyConstraints = new ReadOnlyHashset<Constraint>(constraints);
+            readOnlyBodies = new ReadOnlyHashset<RigidBody>(bodies);
+            readOnlyArbiter = new ReadOnlyHashset<Arbiter>(arbiter);
 
             instance = Interlocked.Increment(ref instanceCount);
         }
@@ -87,7 +92,10 @@ namespace Jitter.Collision
         /// <seealso cref="RigidBody.IsActive"/>
         public bool IsActive()
         {
-            return bodies[0].IsActive;
+            foreach (RigidBody b in bodies)
+                return b.isActive;
+
+            return true;
         }
 
         /// <summary>

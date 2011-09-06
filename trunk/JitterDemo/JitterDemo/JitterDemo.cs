@@ -39,7 +39,7 @@ namespace JitterDemo
         private Random random = new Random();
 
         private Color backgroundColor = new Color(63, 66, 73);
-        private bool multithread = true;
+        private bool multithread = false;
         private int activeBodies = 0;
 
         private bool debugDraw = false;
@@ -122,7 +122,7 @@ namespace JitterDemo
             {
                 if (type.Namespace == "JitterDemo.Scenes" && !type.IsAbstract)
                 {
-                    if (type.Name == "SoftBodyJenga") currentScene = PhysicScenes.Count;
+                    if (type.Name == "Pyramid") currentScene = PhysicScenes.Count;
                     Scenes.Scene scene = (Scenes.Scene)Activator.CreateInstance(type, this);
                     this.PhysicScenes.Add(scene);
                 }
@@ -132,6 +132,19 @@ namespace JitterDemo
                 this.PhysicScenes[currentScene].Build();
 
             base.Initialize();
+
+
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    for (int e = 0; e < 10; e++)
+            //    {
+            //        for (int k = 0; k < 10; k++)
+            //        {
+            //            SpawnRandomPrimitive(new JVector(i, e + 5, k) * 3, JVector.Zero);
+            //        }
+            //    }
+            //}
+
         }
 
 
@@ -195,7 +208,10 @@ namespace JitterDemo
                 multithread = !multithread;
 
             if (keyState.IsKeyDown(Keys.P) && !keyboardPreviousState.IsKeyDown(Keys.P))
-                debugDraw = !debugDraw;
+                lastBody.Position = lastBody.Position + JVector.Forward * 0.1f;
+
+            if (keyState.IsKeyDown(Keys.O) && !keyboardPreviousState.IsKeyDown(Keys.O))
+                lastBody.Position = lastBody.Position + JVector.Backward * 0.1f;
 
             #region drag and drop physical objects with the mouse
             if (mouseState.LeftButton == ButtonState.Pressed &&
@@ -318,7 +334,7 @@ namespace JitterDemo
         private void SpawnRandomPrimitive(JVector position, JVector velocity)
         {
             RigidBody body = null;
-            int rndn = random.Next(7);
+            int rndn = 4;
 
             // less of the more advanced objects
             if (rndn == 5 || rndn == 6) rndn = random.Next(7);
@@ -332,7 +348,7 @@ namespace JitterDemo
                     body = new RigidBody(new BoxShape((float)random.Next(10, 30) / 20.0f, (float)random.Next(10, 30) / 20.0f, (float)random.Next(10, 30) / 20.0f));
                     break;
                 case 2:
-                    body = new RigidBody(new SphereShape(1.0f));
+                    body = new RigidBody(new SphereShape(0.4f));
                     break;
                 case 3:
                     body = new RigidBody(new CylinderShape(1.0f, 0.5f));
@@ -537,8 +553,7 @@ namespace JitterDemo
                     box = JBBox.CreateMerged(box, body.BoundingBox);
                 }
 
-                DebugDrawer.DrawAabb(box.Min, box.Max,
-                    island.IsActive() ? Color.Red : Color.Green);
+                DebugDrawer.DrawAabb(box.Min, box.Max, Color.Green);
 
             }
         }
@@ -591,8 +606,19 @@ namespace JitterDemo
             PhysicScenes[currentScene].Draw();
 
             // Draw the debug data provided by Jitter
-            // DrawIslands();
+            DrawIslands();
             DrawJitterDebugInfo();
+
+            //foreach (Arbiter arbiter in World.ArbiterMap.Values)
+            //{
+            //    DebugDrawer.DrawLine(arbiter.Body1.Position, arbiter.Body2.Position);
+
+            //    for (int i = 0; i < arbiter.ContactList.Count; i++)
+            //    {
+            //        Contact c = arbiter.ContactList[i];
+            //        DebugDrawer.DrawLine(c.Body1.Position, c.Normal + c.Body1.Position,Color.Green);
+            //    }
+            //}
 
             this.GraphicsDevice.RasterizerState = cullMode;
                 
