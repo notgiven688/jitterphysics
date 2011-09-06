@@ -149,7 +149,7 @@ namespace Jitter
         private int smallIterations = 4;
         private float timestep = 0.0f;
 
-        private List<CollisionIsland> islands = new List<CollisionIsland>();
+        private Jitter.Collision.IslandManager islands = new IslandManager();
 
         private HashSet<RigidBody> rigidBodies = new HashSet<RigidBody>();
         private HashSet<Constraint> constraints = new HashSet<Constraint>();
@@ -210,7 +210,8 @@ namespace Jitter
         public ArbiterMap ArbiterMap { get { return arbiterMap; } }
         private ArbiterMap arbiterMap;
 
-        private Stack<Arbiter> garbageArbiterStack = new Stack<Arbiter>();
+        private Stack<Arbiter> removedArbiterStack = new Stack<Arbiter>();
+        private Stack<Arbiter> addedArbiterStack = new Stack<Arbiter>();
 
         private JVector gravity = new JVector(0, -9.81f, 0);
 
@@ -289,6 +290,7 @@ namespace Jitter
             {
                 CollisionSystem.RemoveEntity(body);
                 body.island = null;
+                body.arbiter.Clear();body.constraints.Clear();body.bodies.Clear();
             }
 
             foreach (SoftBody body in softbodies)
@@ -430,6 +432,8 @@ namespace Jitter
                 CollisionIsland.Pool.GiveBack(body.island);
             }
 
+            body.arbiter.Clear(); body.bodies.Clear(); body.constraints.Clear();
+
             body.island = null;
 
             // remove all arbiters and contacts connected with this body
@@ -500,6 +504,9 @@ namespace Jitter
         {
             if (!constraints.Remove(constraint)) return false;
             events.RaiseRemovedConstraint(constraint);
+
+            islands.ConstraintRemoved(constraint);
+
             return true;
         }
 
@@ -513,6 +520,8 @@ namespace Jitter
                 throw new ArgumentException("The constraint was already added to the world.", "constraint");
 
             constraints.Add(constraint);
+
+            islands.ConstraintCreated(constraint);
 
             events.RaiseAddedConstraint(constraint);
         }
@@ -587,12 +596,100 @@ namespace Jitter
 #else
             sw.Reset(); sw.Start();
             events.RaiseWorldPreStep(timestep);
-            foreach (RigidBody body in rigidBodies) body.PreStep();
+            foreach (RigidBody body in rigidBodies)
+            {
+                if (body.becameStatic)
+                {
+                    body.becameStatic = false;
+
+                    // remove the island
+                    if (body.island != null && body.island.bodies.Count == 1)
+                    {
+                        islands.Remove(body.island);
+                        CollisionIsland.Pool.GiveBack(body.island);
+                    }
+
+                    body.arbiter.Clear(); body.bodies.Clear(); body.constraints.Clear();
+                    body.island = null;
+                }
+
+                body.PreStep();
+            }
+
+
+
             sw.Stop(); debugTimes[(int)DebugType.PreStep] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
             UpdateContacts();
             sw.Stop(); debugTimes[(int)DebugType.UpdateContacts] = sw.Elapsed.TotalMilliseconds;
+
+            double ms = 0;
+
+            sw.Reset(); sw.Start();
+
+            if (removedArbiter.Count > 0)
+            {
+                while (removedArbiter.Count > 0)
+                {
+                    Arbiter aa = removedArbiter.Pop();
+
+    //                System.Diagnostics.Debug.WriteLine("============================================");
+    //                int coc = 0;
+    //                foreach (CollisionIsland island in islands)
+    //                {
+    //                    coc++;
+
+    //                    string append = string.Empty;
+
+    //                    foreach (RigidBody bb in island.bodies) append += " " + bb.GetHashCode();
+
+    //                    System.Diagnostics.Debug.WriteLine("ISLAND " + coc.ToString() + " (" + island.bodies.Count.ToString() + ")" + append);
+    //                }
+
+    //                foreach (RigidBody b in rigidBodies)
+    //                {
+    //                    System.Diagnostics.Debug.WriteLine("Body: " + b.GetHashCode().ToString());
+    //                    foreach (RigidBody b2 in b.bodies)
+    //                    {
+    //                        System.Diagnostics.Debug.WriteLine("          " + b2.GetHashCode().ToString());
+    //                    }
+    //                }
+
+    //                System.Diagnostics.Debug.WriteLine("============================================");
+
+    //                System.Diagnostics.Debug.WriteLine("REMOVE: " + aa.body1.GetHashCode().ToString() + " --- " +
+    //aa.body2.GetHashCode().ToString());
+
+                    islands.ArbiterRemoved(aa);
+
+                    //System.Diagnostics.Debug.WriteLine("============================================");
+                    //coc = 0;
+                    //foreach (CollisionIsland island in islands)
+                    //{
+                    //    coc++;
+
+                    //    string append = string.Empty;
+
+                    //    foreach (RigidBody bb in island.bodies) append += " " + bb.GetHashCode();
+
+                    //    System.Diagnostics.Debug.WriteLine("ISLAND " + coc.ToString() + " (" + island.bodies.Count.ToString() + ")" + append);
+                    //}
+
+                    //foreach (RigidBody b in rigidBodies)
+                    //{
+                    //    System.Diagnostics.Debug.WriteLine("Body: " + b.GetHashCode().ToString());
+                    //    foreach (RigidBody b2 in b.bodies)
+                    //    {
+                    //        System.Diagnostics.Debug.WriteLine("          " + b2.GetHashCode().ToString());
+                    //    }
+                    //}
+
+                    //System.Diagnostics.Debug.WriteLine("============================================");
+                }
+            }
+
+            sw.Stop(); ms = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
             foreach (SoftBody body in softbodies)
@@ -608,8 +705,8 @@ namespace Jitter
             sw.Stop(); debugTimes[(int)DebugType.CollisionDetect] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
-            BuildIslands();
-            sw.Stop(); debugTimes[(int)DebugType.BuildIslands] = sw.Elapsed.TotalMilliseconds;
+            while (addedArbiters.Count > 0) islands.ArbiterCreated(addedArbiters.Pop());
+            sw.Stop(); debugTimes[(int)DebugType.BuildIslands] = sw.Elapsed.TotalMilliseconds + ms;
 
             sw.Reset(); sw.Start();
             CheckDeactivation();
@@ -675,7 +772,7 @@ namespace Jitter
         {
             if (arbiter.contactList.Count == 0)
             {
-                lock (garbageArbiterStack) { garbageArbiterStack.Push(arbiter); }
+                lock (removedArbiterStack) { removedArbiterStack.Push(arbiter); }
                 return;
             }
 
@@ -710,6 +807,8 @@ namespace Jitter
             }
         }
 
+        public Stack<Arbiter> removedArbiter = new Stack<Arbiter>();
+
         private void UpdateContacts()
         {
             foreach (Arbiter arbiter in arbiterMap.Values)
@@ -717,11 +816,14 @@ namespace Jitter
                 UpdateArbiterContacts(arbiter);
             }
 
-            while (garbageArbiterStack.Count > 0)
+            while (removedArbiterStack.Count > 0)
             {
-                Arbiter arbiter = garbageArbiterStack.Pop();
+                Arbiter arbiter = removedArbiterStack.Pop();
                 Arbiter.Pool.GiveBack(arbiter);
                 arbiterMap.Remove(arbiter);
+
+                removedArbiter.Push(arbiter);
+
 
                 events.RaiseBodiesEndCollide(arbiter.body1, arbiter.body2);
             }
@@ -734,7 +836,7 @@ namespace Jitter
             CollisionIsland island = obj as CollisionIsland;
 
             int thisIterations;
-            if (island.bodies.Count + island.constraints.Count > 3) thisIterations = contactIterations;
+            if (island.Bodies.Count + island.Constraints.Count > 3) thisIterations = contactIterations;
             else thisIterations = smallIterations;
 
             for (int i = -1; i < thisIterations; i++)
@@ -750,7 +852,7 @@ namespace Jitter
                     }
                 }
 
-                // Constraints
+                //  Constraints
                 foreach (Constraint c in island.constraints)
                 {
                     if (c.body1 != null && !c.body1.IsActive && c.body2 != null && !c.body2.IsActive)
@@ -883,6 +985,8 @@ namespace Jitter
             }
         }
 
+        Stack<Arbiter> addedArbiters = new Stack<Arbiter>();
+
         private void CollisionDetected(RigidBody body1, RigidBody body2, JVector point1, JVector point2, JVector normal, float penetration)
         {
             Arbiter arbiter;
@@ -894,6 +998,10 @@ namespace Jitter
                     arbiter = Arbiter.Pool.GetNew();
                     arbiter.body1 = body1; arbiter.body2 = body2;
                     arbiterMap.Add(new ArbiterKey(body1, body2), arbiter);
+
+                   // addedArbiterStack.Push(arbiter);
+                   // islands.ArbiterCreated(arbiter);
+                    addedArbiters.Push(arbiter);
 
                     events.RaiseBodiesBeginCollide(body1, body2);
                 }
@@ -915,169 +1023,7 @@ namespace Jitter
 
         }
 
-        private void MergeIslands(RigidBody body0, RigidBody body1)
-        {
-            if (body0.island != body1.island)
-            {
-                // both bodies are in different islands
-                // so we can merge them
-                if (body0.island == null)
-                {
-                    // one island is null
-                    body0.island = body1.island;
-                    body0.island.bodies.Add(body0);
-                }
-                else if (body1.island == null)
-                {
-                    // one island is null
-                    body1.island = body0.island;
-                    body1.island.bodies.Add(body1);
-                }
-                else
-                {
-                    // both islands are different,
-                    // merge smaller into larger
 
-                    RigidBody smallIslandOwner, largeIslandOwner;
-
-                    if (body0.island.bodies.Count > body1.island.bodies.Count)
-                    {
-                        smallIslandOwner = body1;
-                        largeIslandOwner = body0;
-                    }
-                    else
-                    {
-                        smallIslandOwner = body0;
-                        largeIslandOwner = body1;
-                    }
-
-                    CollisionIsland giveBackIsland = smallIslandOwner.island;
-
-                    CollisionIsland.Pool.GiveBack(giveBackIsland);
-                    islands.Remove(giveBackIsland);
-
-                    int count = giveBackIsland.bodies.Count;
-                    for (int i = 0; i < count; i++)
-                    {
-                        giveBackIsland.bodies[i].island = largeIslandOwner.island;
-                        largeIslandOwner.island.bodies.Add(giveBackIsland.bodies[i]);
-                    }
-
-                    giveBackIsland.ClearLists();
-                }
-
-            }
-            else if (body0.island == null)
-            {
-                // both are null
-                CollisionIsland island = CollisionIsland.Pool.GetNew();
-                body0.island = body1.island = island;
-
-                body0.island.bodies.Add(body0);
-                body0.island.bodies.Add(body1);
-
-                islands.Add(island);
-            }
-
-        }
-
-        private void BuildIslands()
-        {
-            for (int i = 0; i < islands.Count; i++)
-            {
-                if (islands[i].bodies.Count == 1 && !islands[i].bodies[0].isStatic)
-                {
-                    // keep islands which contain only one body.
-                    islands[i].constraints.Clear();
-                    islands[i].arbiter.Clear();
-                }
-                else if (!islands[i].IsActive())
-                {
-                    // keep islands which are inactive
-                    islands[i].constraints.Clear();
-                    islands[i].arbiter.Clear();
-                }
-                else
-                {
-                    // remove all others
-                    foreach (RigidBody body in islands[i].bodies) body.island = null;
-
-                    islands[i].constraints.Clear();
-                    islands[i].arbiter.Clear();
-                    islands[i].bodies.Clear();
-
-                    CollisionIsland.Pool.GiveBack(islands[i]);
-
-                    islands.RemoveAt(i); i--;
-                }
-            }
-
-            // Connect islands by arbiters
-            foreach (Arbiter arbiter in arbiterMap.Values)
-            {
-                RigidBody body0 = arbiter.body1;
-                RigidBody body1 = arbiter.body2;
-
-                if (body0.isStatic || body1.isStatic) continue;
-
-                MergeIslands(body0, body1);
-            }
-
-            // Connect islands by constraints
-            foreach (Constraint constraint in constraints)
-            {
-                RigidBody body0 = constraint.body1;
-                RigidBody body1 = constraint.body2;
-
-                if (body0 == null || body1 == null) continue;
-
-                if (body0.isStatic && body1.isStatic) continue;
-
-                MergeIslands(body0, body1);
-            }
-
-            // every single body gets an island
-            foreach (RigidBody body in rigidBodies)
-            {
-                if (body.isStatic) continue;
-
-                if (body.island == null)
-                {
-                    body.island = CollisionIsland.Pool.GetNew();
-                    body.island.bodies.Add(body);
-
-                    islands.Add(body.island);
-                }
-            }
-
-
-            #region Add Constraints to Collision Islands
-            foreach (Constraint constraint in constraints)
-            {
-                if (constraint.body1 != null && constraint.body1.CollisionIsland != null)
-                    constraint.body1.island.constraints.Add(constraint);
-            }
-            #endregion
-
-            #region Add Arbiters to Collision Islands
-            foreach (Arbiter arbiter in arbiterMap.Values)
-            {
-                // that must be the same islands OR one or both are null
-                CollisionIsland island1 = arbiter.body1.island;
-                CollisionIsland island2 = arbiter.body2.island;
-
-                if (island1 != null)
-                {
-                    island1.arbiter.Add(arbiter);
-                }
-                else if (island2 != null)
-                {
-                    island2.arbiter.Add(arbiter);
-                }
-            }
-            #endregion
-
-        }
 
         private void CheckDeactivation()
         {
