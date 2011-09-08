@@ -38,33 +38,40 @@ namespace Jitter.Collision
     public class CollisionIsland
     {
 
-        public IslandManager IslandManager;
+        internal IslandManager islandManager;
 
         internal HashSet<RigidBody> bodies = new HashSet<RigidBody>();
-
         internal HashSet<Arbiter> arbiter = new HashSet<Arbiter>();
         internal HashSet<Constraint> constraints = new HashSet<Constraint>();
 
         /// <summary>
         /// Gets a read only list of <see cref="RigidBody"/> which are in contact with each other.
         /// </summary>
-        public HashSet<RigidBody> Bodies { get { return bodies; } }
+        public ReadOnlyHashset<RigidBody> Bodies { get { return readOnlyBodies; } }
 
         /// <summary>
         /// Gets a read only list of <see cref="Arbiter"/> which are involved in this island.
         /// </summary>
-        public HashSet<Arbiter> Arbiter { get { return arbiter; } }
+        public ReadOnlyHashset<Arbiter> Arbiter { get { return readOnlyArbiter; } }
 
         /// <summary>
         /// Gets a read only list of <see cref="Constraint"/> which are involved in this island.
         /// </summary>
-        public HashSet<Constraint> Constraints { get { return constraints; } }
+        public ReadOnlyHashset<Constraint> Constraints { get { return readOnlyConstraints; } }
 
+        public ReadOnlyCollection<CollisionIsland> Islands { get { return islandManager; } }
+
+        private ReadOnlyHashset<RigidBody> readOnlyBodies;
+        private ReadOnlyHashset<Arbiter> readOnlyArbiter;
+        private ReadOnlyHashset<Constraint> readOnlyConstraints;
 
         /// Constructor of CollisionIsland class.
         /// </summary>
         public CollisionIsland()
         {
+            readOnlyBodies = new ReadOnlyHashset<RigidBody>(bodies);
+            readOnlyArbiter = new ReadOnlyHashset<Arbiter>(arbiter);
+            readOnlyConstraints = new ReadOnlyHashset<Constraint>(constraints);
         }
 
         /// <summary>
@@ -76,7 +83,9 @@ namespace Jitter.Collision
         {
             var enumerator = bodies.GetEnumerator();
             enumerator.MoveNext();
-            return enumerator.Current.isActive;
+
+            if (enumerator.Current == null) return false;
+            else return enumerator.Current.isActive;
         }
 
         /// <summary>
@@ -97,9 +106,7 @@ namespace Jitter.Collision
 
         internal void ClearLists()
         {
-            arbiter.Clear();
-            bodies.Clear();
-            constraints.Clear();
+            arbiter.Clear(); bodies.Clear(); constraints.Clear();
         }
 
     }

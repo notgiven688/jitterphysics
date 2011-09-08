@@ -210,8 +210,8 @@ namespace Jitter
         public ArbiterMap ArbiterMap { get { return arbiterMap; } }
         private ArbiterMap arbiterMap;
 
-        private Stack<Arbiter> removedArbiterStack = new Stack<Arbiter>();
-        private Stack<Arbiter> addedArbiterStack = new Stack<Arbiter>();
+        private Queue<Arbiter> removedArbiterQueue = new Queue<Arbiter>();
+        private Queue<Arbiter> addedArbiterQueue = new Queue<Arbiter>();
 
         private JVector gravity = new JVector(0, -9.81f, 0);
 
@@ -222,8 +222,7 @@ namespace Jitter
         /// Gets a read only collection of the <see cref="Jitter.Collision.CollisionIsland"/> objects managed by
         /// this class.
         /// </summary>
-        public ReadOnlyCollection<CollisionIsland> Islands { get { return readOnlyIslands; } }
-        private ReadOnlyCollection<CollisionIsland> readOnlyIslands;
+        public ReadOnlyCollection<CollisionIsland> Islands { get { return islands; } }
 
         private Action<object> arbiterCallback;
         private Action<object> integrateCallback;
@@ -251,8 +250,6 @@ namespace Jitter
             this.RigidBodies = new ReadOnlyHashset<RigidBody>(rigidBodies);
             this.Constraints = new ReadOnlyHashset<Constraint>(constraints);
             this.SoftBodies = new ReadOnlyHashset<SoftBody>(softbodies);
-
-            this.readOnlyIslands = islands.AsReadOnly();
 
             this.CollisionSystem = collision;
 
@@ -299,6 +296,8 @@ namespace Jitter
                 body.connections.Clear();
                 body.arbiters.Clear();
                 body.constraints.Clear();
+
+                events.RaiseRemovedRigidBody(body);
             }
 
             foreach (SoftBody body in softbodies)
@@ -319,7 +318,7 @@ namespace Jitter
             softbodies.Clear();
 
             // remove all islands
-            islands.Clear();
+            islands.RemoveAll();
 
             // delete the arbiters
             arbiterMap.Clear();
@@ -576,12 +575,10 @@ namespace Jitter
             UpdateContacts();
             sw.Stop(); debugTimes[(int)DebugType.UpdateContacts] = sw.Elapsed.TotalMilliseconds;
 
-            double ms = 0;
 
             sw.Reset(); sw.Start();
-
-            while (removedArbiter.Count > 0)islands.ArbiterRemoved(removedArbiter.Pop());
-
+            double ms = 0;
+            while (removedArbiterQueue.Count > 0) islands.ArbiterRemoved(removedArbiterQueue.Dequeue());
             sw.Stop(); ms = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
@@ -599,7 +596,7 @@ namespace Jitter
 
             sw.Reset(); sw.Start();
 
-            while (addedArbiters.Count > 0) islands.ArbiterCreated(addedArbiters.Pop());
+            while (addedArbiterQueue.Count > 0) islands.ArbiterCreated(addedArbiterQueue.Dequeue());
 
             sw.Stop(); debugTimes[(int)DebugType.BuildIslands] = sw.Elapsed.TotalMilliseconds + ms;
 
@@ -702,7 +699,7 @@ namespace Jitter
             }
         }
 
-        public Stack<Arbiter> removedArbiter = new Stack<Arbiter>();
+        private Stack<Arbiter> removedArbiterStack = new Stack<Arbiter>();
 
         private void UpdateContacts()
         {
@@ -717,9 +714,7 @@ namespace Jitter
                 Arbiter.Pool.GiveBack(arbiter);
                 arbiterMap.Remove(arbiter);
 
-                removedArbiter.Push(arbiter);
-
-
+                removedArbiterQueue.Enqueue(arbiter);
                 events.RaiseBodiesEndCollide(arbiter.body1, arbiter.body2);
             }
 
@@ -880,8 +875,6 @@ namespace Jitter
             }
         }
 
-        Stack<Arbiter> addedArbiters = new Stack<Arbiter>();
-
         private void CollisionDetected(RigidBody body1, RigidBody body2, JVector point1, JVector point2, JVector normal, float penetration)
         {
             Arbiter arbiter = null;
@@ -895,9 +888,7 @@ namespace Jitter
                     arbiter.body1 = body1; arbiter.body2 = body2;
                     arbiterMap.Add(new ArbiterKey(body1, body2), arbiter);
 
-                   // addedArbiterStack.Push(arbiter);
-                   // islands.ArbiterCreated(arbiter);
-                    addedArbiters.Push(arbiter);
+                    addedArbiterQueue.Enqueue(arbiter);
 
                     events.RaiseBodiesBeginCollide(body1, body2);
                 }

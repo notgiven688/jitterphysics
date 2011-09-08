@@ -209,15 +209,15 @@ namespace JitterDemo
             if (keyState.IsKeyDown(Keys.M) && !keyboardPreviousState.IsKeyDown(Keys.M))
                 multithread = !multithread;
 
-            //if (keyState.IsKeyDown(Keys.P) && !keyboardPreviousState.IsKeyDown(Keys.P))
-            //{
-            //    enumerator = World.RigidBodies.GetEnumerator();
-            //    enumerator.MoveNext();
-            //    enumerator.MoveNext();
+            if (keyState.IsKeyDown(Keys.P) && !keyboardPreviousState.IsKeyDown(Keys.P))
+            {
+                enumerator = World.RigidBodies.GetEnumerator();
+                enumerator.MoveNext();
+                enumerator.MoveNext();
 
-            //    ((RigidBody)enumerator.Current).IsStatic ;
+                World.RemoveBody((RigidBody)enumerator.Current);
 
-            //}
+            }
 
             //if (keyState.IsKeyDown(Keys.O) && !keyboardPreviousState.IsKeyDown(Keys.O))
             //{
@@ -324,6 +324,7 @@ namespace JitterDemo
             if (step > 1.0f / 100.0f) step = 1.0f / 100.0f;
 
             World.Step(step, multithread);
+
 
             gamePadPreviousState = padState;
             keyboardPreviousState = keyState;

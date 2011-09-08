@@ -53,29 +53,6 @@ namespace JitterDemo.Scenes
             unique.Clear();
         }
 
-        private void BuildLattice(List<TriangleVertexIndices> indices, List<JVector> vertices)
-        {
-            int count = 30;
-
-            for (int i = 0; i < count; i++)
-            {
-                for (int e = 0; e < count; e++)
-                {
-                    vertices.Add(new JVector(i, 0, e));
-                }
-            }
-
-            for (int i = 0; i < count; i++)
-            {
-                for (int e = 0; e < count; e++)
-                {
-
-                }
-            }
-
-
-        }
-
         public override void Build()
         {
             AddGround();
