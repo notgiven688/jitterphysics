@@ -27,6 +27,7 @@ using Jitter.LinearMath;
 using Jitter.Collision.Shapes;
 using Jitter.Collision;
 using Jitter.Dynamics.Constraints;
+using Jitter.DataStructures;
 #endregion
 
 namespace Jitter.Dynamics
@@ -76,29 +77,10 @@ namespace Jitter.Dynamics
         internal HashSet<Arbiter> arbiters = new HashSet<Arbiter>();
         internal HashSet<Constraint> constraints = new HashSet<Constraint>();
 
+        private ReadOnlyHashset<Arbiter> readOnlyArbiters;
+        private ReadOnlyHashset<Constraint> readOnlyConstraints;
+
         internal int marker = 0;
-
-        /// <summary>
-        /// Calculates a hashcode for this RigidBody.
-        /// The hashcode should be unique as possible
-        /// for every body.
-        /// </summary>
-        /// <returns>The hashcode.</returns>
-        public override int GetHashCode()
-        {
-            return hashCode;
-        }
-
-        /// <summary>
-        /// If set to false the body will never be deactived by the
-        /// world.
-        /// </summary>
-        public bool AllowDeactivation { get; set; }
-
-        /// <summary>
-        /// The axis aligned bounding box of the body.
-        /// </summary>
-        public JBBox BoundingBox { get { return boundingBox; } }
 
 
         public RigidBody(Shape shape)
@@ -115,6 +97,9 @@ namespace Jitter.Dynamics
         /// <param name="shape">The shape of the body.</param>
         public RigidBody(Shape shape, Material material)
         {
+            readOnlyArbiters = new ReadOnlyHashset<Arbiter>(arbiters);
+            readOnlyConstraints = new ReadOnlyHashset<Constraint>(constraints);
+
             instance = Interlocked.Increment(ref instanceCount);
             hashCode = CalculateHash(instance);
 
@@ -133,6 +118,32 @@ namespace Jitter.Dynamics
 
             Update();
         }
+
+        /// <summary>
+        /// Calculates a hashcode for this RigidBody.
+        /// The hashcode should be unique as possible
+        /// for every body.
+        /// </summary>
+        /// <returns>The hashcode.</returns>
+        public override int GetHashCode()
+        {
+            return hashCode;
+        }
+
+        public ReadOnlyHashset<Arbiter> ArbiterConnections { get { return readOnlyArbiters; } }
+        public ReadOnlyHashset<Constraint> ConstraintConnections { get { return readOnlyConstraints; } }
+
+        /// <summary>
+        /// If set to false the body will never be deactived by the
+        /// world.
+        /// </summary>
+        public bool AllowDeactivation { get; set; }
+
+        /// <summary>
+        /// The axis aligned bounding box of the body.
+        /// </summary>
+        public JBBox BoundingBox { get { return boundingBox; } }
+
 
         private static int instanceCount = 0;
         private int instance;
@@ -417,7 +428,7 @@ namespace Jitter.Dynamics
                 if (value && !isStatic)
                 {
                     if(island != null)
-                    island.IslandManager.MakeBodyStatic(this);
+                    island.islandManager.MakeBodyStatic(this);
 
                     this.angularVelocity.MakeZero();
                     this.linearVelocity.MakeZero();

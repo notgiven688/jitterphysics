@@ -4,16 +4,24 @@ using System.Linq;
 using System.Text;
 using Jitter.Dynamics;
 using Jitter.Dynamics.Constraints;
+using System.Collections.ObjectModel;
 
 namespace Jitter.Collision
 {
-    public class IslandManager : List<CollisionIsland>
+    class IslandManager : ReadOnlyCollection<CollisionIsland>
     {
+        // TODO: AddBody
+        // Remove the == null stuff
 
-        /// <summary>
-        /// A CollisionIsland pool.
-        /// </summary>
         public static ResourcePool<CollisionIsland> Pool = new ResourcePool<CollisionIsland>();
+
+        private List<CollisionIsland> islands;
+
+        public IslandManager()
+            : base(new List<CollisionIsland>())
+        {
+            this.islands = this.Items as List<CollisionIsland>;
+        }
 
         public void ArbiterCreated(Arbiter arbiter)
         {  
@@ -35,7 +43,7 @@ namespace Jitter.Collision
 
             if (arbiter.body1.island != null)
             arbiter.body1.island.arbiter.Remove(arbiter);
-            if (arbiter.body2.island != null)
+            else if (arbiter.body2.island != null)
             arbiter.body2.island.arbiter.Remove(arbiter);
 
             RemoveConnection(arbiter.body1, arbiter.body2);
@@ -49,9 +57,9 @@ namespace Jitter.Collision
             if(constraint.body2 != null) constraint.body2.constraints.Add(constraint);
 
             if (constraint.body1.island != null)
-                constraint.body1.island.constraints.Add(constraint);
+            constraint.body1.island.constraints.Add(constraint);
             else if (constraint.body2 != null && constraint.body2.island != null)
-                constraint.body2.island.constraints.Add(constraint);
+            constraint.body2.island.constraints.Add(constraint);
         }
 
         public void ConstraintRemoved(Constraint constraint)
@@ -59,13 +67,12 @@ namespace Jitter.Collision
             constraint.body1.constraints.Remove(constraint);
 
             if (constraint.body2 != null)
-                constraint.body2.constraints.Remove(constraint);
+            constraint.body2.constraints.Remove(constraint);
 
             if (constraint.body1.island != null)
-                constraint.body1.island.constraints.Remove(constraint);
-
-            if (constraint.body2 != null && constraint.body2.island != null)
-                constraint.body2.island.constraints.Remove(constraint);
+            constraint.body1.island.constraints.Remove(constraint);
+            else if (constraint.body2 != null && constraint.body2.island != null)
+            constraint.body2.island.constraints.Remove(constraint);
 
             RemoveConnection(constraint.body1, constraint.body2);
         }
@@ -96,7 +103,7 @@ namespace Jitter.Collision
             // Remove everything.
             if (body.island != null)
             {
-                System.Diagnostics.Debug.Assert(body.island.IslandManager == this,
+                System.Diagnostics.Debug.Assert(body.island.islandManager == this,
                      "IslandManager Inconsistency.",
                      "IslandManager doesn't own the Island.");
 
@@ -115,14 +122,31 @@ namespace Jitter.Collision
                 body.island.ClearLists();
                 Pool.GiveBack(body.island);
 
-                Remove(body.island);
+                islands.Remove(body.island);
 
                 body.island = null;
             }
 
         }
 
-        public void AddConnection(RigidBody body1, RigidBody body2)
+
+        public void RemoveAll()
+        {
+            foreach (CollisionIsland island in islands)
+            {
+                foreach (RigidBody body in island.bodies)
+                {
+                    body.arbiters.Clear();
+                    body.constraints.Clear();
+                    body.connections.Clear();
+                    body.island = null;
+                }
+                island.ClearLists();
+            }
+            islands.Clear();
+        }
+
+        private void AddConnection(RigidBody body1, RigidBody body2)
         {
             System.Diagnostics.Debug.Assert(!(body1.isStatic && body2.isStatic),
                 "IslandManager Inconsistency.",
@@ -133,11 +157,11 @@ namespace Jitter.Collision
                 if (body2.island == null)
                 {
                     CollisionIsland newIsland = Pool.GetNew();
-                    newIsland.IslandManager = this;
+                    newIsland.islandManager = this;
 
                     body2.island = newIsland;
                     body2.island.bodies.Add(body2);
-                    this.Add(newIsland);
+                    islands.Add(newIsland);
                 }
             }
             else if (body2 == null || body2.isStatic) // <- only body2 is static
@@ -145,11 +169,11 @@ namespace Jitter.Collision
                 if (body1.island == null)
                 {
                     CollisionIsland newIsland = Pool.GetNew();
-                    newIsland.IslandManager = this;
+                    newIsland.islandManager = this;
 
                     body1.island = newIsland;
                     body1.island.bodies.Add(body1);
-                    this.Add(newIsland);
+                    islands.Add(newIsland);
                 }
             }
             else // both are !static
@@ -161,7 +185,7 @@ namespace Jitter.Collision
             }
         }
 
-        public void RemoveConnection(RigidBody body1, RigidBody body2)
+        private void RemoveConnection(RigidBody body1, RigidBody body2)
         {
             System.Diagnostics.Debug.Assert(!(body1.isStatic && body2.isStatic),
                 "IslandManager Inconsistency.",
@@ -223,9 +247,6 @@ namespace Jitter.Collision
                 RigidBody currentNode = leftSearchQueue.Dequeue();
                 if (!currentNode.isStatic)
                 {
-
-                    if (currentNode.connections.Count > 12) throw new Exception();
-
                     for (int i = 0; i < currentNode.connections.Count; i++)
                     {
                         RigidBody connectedNode = currentNode.connections[i];
@@ -270,9 +291,9 @@ namespace Jitter.Collision
             }
 
             CollisionIsland island = Pool.GetNew();
-            island.IslandManager = this;
+            island.islandManager = this;
 
-            this.Add(island);
+            islands.Add(island);
 
             if (leftSearchQueue.Count == 0)
             {
@@ -373,7 +394,7 @@ namespace Jitter.Collision
                     CollisionIsland giveBackIsland = smallIslandOwner.island;
 
                     Pool.GiveBack(giveBackIsland);
-                    this.Remove(giveBackIsland);
+                    islands.Remove(giveBackIsland);
 
                     foreach (RigidBody b in giveBackIsland.bodies)
                     {
@@ -398,14 +419,14 @@ namespace Jitter.Collision
             else if (body0.island == null) // <- both are null
             {
                 CollisionIsland island = Pool.GetNew();
-                island.IslandManager = this;
+                island.islandManager = this;
 
                 body0.island = body1.island = island;
 
                 body0.island.bodies.Add(body0);
                 body0.island.bodies.Add(body1);
 
-                this.Add(island);
+                islands.Add(island);
             }
 
         }
