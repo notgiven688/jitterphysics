@@ -32,12 +32,6 @@ using Jitter.Dynamics.Constraints;
 namespace Jitter.Dynamics
 {
 
-    public interface IBodyConnection
-    {
-        RigidBody Body1 { get; }
-        RigidBody Body2 { get; }
-    }
-
     /// <summary>
     /// The RigidBody class.
     /// </summary>
@@ -77,9 +71,10 @@ namespace Jitter.Dynamics
 
         private ShapeUpdatedHandler updatedHandler;
 
-        internal List<Constraint> constraints = new List<Constraint>();
-        internal List<Arbiter> arbiter = new List<Arbiter>();
-        internal List<RigidBody> bodies = new List<RigidBody>();
+        internal List<RigidBody> connections = new List<RigidBody>();
+
+        internal HashSet<Arbiter> arbiters = new HashSet<Arbiter>();
+        internal HashSet<Constraint> constraints = new HashSet<Constraint>();
 
         internal int marker = 0;
 
@@ -408,8 +403,6 @@ namespace Jitter.Dynamics
             set { orientation = value; Update(); }
         }
 
-        internal bool becameStatic = false;
-
         /// <summary>
         /// If set to true the body can't be moved.
         /// </summary>
@@ -423,7 +416,9 @@ namespace Jitter.Dynamics
             {
                 if (value && !isStatic)
                 {
-                    becameStatic = true;
+                    if(island != null)
+                    island.IslandManager.MakeBodyStatic(this);
+
                     this.angularVelocity.MakeZero();
                     this.linearVelocity.MakeZero();
                 }

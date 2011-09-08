@@ -10,169 +10,189 @@ namespace Jitter.Collision
     public class IslandManager : List<CollisionIsland>
     {
 
-        // static bodies dont get anything
-        // what to remove when body gets static?
-
-        public void ConstraintCreated(Constraint constraint)
-        {
-            RigidBody body1 = constraint.body1;
-            RigidBody body2 = constraint.body2;
-
-            // constraints - body2 can be null
-            if ((body2 == null || body2.isStatic) && !body1.isStatic)
-            {
-                if (body1.island == null)
-                {
-                    body1.island = CollisionIsland.Pool.GetNew();
-                    body1.island.bodies.Add(body1);
-                    this.Add(body1.island);
-                }
-
-                body1.island.constraints.Add(constraint);
-                body1.constraints.Add(constraint);
-            }
-            else if (body1.isStatic && !body2.isStatic)
-            {
-                if (body2.island == null)
-                {
-                    body2.island = CollisionIsland.Pool.GetNew();
-                    body2.island.bodies.Add(body1);
-                    this.Add(body2.island);
-                }
-
-                body2.island.constraints.Add(constraint);
-                body2.constraints.Add(constraint);
-            }
-            else if (!body1.isStatic && !body2.isStatic)
-            {
-                // both are !static
-                MergeIslands(body1, body2);
-
-                body1.island.constraints.Add(constraint);
-
-                body1.bodies.Add(body2);
-                body1.constraints.Add(constraint);
-
-                body2.bodies.Add(body1);
-                body2.constraints.Add(constraint);
-            }
-    
-        }
-
-        public void ConstraintRemoved(Constraint constraint)
-        {
-            RigidBody body1 = constraint.body1;
-            RigidBody body2 = constraint.body2;
-
-            if (body2 != null)
-            {
-                body1.bodies.Remove(body2);
-                body2.bodies.Remove(body1);
-            }
-
-            body1.constraints.Remove(constraint);
-            if (body2 != null) body2.constraints.Remove(constraint);
-
-
-            if ((body2 == null || body2.isStatic) && !body1.isStatic)
-            {
-                // only body2 is static
-                body1.island.constraints.Remove(constraint);
-            }
-            else if (body1.isStatic && !body2.isStatic)
-            {
-                // only body1 is static
-                body2.island.constraints.Remove(constraint);
-            }
-            else if (!body1.isStatic && !body2.isStatic)
-            {
-                // TODO: dont know in which island the arbiter is.. try to remove from both
-                body1.island.constraints.Remove(constraint);
-
-                // both are !static
-                SplitIslands(body1, body2);
-            }
-        }
+        /// <summary>
+        /// A CollisionIsland pool.
+        /// </summary>
+        public static ResourcePool<CollisionIsland> Pool = new ResourcePool<CollisionIsland>();
 
         public void ArbiterCreated(Arbiter arbiter)
-        {
-            RigidBody body1 = arbiter.body1;
-            RigidBody body2 = arbiter.body2;
+        {  
+            AddConnection(arbiter.body1, arbiter.body2);
 
-            // dont accept arbiter between static-static.
-            if (body1.isStatic && body2.isStatic) return;
+            arbiter.body1.arbiters.Add(arbiter);
+            arbiter.body2.arbiters.Add(arbiter);
 
-            if (body1.isStatic)
-            {
-                // only body1 is static
-                if (body2.island == null)
-                {
-                    body2.island = CollisionIsland.Pool.GetNew();
-                    body2.island.bodies.Add(body2);
-                    this.Add(body2.island);
-                }
-
-                body2.island.arbiter.Add(arbiter);
-                body2.arbiter.Add(arbiter);
-            }
-            else if (body2.isStatic)
-            {
-                // only body2 is static
-                if (arbiter.body1.island == null)
-                {
-                    body1.island = CollisionIsland.Pool.GetNew();
-                    body1.island.bodies.Add(body1);
-                    this.Add(body1.island);
-                }
-
-                body1.island.arbiter.Add(arbiter);
-                body1.arbiter.Add(arbiter);
-            }
-            else
-            {
-                // both are !static
-                MergeIslands(body1, body2);
-
-                body1.island.arbiter.Add(arbiter);
-
-                body1.bodies.Add(body2);
-                body1.arbiter.Add(arbiter);
-
-                body2.bodies.Add(body1);
-                body2.arbiter.Add(arbiter);
-            }
+            if (arbiter.body1.island !=null)
+            arbiter.body1.island.arbiter.Add(arbiter);
+            else if (arbiter.body2.island != null)
+            arbiter.body2.island.arbiter.Add(arbiter);
         }
 
         public void ArbiterRemoved(Arbiter arbiter)
         {
-            RigidBody body1 = arbiter.body1;
-            RigidBody body2 = arbiter.body2;
+            arbiter.body1.arbiters.Remove(arbiter);
+            arbiter.body2.arbiters.Remove(arbiter);
 
-            body1.bodies.Remove(body2);
-            body2.bodies.Remove(body1);
+            if (arbiter.body1.island != null)
+            arbiter.body1.island.arbiter.Remove(arbiter);
+            if (arbiter.body2.island != null)
+            arbiter.body2.island.arbiter.Remove(arbiter);
 
-            body1.arbiter.Remove(arbiter);
-            body2.arbiter.Remove(arbiter);
+            RemoveConnection(arbiter.body1, arbiter.body2);
+        }
 
-            // dont accept arbiter between static-static.
-            if (body1.isStatic && body2.isStatic) return;
+        public void ConstraintCreated(Constraint constraint)
+        {
+            AddConnection(constraint.body1, constraint.body2);
 
-            if (body1.isStatic)
+            constraint.body1.constraints.Add(constraint);
+            if(constraint.body2 != null) constraint.body2.constraints.Add(constraint);
+
+            if (constraint.body1.island != null)
+                constraint.body1.island.constraints.Add(constraint);
+            else if (constraint.body2 != null && constraint.body2.island != null)
+                constraint.body2.island.constraints.Add(constraint);
+        }
+
+        public void ConstraintRemoved(Constraint constraint)
+        {
+            constraint.body1.constraints.Remove(constraint);
+
+            if (constraint.body2 != null)
+                constraint.body2.constraints.Remove(constraint);
+
+            if (constraint.body1.island != null)
+                constraint.body1.island.constraints.Remove(constraint);
+
+            if (constraint.body2 != null && constraint.body2.island != null)
+                constraint.body2.island.constraints.Remove(constraint);
+
+            RemoveConnection(constraint.body1, constraint.body2);
+        }
+
+        public void MakeBodyStatic(RigidBody body)
+        {
+            // A static body doesn't have any connections.
+            body.connections.Clear();
+            body.constraints.Clear();
+            body.arbiters.Clear();
+
+            if (body.island != null)
             {
-                // only body1 is static
-                body2.island.arbiter.Remove(arbiter);
+                body.island.bodies.Remove(body);
+
+                if (body.island.bodies.Count == 0)
+                {
+                    body.island.ClearLists();
+                    Pool.GiveBack(body.island);
+                }
             }
-            else if (body2.isStatic)
-            {
-                // only body2 is static
-                body1.island.arbiter.Remove(arbiter);
-            }
-            else
-            {
-                // TODO: dont know in which island the arbiter is.. try to remove from both
-                body1.island.arbiter.Remove(arbiter);
 
-                // both are !static
+            body.island = null;
+        }
+
+        public void RemoveBody(RigidBody body)
+        {
+            // Remove everything.
+            if (body.island != null)
+            {
+                System.Diagnostics.Debug.Assert(body.island.IslandManager == this,
+                     "IslandManager Inconsistency.",
+                     "IslandManager doesn't own the Island.");
+
+                while (body.connections.Count > 0) RemoveConnection(body, body.connections[0]);
+
+                body.constraints.Clear();
+                body.arbiters.Clear();
+
+                // the body should now form an island on his own.
+                // thats okay, but since static bodies dont have islands
+                // remove this island.
+                System.Diagnostics.Debug.Assert(body.island.bodies.Count == 1,
+                "IslandManager Inconsistency.",
+                "Removed all connections of a body - body is still in a non single Island.");
+
+                body.island.ClearLists();
+                Pool.GiveBack(body.island);
+
+                Remove(body.island);
+
+                body.island = null;
+            }
+
+        }
+
+        public void AddConnection(RigidBody body1, RigidBody body2)
+        {
+            System.Diagnostics.Debug.Assert(!(body1.isStatic && body2.isStatic),
+                "IslandManager Inconsistency.",
+                "Arbiter detected between two static objects.");
+
+            if (body1.isStatic) // <- only body1 is static
+            {
+                if (body2.island == null)
+                {
+                    CollisionIsland newIsland = Pool.GetNew();
+                    newIsland.IslandManager = this;
+
+                    body2.island = newIsland;
+                    body2.island.bodies.Add(body2);
+                    this.Add(newIsland);
+                }
+            }
+            else if (body2 == null || body2.isStatic) // <- only body2 is static
+            {
+                if (body1.island == null)
+                {
+                    CollisionIsland newIsland = Pool.GetNew();
+                    newIsland.IslandManager = this;
+
+                    body1.island = newIsland;
+                    body1.island.bodies.Add(body1);
+                    this.Add(newIsland);
+                }
+            }
+            else // both are !static
+            {
+                MergeIslands(body1, body2);
+
+                body1.connections.Add(body2);
+                body2.connections.Add(body1);
+            }
+        }
+
+        public void RemoveConnection(RigidBody body1, RigidBody body2)
+        {
+            System.Diagnostics.Debug.Assert(!(body1.isStatic && body2.isStatic),
+                "IslandManager Inconsistency.",
+                "Arbiter detected between two static objects.");
+
+            if (body1.isStatic) // <- only body1 is static
+            {
+               // if (!body2.connections.Contains(body1)) throw new Exception();
+                //System.Diagnostics.Debug.Assert(body2.connections.Contains(body1),
+                //    "IslandManager Inconsistency.",
+                //    "Missing body in connections.");
+
+                body2.connections.Remove(body1);
+            }
+            else if (body2 == null || body2.isStatic) // <- only body2 is static
+            {
+                //System.Diagnostics.Debug.Assert(body1.connections.Contains(body2),
+                //    "IslandManager Inconsistency.",
+                //    "Missing body in connections.");
+
+                body1.connections.Remove(body2);
+            }
+            else // <- both are !static
+            {
+                System.Diagnostics.Debug.Assert(body1.island == body2.island,
+                    "IslandManager Inconsistency.",
+                    "Removing arbiter with different islands.");
+
+                body1.connections.Remove(body2);
+                body2.connections.Remove(body1);
+
                 SplitIslands(body1, body2);
             }
         }
@@ -184,11 +204,10 @@ namespace Jitter.Collision
         private List<RigidBody> visitedBodiesLeft = new List<RigidBody>();
         private List<RigidBody> visitedBodiesRight = new List<RigidBody>();
 
-        // Boths bodies must be !static - so they must have an island
         private void SplitIslands(RigidBody body0, RigidBody body1)
         {
-            System.Diagnostics.Debug.Assert(body0.island == body1.island,
-                "Two bodies connected by arbiter but not in the same island");
+            System.Diagnostics.Debug.Assert(body0.island != null && (body0.island == body1.island),
+                "Islands not the same or null.");
 
             leftSearchQueue.Enqueue(body0);
             rightSearchQueue.Enqueue(body1);
@@ -204,15 +223,18 @@ namespace Jitter.Collision
                 RigidBody currentNode = leftSearchQueue.Dequeue();
                 if (!currentNode.isStatic)
                 {
-                    for (int i = 0; i < currentNode.bodies.Count; i++)
+
+                    if (currentNode.connections.Count > 12) throw new Exception();
+
+                    for (int i = 0; i < currentNode.connections.Count; i++)
                     {
-                        RigidBody connectedNode = currentNode.bodies[i];
+                        RigidBody connectedNode = currentNode.connections[i];
 
                         if (connectedNode.marker == 0)
                         {
                             leftSearchQueue.Enqueue(connectedNode);
                             visitedBodiesLeft.Add(connectedNode);
-                            currentNode.marker = 1;
+                            connectedNode.marker = 1;
                         }
                         else if (connectedNode.marker == 2)
                         {
@@ -227,15 +249,15 @@ namespace Jitter.Collision
                 if (!currentNode.isStatic)
                 {
 
-                    for (int i = 0; i < currentNode.bodies.Count; i++)
+                    for (int i = 0; i < currentNode.connections.Count; i++)
                     {
-                        RigidBody connectedNode = currentNode.bodies[i];
+                        RigidBody connectedNode = currentNode.connections[i];
 
                         if (connectedNode.marker == 0)
                         {
                             rightSearchQueue.Enqueue(connectedNode);
                             visitedBodiesRight.Add(connectedNode);
-                            currentNode.marker = 2;
+                            connectedNode.marker = 2;
                         }
                         else if (connectedNode.marker == 1)
                         {
@@ -247,7 +269,9 @@ namespace Jitter.Collision
                 }
             }
 
-            CollisionIsland island = CollisionIsland.Pool.GetNew();
+            CollisionIsland island = Pool.GetNew();
+            island.IslandManager = this;
+
             this.Add(island);
 
             if (leftSearchQueue.Count == 0)
@@ -255,16 +279,21 @@ namespace Jitter.Collision
                 for (int i = 0; i < visitedBodiesLeft.Count; i++)
                 {
                     RigidBody body = visitedBodiesLeft[i];
-
                     body1.island.bodies.Remove(body);
                     island.bodies.Add(body);
-
-                    foreach (Arbiter a in body.arbiter)
-                    { body1.island.arbiter.Remove(a); island.arbiter.Add(a); }
-                    foreach (Constraint c in body.constraints)
-                    { body1.island.constraints.Remove(c); island.constraints.Add(c); }
-
                     body.island = island;
+
+                    foreach (Arbiter a in body.arbiters)
+                    {
+                        body1.island.arbiter.Remove(a);
+                        island.arbiter.Add(a);
+                    }
+
+                    foreach (Constraint c in body.constraints)
+                    {
+                        body1.island.constraints.Remove(c);
+                        island.constraints.Add(c);
+                    }
                 }
 
                 rightSearchQueue.Clear();
@@ -274,16 +303,21 @@ namespace Jitter.Collision
                 for (int i = 0; i < visitedBodiesRight.Count; i++)
                 {
                     RigidBody body = visitedBodiesRight[i];
-
                     body0.island.bodies.Remove(body);
                     island.bodies.Add(body);
-
-                    foreach (Arbiter a in body.arbiter)
-                    { body0.island.arbiter.Remove(a); island.arbiter.Add(a); }
-                    foreach (Constraint c in body.constraints)
-                    { body0.island.constraints.Remove(c); island.constraints.Add(c); }
-
                     body.island = island;
+
+                    foreach (Arbiter a in body.arbiters)
+                    {
+                        body0.island.arbiter.Remove(a);
+                        island.arbiter.Add(a);
+                    }
+
+                    foreach (Constraint c in body.constraints)
+                    {
+                        body0.island.constraints.Remove(c);
+                        island.constraints.Add(c);
+                    }
                 }
 
                 leftSearchQueue.Clear();
@@ -308,27 +342,21 @@ namespace Jitter.Collision
         // Boths bodies must be !static
         private void MergeIslands(RigidBody body0, RigidBody body1)
         {
-            if (body0.island != body1.island)
+            if (body0.island != body1.island) // <- both bodies are in different islands
             {
-                // both bodies are in different islands
-                // so we can merge them
-                if (body0.island == null)
+                if (body0.island == null) // <- one island is null
                 {
-                    // one island is null
                     body0.island = body1.island;
                     body0.island.bodies.Add(body0);
                 }
-                else if (body1.island == null)
+                else if (body1.island == null)  // <- one island is null
                 {
-                    // one island is null
                     body1.island = body0.island;
                     body1.island.bodies.Add(body1);
                 }
-                else
+                else // <- both islands are different,
                 {
-                    // both islands are different,
                     // merge smaller into larger
-
                     RigidBody smallIslandOwner, largeIslandOwner;
 
                     if (body0.island.bodies.Count > body1.island.bodies.Count)
@@ -344,7 +372,7 @@ namespace Jitter.Collision
 
                     CollisionIsland giveBackIsland = smallIslandOwner.island;
 
-                    CollisionIsland.Pool.GiveBack(giveBackIsland);
+                    Pool.GiveBack(giveBackIsland);
                     this.Remove(giveBackIsland);
 
                     foreach (RigidBody b in giveBackIsland.bodies)
@@ -367,10 +395,11 @@ namespace Jitter.Collision
                 }
 
             }
-            else if (body0.island == null)
+            else if (body0.island == null) // <- both are null
             {
-                // both are null
-                CollisionIsland island = CollisionIsland.Pool.GetNew();
+                CollisionIsland island = Pool.GetNew();
+                island.IslandManager = this;
+
                 body0.island = body1.island = island;
 
                 body0.island.bodies.Add(body0);

@@ -39,7 +39,7 @@ namespace JitterDemo
         private Random random = new Random();
 
         private Color backgroundColor = new Color(63, 66, 73);
-        private bool multithread = false;
+        private bool multithread = true;
         private int activeBodies = 0;
 
         private bool debugDraw = false;
@@ -193,6 +193,8 @@ namespace JitterDemo
             }
         }
 
+        System.Collections.IEnumerator enumerator;
+
         protected override void Update(GameTime gameTime)
         {
             GamePadState padState = GamePad.GetState(PlayerIndex.One);
@@ -207,11 +209,20 @@ namespace JitterDemo
             if (keyState.IsKeyDown(Keys.M) && !keyboardPreviousState.IsKeyDown(Keys.M))
                 multithread = !multithread;
 
-            if (keyState.IsKeyDown(Keys.P) && !keyboardPreviousState.IsKeyDown(Keys.P))
-                lastBody.Position = lastBody.Position + JVector.Forward * 0.1f;
+            //if (keyState.IsKeyDown(Keys.P) && !keyboardPreviousState.IsKeyDown(Keys.P))
+            //{
+            //    enumerator = World.RigidBodies.GetEnumerator();
+            //    enumerator.MoveNext();
+            //    enumerator.MoveNext();
 
-            if (keyState.IsKeyDown(Keys.O) && !keyboardPreviousState.IsKeyDown(Keys.O))
-                lastBody.Position = lastBody.Position + JVector.Backward * 0.1f;
+            //    ((RigidBody)enumerator.Current).IsStatic ;
+
+            //}
+
+            //if (keyState.IsKeyDown(Keys.O) && !keyboardPreviousState.IsKeyDown(Keys.O))
+            //{
+            //    enumerator = World.RigidBodies.GetEnumerator();
+            //}
 
             #region drag and drop physical objects with the mouse
             if (mouseState.LeftButton == ButtonState.Pressed &&

@@ -29,9 +29,9 @@ namespace JitterDemo.Scenes
                 for (int e = i; e < 30; e++)
                 {
                     RigidBody body = new RigidBody(new BoxShape(new JVector(1.0f, 1.0f, 1.0f)));
-                    body.Position = new JVector((e - i * 0.5f) * 1.01f + 7, 5.5f + i * 1.0f, 3.0f);
+                    body.Position = new JVector((e - i * 0.5f) * 1.01f + 7, 0.5f + i * 1.0f, 3.0f);
                     Demo.World.AddBody(body);
-                  //  body.AffectedByGravity = false;
+                    //body.AffectedByGravity = false;
                     body.Material.Restitution = 0.0f;
                 }
             }
