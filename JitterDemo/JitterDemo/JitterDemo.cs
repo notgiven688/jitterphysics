@@ -74,7 +74,7 @@ namespace JitterDemo
             this.graphics.SynchronizeWithVerticalRetrace = false;
 
             CollisionSystem collision = new CollisionSystemPersistentSAP();
-            World = new World(collision); World.AllowDeactivation = true;
+            World = new World(collision); World.AllowDeactivation = false;
 
             this.Window.AllowUserResizing = true;
 
@@ -122,7 +122,7 @@ namespace JitterDemo
             {
                 if (type.Namespace == "JitterDemo.Scenes" && !type.IsAbstract)
                 {
-                    if (type.Name == "Pyramid") currentScene = PhysicScenes.Count;
+                    if (type.Name == "SoftBodyJenga") currentScene = PhysicScenes.Count;
                     Scenes.Scene scene = (Scenes.Scene)Activator.CreateInstance(type, this);
                     this.PhysicScenes.Add(scene);
                 }
