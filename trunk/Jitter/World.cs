@@ -430,9 +430,16 @@ namespace Jitter
 
             // Remove all connected constraints and arbiters
             foreach (Arbiter arbiter in body.arbiters)
+            {
                 arbiterMap.Remove(arbiter);
+                events.RaiseBodiesEndCollide(arbiter.body1, arbiter.body2);
+            }
+
             foreach (Constraint constraint in body.constraints)
+            {
                 constraints.Remove(constraint);
+                events.RaiseRemovedConstraint(constraint);
+            }
 
             // remove the body from the collision system
             CollisionSystem.RemoveEntity(body);

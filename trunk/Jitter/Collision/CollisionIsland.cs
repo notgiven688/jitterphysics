@@ -59,8 +59,6 @@ namespace Jitter.Collision
         /// </summary>
         public ReadOnlyHashset<Constraint> Constraints { get { return readOnlyConstraints; } }
 
-        public ReadOnlyCollection<CollisionIsland> Islands { get { return islandManager; } }
-
         private ReadOnlyHashset<RigidBody> readOnlyBodies;
         private ReadOnlyHashset<Arbiter> readOnlyArbiter;
         private ReadOnlyHashset<Constraint> readOnlyConstraints;
