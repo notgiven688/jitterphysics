@@ -94,7 +94,7 @@ namespace Jitter.Dynamics
     /// only keeps the best four contacts based on the area spanned by
     /// the contact points.
     /// </summary>
-    public class Arbiter : IBodyConnection
+    public class Arbiter
     {
         /// <summary>
         /// The first body.

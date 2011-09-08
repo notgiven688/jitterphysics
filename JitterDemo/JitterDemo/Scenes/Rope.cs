@@ -25,7 +25,7 @@ namespace JitterDemo.Scenes
 
             RigidBody last = null;
 
-            for (int i = 0; i < 40; i++)
+            for (int i = 0; i < 4; i++)
             {
                 RigidBody body = new RigidBody(new BoxShape(JVector.One));
                 body.Position = new JVector(i * 1.5f-20, 0.5f, 0);

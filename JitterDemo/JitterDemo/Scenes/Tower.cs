@@ -31,7 +31,7 @@ namespace JitterDemo.Scenes
 
             BoxShape shape = new BoxShape(2, 1, 1);
 
-            for (int e = 0; e < 30; e++)
+            for (int e = 0; e < 90; e++)
             {
                 orientation *= halfRotationStep;
 
