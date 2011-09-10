@@ -81,6 +81,8 @@ namespace JitterDemo
             this.Window.Title = "Jitter Physics Demo - Jitter "
                 + Assembly.GetAssembly(typeof(Jitter.World)).GetName().Version.ToString();
 
+            this.World.Events.ContactCreated += new Action<Contact>(Events_ContactCreated);
+
             wireframe = new RasterizerState();
             wireframe.FillMode = FillMode.WireFrame;
 
@@ -89,6 +91,15 @@ namespace JitterDemo
 
             normal = new RasterizerState();
         }
+
+        void Events_ContactCreated(Contact obj)
+        {
+            if (obj.Body1.Shape is CapsuleShape && !(obj.Body2.Shape is CapsuleShape))
+                obj.TreatBodyAsStatic(RigidBodyIndex.RigidBody1);
+            else if (obj.Body2.Shape is CapsuleShape && !(obj.Body1.Shape is CapsuleShape))
+                obj.TreatBodyAsStatic(RigidBodyIndex.RigidBody2);
+        }
+
 
         protected override void Initialize()
         {

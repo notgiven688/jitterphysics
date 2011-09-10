@@ -177,6 +177,8 @@ namespace Jitter.Dynamics
         /// </summary>
         public void Iterate()
         {
+            if (treatBody1AsStatic && treatBody2AsStatic) return;
+
             float dvx, dvy, dvz;
 
             dvx = body2.linearVelocity.X - body1.linearVelocity.X;
