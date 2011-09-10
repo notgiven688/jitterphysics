@@ -67,7 +67,7 @@ namespace JitterDemo.Scenes
                     RigidBody body = new RigidBody(new BoxShape(size));
                     body.Position = new JVector(3.0f + (even ? e : 1.0f), i + 0.5f, -5.0f + (even ? 1.0f : e));
 
-                   // Demo.World.AddBody(body);
+                    Demo.World.AddBody(body);
                 }
 
             }
@@ -88,7 +88,7 @@ namespace JitterDemo.Scenes
             softBody.SetSpringValues(0.2f, 0.005f);
             //softBody.SelfCollision = true; ;
 
-            //Demo.World.AddBody(softBody);
+            Demo.World.AddBody(softBody);
 
             SoftBody cloth = new SoftBody(20,20,0.4f);
 
