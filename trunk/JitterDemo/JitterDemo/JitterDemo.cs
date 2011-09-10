@@ -121,7 +121,7 @@ namespace JitterDemo
             {
                 if (type.Namespace == "JitterDemo.Scenes" && !type.IsAbstract)
                 {
-                    if (type.Name == "EmptyScene") currentScene = PhysicScenes.Count;
+                    if (type.Name == "SoftBodyJenga") currentScene = PhysicScenes.Count;
                     Scenes.Scene scene = (Scenes.Scene)Activator.CreateInstance(type, this);
                     this.PhysicScenes.Add(scene);
                 }
