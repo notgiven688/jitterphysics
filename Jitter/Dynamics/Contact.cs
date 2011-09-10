@@ -57,6 +57,7 @@ namespace Jitter.Dynamics
     }
     #endregion
 
+
     /// <summary>
     /// </summary>
     public class Contact : IConstraint
@@ -84,6 +85,9 @@ namespace Jitter.Dynamics
         private float restitutionBias = 0.0f;
 
         private bool newContact = false;
+
+        private bool treatBody1AsStatic = false;
+        private bool treatBody2AsStatic = false;
 
         /// <summary>
         /// A contact resource pool.
@@ -222,7 +226,7 @@ namespace Jitter.Dynamics
             impulse.Y = normal.Y * normalImpulse + tangent.Y * tangentImpulse;
             impulse.Z = normal.Z * normalImpulse + tangent.Z * tangentImpulse;
 
-            if (!body1.isStatic)
+            if (!treatBody1AsStatic)
             {
                 body1.linearVelocity.X -= (impulse.X * body1.inverseMass);
                 body1.linearVelocity.Y -= (impulse.Y * body1.inverseMass);
@@ -254,7 +258,7 @@ namespace Jitter.Dynamics
                 }
             }
 
-            if (!body2.isStatic)
+            if (!treatBody2AsStatic)
             {
 
                 body2.linearVelocity.X += (impulse.X * body2.inverseMass);
@@ -326,7 +330,7 @@ namespace Jitter.Dynamics
             #region INLINE - HighFrequency
             //JVector temp;
 
-            if (!body1.isStatic)
+            if (!treatBody1AsStatic)
             {
                 body1.linearVelocity.X -= (impulse.X * body1.inverseMass);
                 body1.linearVelocity.Y -= (impulse.Y * body1.inverseMass);
@@ -355,7 +359,7 @@ namespace Jitter.Dynamics
                 body1.angularVelocity.Z -= num5;
             }
 
-            if (!body2.isStatic)
+            if (!treatBody2AsStatic)
             {
 
                 body2.linearVelocity.X += (impulse.X * body2.inverseMass);
@@ -394,7 +398,7 @@ namespace Jitter.Dynamics
             #region INLINE - HighFrequency
             //JVector temp;
 
-            if (!body1.isStatic)
+            if (!treatBody1AsStatic)
             {
                 body1.linearVelocity.X -= (impulse.X * body1.inverseMass);
                 body1.linearVelocity.Y -= (impulse.Y * body1.inverseMass);
@@ -423,7 +427,7 @@ namespace Jitter.Dynamics
                 body1.angularVelocity.Z -= num5;
             }
 
-            if (!body2.isStatic)
+            if (!treatBody2AsStatic)
             {
 
                 body2.linearVelocity.X += (impulse.X * body2.inverseMass);
@@ -476,7 +480,7 @@ namespace Jitter.Dynamics
             float kNormal = 0.0f;
 
             JVector rantra = JVector.Zero;
-            if (!body1.isStatic)
+            if (!treatBody1AsStatic)
             {
                 kNormal += body1.inverseMass;
 
@@ -505,7 +509,7 @@ namespace Jitter.Dynamics
             }
 
             JVector rbntrb = JVector.Zero;
-            if (!body2.isStatic)
+            if (!treatBody2AsStatic)
             {
                 kNormal += body2.inverseMass;
 
@@ -533,8 +537,8 @@ namespace Jitter.Dynamics
                 }
             }
 
-            if (!body1.isStatic) kNormal += rantra.X * normal.X + rantra.Y * normal.Y + rantra.Z * normal.Z;
-            if (!body2.isStatic) kNormal += rbntrb.X * normal.X + rbntrb.Y * normal.Y + rbntrb.Z * normal.Z;
+            if (!treatBody1AsStatic) kNormal += rantra.X * normal.X + rantra.Y * normal.Y + rantra.Z * normal.Z;
+            if (!treatBody2AsStatic) kNormal += rbntrb.X * normal.X + rbntrb.Y * normal.Y + rbntrb.Z * normal.Z;
 
             massNormal = 1.0f / kNormal;
 
@@ -556,7 +560,7 @@ namespace Jitter.Dynamics
 
             float kTangent = 0.0f;
 
-            if (body1.isStatic) rantra.MakeZero();
+            if (treatBody1AsStatic) rantra.MakeZero();
             else
             {
                 kTangent += body1.inverseMass;
@@ -585,7 +589,7 @@ namespace Jitter.Dynamics
 
             }
 
-            if (body2.isStatic) rbntrb.MakeZero();
+            if (treatBody2AsStatic) rbntrb.MakeZero();
             else
             {
                 kTangent += body2.inverseMass;
@@ -613,8 +617,8 @@ namespace Jitter.Dynamics
                 }
             }
 
-            if (!body1.isStatic) kTangent += JVector.Dot(ref rantra, ref tangent);
-            if (!body2.isStatic) kTangent += JVector.Dot(ref rbntrb, ref tangent);
+            if (!treatBody1AsStatic) kTangent += JVector.Dot(ref rantra, ref tangent);
+            if (!treatBody2AsStatic) kTangent += JVector.Dot(ref rbntrb, ref tangent);
             massTangent = 1.0f / kTangent;
 
             restitutionBias = 0.0f;
@@ -655,7 +659,7 @@ namespace Jitter.Dynamics
             impulse.Y = normal.Y * accumulatedNormalImpulse + tangent.Y * accumulatedTangentImpulse;
             impulse.Z = normal.Z * accumulatedNormalImpulse + tangent.Z * accumulatedTangentImpulse;
 
-            if (!body1.isStatic)
+            if (!treatBody1AsStatic)
             {
                 body1.linearVelocity.X -= (impulse.X * body1.inverseMass);
                 body1.linearVelocity.Y -= (impulse.Y * body1.inverseMass);
@@ -688,7 +692,7 @@ namespace Jitter.Dynamics
                 }
             }
 
-            if (!body2.isStatic)
+            if (!treatBody2AsStatic)
             {
 
                 body2.linearVelocity.X += (impulse.X * body2.inverseMass);
@@ -727,6 +731,12 @@ namespace Jitter.Dynamics
             newContact = false;
         }
 
+        public void TreatBodyAsStatic(RigidBodyIndex index)
+        {
+            if (index == RigidBodyIndex.RigidBody1) treatBody1AsStatic = true;
+            else treatBody2AsStatic = true;
+        }
+
 
         bool body1IsMassPoint; bool body2IsMassPoint;
 
@@ -762,6 +772,9 @@ namespace Jitter.Dynamics
             // Material Properties
             if (newContact)
             {
+                treatBody1AsStatic = body1.isStatic;
+                treatBody2AsStatic = body2.isStatic;
+
                 accumulatedNormalImpulse = 0.0f;
                 accumulatedTangentImpulse = 0.0f;
 

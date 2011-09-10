@@ -917,8 +917,6 @@ namespace Jitter
 
         }
 
-
-
         private void CheckDeactivation()
         {
             // A body deactivation DOESN'T kill the contacts - they are stored in
