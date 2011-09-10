@@ -90,7 +90,6 @@ namespace JitterDemo
             normal = new RasterizerState();
         }
 
-
         protected override void Initialize()
         {
             Camera = new Camera(this);
@@ -122,7 +121,7 @@ namespace JitterDemo
             {
                 if (type.Namespace == "JitterDemo.Scenes" && !type.IsAbstract)
                 {
-                    if (type.Name == "SoftBodyJenga") currentScene = PhysicScenes.Count;
+                    if (type.Name == "EmptyScene") currentScene = PhysicScenes.Count;
                     Scenes.Scene scene = (Scenes.Scene)Activator.CreateInstance(type, this);
                     this.PhysicScenes.Add(scene);
                 }

@@ -113,11 +113,6 @@ namespace Jitter.Collision
                 body.arbiters.Clear();
 
                 // the body should now form an island on his own.
-                // thats okay, but since static bodies dont have islands
-                // remove this island.
-                System.Diagnostics.Debug.Assert(body.island.bodies.Count == 1,
-                "IslandManager Inconsistency.",
-                "Removed all connections of a body - body is still in a non single Island.");
 
                 body.island.ClearLists();
                 Pool.GiveBack(body.island);
@@ -193,19 +188,10 @@ namespace Jitter.Collision
 
             if (body1.isStatic) // <- only body1 is static
             {
-               // if (!body2.connections.Contains(body1)) throw new Exception();
-                //System.Diagnostics.Debug.Assert(body2.connections.Contains(body1),
-                //    "IslandManager Inconsistency.",
-                //    "Missing body in connections.");
-
                 body2.connections.Remove(body1);
             }
             else if (body2 == null || body2.isStatic) // <- only body2 is static
             {
-                //System.Diagnostics.Debug.Assert(body1.connections.Contains(body2),
-                //    "IslandManager Inconsistency.",
-                //    "Missing body in connections.");
-
                 body1.connections.Remove(body2);
             }
             else // <- both are !static

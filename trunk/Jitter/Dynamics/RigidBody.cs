@@ -33,6 +33,12 @@ using Jitter.DataStructures;
 namespace Jitter.Dynamics
 {
 
+
+    public enum RigidBodyIndex
+    {
+        RigidBody1, RigidBody2
+    }
+
     /// <summary>
     /// The RigidBody class.
     /// </summary>
