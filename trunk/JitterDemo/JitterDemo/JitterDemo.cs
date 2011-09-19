@@ -74,7 +74,7 @@ namespace JitterDemo
             this.graphics.SynchronizeWithVerticalRetrace = false;
 
             CollisionSystem collision = new CollisionSystemPersistentSAP();
-            World = new World(collision); World.AllowDeactivation = false;
+            World = new World(collision); World.AllowDeactivation = true;
 
             this.Window.AllowUserResizing = true;
 
@@ -575,7 +575,7 @@ namespace JitterDemo
                     box = JBBox.CreateMerged(box, body.BoundingBox);
                 }
 
-                DebugDrawer.DrawAabb(box.Min, box.Max, Color.Green);
+                DebugDrawer.DrawAabb(box.Min, box.Max, island.IsActive() ? Color.Green : Color.Yellow);
 
             }
         }

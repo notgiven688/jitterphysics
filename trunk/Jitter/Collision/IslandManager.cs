@@ -24,16 +24,16 @@ namespace Jitter.Collision
         }
 
         public void ArbiterCreated(Arbiter arbiter)
-        {  
+        {
             AddConnection(arbiter.body1, arbiter.body2);
 
             arbiter.body1.arbiters.Add(arbiter);
             arbiter.body2.arbiters.Add(arbiter);
 
-            if (arbiter.body1.island !=null)
-            arbiter.body1.island.arbiter.Add(arbiter);
+            if (arbiter.body1.island != null)
+                arbiter.body1.island.arbiter.Add(arbiter);
             else if (arbiter.body2.island != null)
-            arbiter.body2.island.arbiter.Add(arbiter);
+                arbiter.body2.island.arbiter.Add(arbiter);
         }
 
         public void ArbiterRemoved(Arbiter arbiter)
@@ -42,9 +42,9 @@ namespace Jitter.Collision
             arbiter.body2.arbiters.Remove(arbiter);
 
             if (arbiter.body1.island != null)
-            arbiter.body1.island.arbiter.Remove(arbiter);
+                arbiter.body1.island.arbiter.Remove(arbiter);
             else if (arbiter.body2.island != null)
-            arbiter.body2.island.arbiter.Remove(arbiter);
+                arbiter.body2.island.arbiter.Remove(arbiter);
 
             RemoveConnection(arbiter.body1, arbiter.body2);
         }
@@ -54,12 +54,12 @@ namespace Jitter.Collision
             AddConnection(constraint.body1, constraint.body2);
 
             constraint.body1.constraints.Add(constraint);
-            if(constraint.body2 != null) constraint.body2.constraints.Add(constraint);
+            if (constraint.body2 != null) constraint.body2.constraints.Add(constraint);
 
             if (constraint.body1.island != null)
-            constraint.body1.island.constraints.Add(constraint);
+                constraint.body1.island.constraints.Add(constraint);
             else if (constraint.body2 != null && constraint.body2.island != null)
-            constraint.body2.island.constraints.Add(constraint);
+                constraint.body2.island.constraints.Add(constraint);
         }
 
         public void ConstraintRemoved(Constraint constraint)
@@ -67,12 +67,12 @@ namespace Jitter.Collision
             constraint.body1.constraints.Remove(constraint);
 
             if (constraint.body2 != null)
-            constraint.body2.constraints.Remove(constraint);
+                constraint.body2.constraints.Remove(constraint);
 
             if (constraint.body1.island != null)
-            constraint.body1.island.constraints.Remove(constraint);
+                constraint.body1.island.constraints.Remove(constraint);
             else if (constraint.body2 != null && constraint.body2.island != null)
-            constraint.body2.island.constraints.Remove(constraint);
+                constraint.body2.island.constraints.Remove(constraint);
 
             RemoveConnection(constraint.body1, constraint.body2);
         }
@@ -98,6 +98,9 @@ namespace Jitter.Collision
             body.island = null;
         }
 
+        private Stack<Arbiter> rmStackArb = new Stack<Arbiter>();
+        private Stack<Constraint> rmStackCstr = new Stack<Constraint>();
+
         public void RemoveBody(RigidBody body)
         {
             // Remove everything.
@@ -107,12 +110,21 @@ namespace Jitter.Collision
                      "IslandManager Inconsistency.",
                      "IslandManager doesn't own the Island.");
 
-                while (body.connections.Count > 0) RemoveConnection(body, body.connections[0]);
+                foreach (Arbiter arbiter in body.arbiters) rmStackArb.Push(arbiter);
+                while (rmStackArb.Count > 0) ArbiterRemoved(rmStackArb.Pop());
 
-                body.constraints.Clear();
+                foreach (Constraint constraint in body.constraints) rmStackCstr.Push(constraint);
+                while (rmStackCstr.Count > 0) ConstraintRemoved(rmStackCstr.Pop());
+
                 body.arbiters.Clear();
+                body.constraints.Clear();
 
                 // the body should now form an island on his own.
+                // thats okay, but since static bodies dont have islands
+                // remove this island.
+                System.Diagnostics.Debug.Assert(body.island.bodies.Count == 1,
+                "IslandManager Inconsistency.",
+                "Removed all connections of a body - body is still in a non single Island.");
 
                 body.island.ClearLists();
                 Pool.GiveBack(body.island);
@@ -188,10 +200,19 @@ namespace Jitter.Collision
 
             if (body1.isStatic) // <- only body1 is static
             {
+                // if (!body2.connections.Contains(body1)) throw new Exception();
+                //System.Diagnostics.Debug.Assert(body2.connections.Contains(body1),
+                //    "IslandManager Inconsistency.",
+                //    "Missing body in connections.");
+
                 body2.connections.Remove(body1);
             }
             else if (body2 == null || body2.isStatic) // <- only body2 is static
             {
+                //System.Diagnostics.Debug.Assert(body1.connections.Contains(body2),
+                //    "IslandManager Inconsistency.",
+                //    "Missing body in connections.");
+
                 body1.connections.Remove(body2);
             }
             else // <- both are !static
