@@ -26,11 +26,11 @@ namespace JitterDemo.Scenes
             // CollisionSystemSAP          7   ms
             // CollisionSystemPersistenSAP 1   ms
 
-            for (int i = 0; i < 15; i++)
+            for (int i = 0; i < 10; i++)
             {
-                for (int e = 0; e < 15; e++)
+                for (int e = 0; e < 10; e++)
                 {
-                    for (int k = 0; k < 15; k++)
+                    for (int k = 0; k < 10; k++)
                     {
                         RigidBody b = new RigidBody(shape);
                         Demo.World.AddBody(b);

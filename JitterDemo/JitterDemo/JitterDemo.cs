@@ -132,7 +132,7 @@ namespace JitterDemo
             {
                 if (type.Namespace == "JitterDemo.Scenes" && !type.IsAbstract)
                 {
-                    if (type.Name == "SoftBodyJenga") currentScene = PhysicScenes.Count;
+                    if (type.Name == "BroadphaseStress") currentScene = PhysicScenes.Count;
                     Scenes.Scene scene = (Scenes.Scene)Activator.CreateInstance(type, this);
                     this.PhysicScenes.Add(scene);
                 }
@@ -356,7 +356,7 @@ namespace JitterDemo
         private void SpawnRandomPrimitive(JVector position, JVector velocity)
         {
             RigidBody body = null;
-            int rndn = 4;
+            int rndn = random.Next(7);
 
             // less of the more advanced objects
             if (rndn == 5 || rndn == 6) rndn = random.Next(7);

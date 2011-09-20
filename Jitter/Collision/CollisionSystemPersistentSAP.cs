@@ -34,97 +34,7 @@ namespace Jitter.Collision
     /// </summary>
     public class CollisionSystemPersistentSAP : CollisionSystem
     {
-        private const int MatrixGrowFactor = 500;
         private const int AddedObjectsBruteForceIsUsed = 250;
-
-        #region private class Triangular2BitMatrix
-        private class Triangular2BitMatrix
-        {
-            private BitArray bitMatrix0 = new BitArray(0);
-            private BitArray bitMatrix1 = new BitArray(0);
-
-            public Triangular2BitMatrix()
-            {
-                Size = 0;
-            }
-
-            public void ZeroAll()
-            {
-                bitMatrix0.SetAll(false);
-                bitMatrix1.SetAll(false);
-            }
-
-            public int Size
-            {
-                set
-                {
-                    int length = (int)((double)(value - 1.0d) * ((double)value / 2.0d)) + value;
-                    bitMatrix0.Length = length;
-                    bitMatrix1.Length = length;
-                }
-                get
-                {
-                    int maxIndex = bitMatrix0.Length - 1;
-                    return (int)(Math.Sqrt(2.25d + 2.0d * (double)maxIndex) - 0.5d);
-                }
-            }
-
-            public int GetValue(int row, int column)
-            {
-                if (column > row) { int temp = column; column = row; row = temp; }
-                int index = (int)((float)(row - 1) * ((float)row / 2.0f)) + column;
-
-                return (bitMatrix1[index] ? 1 : 0) * 2 + (bitMatrix0[index] ? 1 : 0);
-            }
-
-            public void SetValue(int row, int column, int value)
-            {
-                if (column > row) { int temp = column; column = row; row = temp; }
-                int index = (int)((float)(row - 1) * ((float)row / 2.0f)) + column;
-
-                bitMatrix0[index] = !(value % 2 == 0);
-                bitMatrix1[index] = !(value / 2 == 0);
-            }
-
-            public int IncrementCounter(int row, int column)
-            {
-                if (column > row) { int temp = column; column = row; row = temp; }
-                int index = (int)((float)(row - 1) * ((float)row / 2.0f)) + column;
-
-                bool b0 = bitMatrix0[index];
-                bool b1 = bitMatrix1[index];
-
-                if (b0 && b1) return 3;
-
-                b1 = b0 ^ b1;
-                b0 = !b0;
-
-                bitMatrix0[index] = b0;
-                bitMatrix1[index] = b1;
-
-                return (b1 ? 1 : 0) * 2 + (b0 ? 1 : 0);
-            }
-
-            public int DecrementCounter(int row, int column)
-            {
-                if (column > row) { int temp = column; column = row; row = temp; }
-                int index = (int)((float)(row - 1) * ((float)row / 2.0f)) + column;
-
-                bool b0 = bitMatrix0[index];
-                bool b1 = bitMatrix1[index];
-
-                if (!b0 && !b1) return 0;
-
-                b1 = !(b0 ^ b1);
-                b0 = !b0;
-
-                bitMatrix0[index] = b0;
-                bitMatrix1[index] = b1;
-
-                return (b1 ? 1 : 0) * 2 + (b0 ? 1 : 0);
-            }
-        }
-        #endregion
 
         #region private class SweepPoint
         private class SweepPoint
@@ -140,21 +50,26 @@ namespace Jitter.Collision
                 this.Axis = axis;
             }
 
-            public float GetValue()
+            public float Value
             {
-                 if (Begin)
+                get
                 {
-                    if (Axis == 0) return Body.BoundingBox.Min.X;
-                    else if (Axis == 1) return Body.BoundingBox.Min.Y;
-                    else return Body.BoundingBox.Min.Z;
-                }
-                else
-                {
-                    if (Axis == 0) return Body.BoundingBox.Max.X;
-                    else if (Axis == 1) return Body.BoundingBox.Max.Y;
-                    else return Body.BoundingBox.Max.Z;
+                    if (Begin)
+                    {
+                        if (Axis == 0) return Body.BoundingBox.Min.X;
+                        else if (Axis == 1) return Body.BoundingBox.Min.Y;
+                        else return Body.BoundingBox.Min.Z;
+                    }
+                    else
+                    {
+                        if (Axis == 0) return Body.BoundingBox.Max.X;
+                        else if (Axis == 1) return Body.BoundingBox.Max.Y;
+                        else return Body.BoundingBox.Max.Z;
+                    }
                 }
             }
+
+
         }
         #endregion
 
@@ -181,7 +96,7 @@ namespace Jitter.Collision
             /// </summary>
             /// <param name="body1">The first body.</param>
             /// <param name="body2">The second body.</param>
-            internal void SetBodies(RigidBody body1, RigidBody body2)
+            internal void SetBodies(IBroadphaseEntity body1, IBroadphaseEntity body2)
             {
                 this.body1 = body1;
                 this.body2 = body2;
@@ -212,12 +127,10 @@ namespace Jitter.Collision
         #endregion
 
         private List<IBroadphaseEntity> bodyList = new List<IBroadphaseEntity>();
+
         private List<SweepPoint> axis1 = new List<SweepPoint>();
         private List<SweepPoint> axis2 = new List<SweepPoint>();
         private List<SweepPoint> axis3 = new List<SweepPoint>();
-
-        private Triangular2BitMatrix t2bM;
-
 
         private HashSet<BodyPair> fullOverlaps = new HashSet<BodyPair>();
 
@@ -227,16 +140,14 @@ namespace Jitter.Collision
         {
             detectCallback = new Action<object>(DetectCallback);
             sortCallback = new Action<object>(SortCallback);
-
-            t2bM = new Triangular2BitMatrix();
         }
 
         #region Incoherent Update - Quicksort
 
         private int QuickSort(SweepPoint sweepPoint1, SweepPoint sweepPoint2)
         {
-            float val1 = sweepPoint1.GetValue();
-            float val2 = sweepPoint2.GetValue();
+            float val1 = sweepPoint1.Value;
+            float val2 = sweepPoint2.Value;
 
             if (val1 > val2) return 1;
             else if (val2 > val1) return -1;
@@ -258,8 +169,8 @@ namespace Jitter.Collision
                 {
                     foreach (IBroadphaseEntity body in activeList)
                     {
-                        int count = t2bM.IncrementCounter(body.BroadphaseTag, keyelement.Body.BroadphaseTag);
-                        if (count == 3) fullOverlaps.Add(new BodyPair(body, keyelement.Body));
+                        if (CheckBoundingBoxes(body,keyelement.Body)) 
+                            fullOverlaps.Add(new BodyPair(body, keyelement.Body));
                     }
 
                     activeList.Add(keyelement.Body);
@@ -279,41 +190,28 @@ namespace Jitter.Collision
             for (int j = 1; j < axis.Count; j++)
             {
                 SweepPoint keyelement = axis[j];
-                float key = keyelement.GetValue();
+                float key = keyelement.Value;
 
                 int i = j - 1;
 
-                while (i >= 0 && axis[i].GetValue() > key)
+                while (i >= 0 && axis[i].Value > key)
                 {
                     SweepPoint swapper = axis[i];
 
                     if (keyelement.Begin && !swapper.Begin)
                     {
-                        lock (t2bM)
+                        lock (fullOverlaps)
                         {
-                            int count = t2bM.IncrementCounter(keyelement.Body.BroadphaseTag,
-                                swapper.Body.BroadphaseTag);
-
-                            if (count == 3)
-                            {
-                                BodyPair pair = new BodyPair(keyelement.Body, swapper.Body);
-                                fullOverlaps.Add(pair);
-                            }
+                            if (CheckBoundingBoxes(swapper.Body, keyelement.Body)) 
+                                fullOverlaps.Add(new BodyPair(swapper.Body, keyelement.Body));
                         }
                     }
 
                     if (!keyelement.Begin && swapper.Begin)
                     {
-                        lock (t2bM)
+                        lock (fullOverlaps)
                         {
-                            int count = t2bM.DecrementCounter(keyelement.Body.BroadphaseTag,
-                                swapper.Body.BroadphaseTag);
-
-                            if (count == 2)
-                            {
-                                BodyPair pair = new BodyPair(keyelement.Body, swapper.Body);
-                                fullOverlaps.Remove(pair);
-                            }
+                            fullOverlaps.Remove(new BodyPair(swapper.Body, keyelement.Body));
                         }
                     }
 
@@ -324,18 +222,6 @@ namespace Jitter.Collision
             }
         }
         #endregion
-
-        private void ResizeMatrix(int growValue)
-        {
-            if (bodyList.Count > t2bM.Size)
-            {
-                t2bM.Size += growValue;
-            }
-            else if (t2bM.Size - bodyList.Count > growValue)
-            {
-                t2bM.Size -= growValue;
-            }
-        }
 
         int addCounter = 0;
         public override void AddEntity(IBroadphaseEntity body)
@@ -350,16 +236,12 @@ namespace Jitter.Collision
             axis2.Add(new SweepPoint(body, true, 1)); axis2.Add(new SweepPoint(body, false, 1));
             axis3.Add(new SweepPoint(body, true, 2)); axis3.Add(new SweepPoint(body, false, 2));
 
-            ResizeMatrix(MatrixGrowFactor);
-
             addCounter++;
         }
 
         Stack<BodyPair> depricated = new Stack<BodyPair>();
         public override bool RemoveEntity(IBroadphaseEntity body)
         {
-            if (body.BroadphaseTag > bodyList.Count || bodyList[body.BroadphaseTag] != body) return false;
-
             int count;
 
             count = 0;
@@ -377,32 +259,7 @@ namespace Jitter.Collision
             foreach (var pair in fullOverlaps) if (pair.body1 == body || pair.body2 == body) depricated.Push(pair);
             while (depricated.Count > 0) fullOverlaps.Remove(depricated.Pop());
 
-            IBroadphaseEntity lastBody = bodyList[bodyList.Count - 1];
-
-            if (body == lastBody)
-            {
-                for (int i = 0; i < bodyList.Count; i++)
-                {
-                    t2bM.SetValue(body.BroadphaseTag, i, 0);
-                }
-
-                bodyList.RemoveAt(body.BroadphaseTag);
-            }
-            else
-            {
-                for (int i = 0; i < bodyList.Count; i++)
-                {
-                    int value = t2bM.GetValue(lastBody.BroadphaseTag, i);
-                    t2bM.SetValue(body.BroadphaseTag, i, value);
-                }
-
-                bodyList.RemoveAt(lastBody.BroadphaseTag);
-                bodyList[body.BroadphaseTag] = lastBody;
-
-                lastBody.BroadphaseTag = body.BroadphaseTag;
-            }
-
-            ResizeMatrix(MatrixGrowFactor);
+            bodyList.Remove(body);
 
             return true;
         }
@@ -419,7 +276,6 @@ namespace Jitter.Collision
         {
             if (addCounter > AddedObjectsBruteForceIsUsed)
             {
-                t2bM.ZeroAll();
                 fullOverlaps.Clear();
 
                 DirtySortAxis(axis1);
