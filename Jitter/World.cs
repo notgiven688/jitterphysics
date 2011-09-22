@@ -711,7 +711,7 @@ namespace Jitter
 
         private void UpdateContacts()
         {
-            foreach (Arbiter arbiter in arbiterMap.Values)
+            foreach (Arbiter arbiter in arbiterMap.Arbiters)
             {
                 UpdateArbiterContacts(arbiter);
             }

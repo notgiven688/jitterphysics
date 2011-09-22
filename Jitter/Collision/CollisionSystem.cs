@@ -314,6 +314,7 @@ namespace Jitter.Collision
                             {
                                 JVector point1, point2;
                                 FindSupportPoints(body1, body2, ms1, ms2, ref point, ref normal, out point1, out point2);
+                                
                                 RaiseCollisionDetected(body1, body2, ref point1, ref point2, ref normal, penetration);
                             }
                         }

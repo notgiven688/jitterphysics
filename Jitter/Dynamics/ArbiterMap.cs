@@ -24,6 +24,8 @@ using System.Collections.Generic;
 using Jitter.Dynamics;
 using Jitter.LinearMath;
 using Jitter.Collision.Shapes;
+using System.Collections;
+using Jitter.Collision;
 #endregion
 
 namespace Jitter.Dynamics
@@ -107,8 +109,11 @@ namespace Jitter.Dynamics
     /// <summary>
     /// The ArbiterMap is a dictionary which stores all arbiters.
     /// </summary>
-    public class ArbiterMap : Dictionary<ArbiterKey,Arbiter>
+    public class ArbiterMap : IEnumerable
     {
+        private Dictionary<ArbiterKey, Arbiter> dictionary =
+            new Dictionary<ArbiterKey, Arbiter>(2048, arbiterKeyComparer);
+
         private ArbiterKey lookUpKey;
         private static ArbiterKeyComparer arbiterKeyComparer = new ArbiterKeyComparer();
 
@@ -116,7 +121,6 @@ namespace Jitter.Dynamics
         /// Initializes a new instance of the ArbiterMap class.
         /// </summary>
         public ArbiterMap()
-            : base(2048,arbiterKeyComparer)
         {
             lookUpKey = new ArbiterKey(null,null);
         }
@@ -131,17 +135,28 @@ namespace Jitter.Dynamics
         public bool LookUpArbiter(RigidBody body1, RigidBody body2,out Arbiter arbiter)
         {
             lookUpKey.SetBodies(body1, body2);
-            return this.TryGetValue(lookUpKey, out arbiter);
+            return dictionary.TryGetValue(lookUpKey, out arbiter);
         }
 
-        /// <summary>
-        /// Removes an arbiter from the ArbiterMap.
-        /// </summary>
-        /// <param name="arbiter">The arbiter to be removed.</param>
-        public void Remove(Arbiter arbiter)
+        public Dictionary<ArbiterKey, Arbiter>.ValueCollection Arbiters
+        {
+            get { return dictionary.Values; }
+        }
+
+        internal void Add(ArbiterKey key, Arbiter arbiter)
+        {
+            dictionary.Add(key, arbiter);
+        }
+
+        internal void Clear()
+        {
+            dictionary.Clear();
+        }
+
+        internal void Remove(Arbiter arbiter)
         {
             lookUpKey.SetBodies(arbiter.body1, arbiter.body2);
-            this.Remove(lookUpKey);
+            dictionary.Remove(lookUpKey);
         }
 
         /// <summary>
@@ -153,9 +168,13 @@ namespace Jitter.Dynamics
         public bool ContainsArbiter(RigidBody body1, RigidBody body2)
         {
             lookUpKey.SetBodies(body1, body2);
-            return this.ContainsKey(lookUpKey);
+            return dictionary.ContainsKey(lookUpKey);
         }
 
+        public IEnumerator GetEnumerator()
+        {
+            return dictionary.GetEnumerator();
+        }
     }
 
 }
