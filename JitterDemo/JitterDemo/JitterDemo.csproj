@@ -108,6 +108,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Camera.cs" />
+    <Compile Include="Classes from Matt\MyClasses.cs" />
     <Compile Include="Conversion.cs" />
     <Compile Include="DebugDrawer.cs" />
     <Compile Include="Display.cs" />

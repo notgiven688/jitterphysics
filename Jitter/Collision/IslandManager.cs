@@ -8,10 +8,18 @@ using System.Collections.ObjectModel;
 
 namespace Jitter.Collision
 {
+
+
+    /// <summary>
+    /// bodies have: connections - bodies they are connected with (via constraints or arbiters)
+    ///              arbiters    - all arbiters they are involved
+    ///              constraints - all constraints they are involved
+    ///              
+    /// static bodies dont have any connections. Think of the islands as a graph:
+    /// nodes are the bodies, and edges are the connections
+    /// </summary>
     class IslandManager : ReadOnlyCollection<CollisionIsland>
     {
-        // TODO: AddBody
-        // Remove the == null stuff
 
         public static ResourcePool<CollisionIsland> Pool = new ResourcePool<CollisionIsland>();
 
@@ -81,8 +89,6 @@ namespace Jitter.Collision
         {
             // A static body doesn't have any connections.
             body.connections.Clear();
-            body.constraints.Clear();
-            body.arbiters.Clear();
 
             if (body.island != null)
             {
@@ -104,20 +110,21 @@ namespace Jitter.Collision
         public void RemoveBody(RigidBody body)
         {
             // Remove everything.
+            foreach (Arbiter arbiter in body.arbiters) rmStackArb.Push(arbiter);
+            while (rmStackArb.Count > 0) ArbiterRemoved(rmStackArb.Pop());
+
+            foreach (Constraint constraint in body.constraints) rmStackCstr.Push(constraint);
+            while (rmStackCstr.Count > 0) ConstraintRemoved(rmStackCstr.Pop());
+
+            body.arbiters.Clear();
+            body.constraints.Clear();
+
             if (body.island != null)
             {
                 System.Diagnostics.Debug.Assert(body.island.islandManager == this,
-                     "IslandManager Inconsistency.",
-                     "IslandManager doesn't own the Island.");
+                    "IslandManager Inconsistency.",
+                    "IslandManager doesn't own the Island.");
 
-                foreach (Arbiter arbiter in body.arbiters) rmStackArb.Push(arbiter);
-                while (rmStackArb.Count > 0) ArbiterRemoved(rmStackArb.Pop());
-
-                foreach (Constraint constraint in body.constraints) rmStackCstr.Push(constraint);
-                while (rmStackCstr.Count > 0) ConstraintRemoved(rmStackCstr.Pop());
-
-                body.arbiters.Clear();
-                body.constraints.Clear();
 
                 // the body should now form an island on his own.
                 // thats okay, but since static bodies dont have islands

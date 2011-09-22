@@ -553,6 +553,8 @@ namespace Jitter
             foreach (RigidBody body in rigidBodies) body.PreStep();
             UpdateContacts();
 
+            while (removedArbiterQueue.Count > 0) islands.ArbiterRemoved(removedArbiterQueue.Dequeue());
+
             foreach (SoftBody body in softbodies)
             {
                 body.Update(timestep);
@@ -561,7 +563,9 @@ namespace Jitter
             }
 
             CollisionSystem.Detect(multithread);
-            BuildIslands();
+           
+            while (addedArbiterQueue.Count > 0) islands.ArbiterCreated(addedArbiterQueue.Dequeue());
+
             CheckDeactivation();
 
             IntegrateForces();
@@ -575,13 +579,11 @@ namespace Jitter
             events.RaiseWorldPreStep(timestep);
             foreach (RigidBody body in rigidBodies) body.PreStep();
 
-
             sw.Stop(); debugTimes[(int)DebugType.PreStep] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
             UpdateContacts();
             sw.Stop(); debugTimes[(int)DebugType.UpdateContacts] = sw.Elapsed.TotalMilliseconds;
-
 
             sw.Reset(); sw.Start();
             double ms = 0;
@@ -622,7 +624,6 @@ namespace Jitter
             sw.Reset(); sw.Start();
             Integrate(multithread);
             sw.Stop(); debugTimes[(int)DebugType.Integrate] = sw.Elapsed.TotalMilliseconds;
-
 
             sw.Reset(); sw.Start();
             foreach (RigidBody body in rigidBodies) body.PostStep();
