@@ -90,6 +90,7 @@ namespace JitterDemo
             cullMode.CullMode = CullMode.None;
 
             normal = new RasterizerState();
+
         }
 
         //void Events_ContactCreated(Contact obj)
@@ -420,14 +421,14 @@ namespace JitterDemo
             accUpdateTime = 0.0f;
 
             int contactCount = 0;
-            foreach (Arbiter ar in World.ArbiterMap.Values)
+            foreach (Arbiter ar in World.ArbiterMap.Arbiters)
                 contactCount += ar.ContactList.Count;
 
             Display.DisplayText[1] = World.CollisionSystem.ToString();
 
             Display.DisplayText[0] = "Current Scene: " + PhysicScenes[currentScene].ToString();
             //
-            Display.DisplayText[2] = "Arbitercount: " + World.ArbiterMap.Values.Count.ToString() + ";" + " Contactcount: " + contactCount.ToString();
+            Display.DisplayText[2] = "Arbitercount: " + World.ArbiterMap.Arbiters.Count.ToString() + ";" + " Contactcount: " + contactCount.ToString();
             Display.DisplayText[3] = "Islandcount: " + World.Islands.Count.ToString();
             Display.DisplayText[4] = "Bodycount: " + World.RigidBodies.Count + " (" + activeBodies.ToString() + ")";
             Display.DisplayText[5] = (multithread) ? "Multithreaded" : "Single Threaded";

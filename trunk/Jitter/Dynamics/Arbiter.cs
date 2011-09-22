@@ -37,7 +37,7 @@ namespace Jitter.Dynamics
     /// Represents a list of contacts. Every ContactList 
     /// has a maximum of four contacts.
     /// </summary>
-    public class ContactList : List<Contact>
+    public class ContactList
     {
         // #region TODO: Write an implementation which only has 4 elements.
         Contact[] contacts = new Contact[4];
@@ -136,6 +136,16 @@ namespace Jitter.Dynamics
         public Arbiter()
         {
             this.contactList = new ContactList();
+        }
+
+        /// <summary>
+        /// Removes all contacts from this arbiter.
+        /// The world will remove the arbiter automatically next frame
+        /// or add new contacts.
+        /// </summary>
+        public void Invalidate()
+        {
+            contactList.Clear();
         }
 
         /// <summary>
