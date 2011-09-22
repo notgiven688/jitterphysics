@@ -30,7 +30,7 @@ using System.Collections;
 namespace Jitter.Collision
 {
     /// <summary>
-    /// EXPERIMENTAL: FULL SAP WITH COHERENT UPDATES
+    /// Full 3-Axis SweepAndPrune using persistent updates.
     /// </summary>
     public class CollisionSystemPersistentSAP : CollisionSystem
     {
@@ -73,33 +73,33 @@ namespace Jitter.Collision
         }
         #endregion
 
-        #region private struct BodyPair
-        private struct BodyPair
+        #region private struct BroadphasePair
+        private struct BroadphasePair
         {
             // internal values for faster access within the engine
-            internal IBroadphaseEntity body1, body2;
+            internal IBroadphaseEntity entity1, entity2;
 
             /// <summary>
             /// Initializes a new instance of the BodyPair class.
             /// </summary>
-            /// <param name="body1"></param>
-            /// <param name="body2"></param>
-            public BodyPair(IBroadphaseEntity body1, IBroadphaseEntity body2)
+            /// <param name="entity1"></param>
+            /// <param name="entity2"></param>
+            public BroadphasePair(IBroadphaseEntity entity1, IBroadphaseEntity entity2)
             {
-                this.body1 = body1;
-                this.body2 = body2;
+                this.entity1 = entity1;
+                this.entity2 = entity2;
             }
 
             /// <summary>
             /// Don't call this, while the key is used in the arbitermap.
             /// It changes the hashcode of this object.
             /// </summary>
-            /// <param name="body1">The first body.</param>
-            /// <param name="body2">The second body.</param>
-            internal void SetBodies(IBroadphaseEntity body1, IBroadphaseEntity body2)
+            /// <param name="entity1">The first body.</param>
+            /// <param name="entity2">The second body.</param>
+            internal void SetBodies(IBroadphaseEntity entity1, IBroadphaseEntity entity2)
             {
-                this.body1 = body1;
-                this.body2 = body2;
+                this.entity1 = entity1;
+                this.entity2 = entity2;
             }
 
             /// <summary>
@@ -109,9 +109,9 @@ namespace Jitter.Collision
             /// <returns>Returns true if they are equal, otherwise false.</returns>
             public override bool Equals(object obj)
             {
-                BodyPair other = (BodyPair)obj;
-                return (other.body1.Equals(body1) && other.body2.Equals(body2) ||
-                    other.body1.Equals(body2) && other.body2.Equals(body1));
+                BroadphasePair other = (BroadphasePair)obj;
+                return (other.entity1.Equals(entity1) && other.entity2.Equals(entity2) ||
+                    other.entity1.Equals(entity2) && other.entity2.Equals(entity1));
             }
 
             /// <summary>
@@ -121,18 +121,19 @@ namespace Jitter.Collision
             /// <returns></returns>
             public override int GetHashCode()
             {
-                return body1.GetHashCode() + body2.GetHashCode();
+                return entity1.GetHashCode() + entity2.GetHashCode();
             }
         }
         #endregion
 
+        // not needed anymore
         private List<IBroadphaseEntity> bodyList = new List<IBroadphaseEntity>();
 
         private List<SweepPoint> axis1 = new List<SweepPoint>();
         private List<SweepPoint> axis2 = new List<SweepPoint>();
         private List<SweepPoint> axis3 = new List<SweepPoint>();
 
-        private HashSet<BodyPair> fullOverlaps = new HashSet<BodyPair>();
+        private HashSet<BroadphasePair> fullOverlaps = new HashSet<BroadphasePair>();
 
         Action<object> detectCallback, sortCallback;
 
@@ -170,7 +171,7 @@ namespace Jitter.Collision
                     foreach (IBroadphaseEntity body in activeList)
                     {
                         if (CheckBoundingBoxes(body,keyelement.Body)) 
-                            fullOverlaps.Add(new BodyPair(body, keyelement.Body));
+                            fullOverlaps.Add(new BroadphasePair(body, keyelement.Body));
                     }
 
                     activeList.Add(keyelement.Body);
@@ -200,19 +201,15 @@ namespace Jitter.Collision
 
                     if (keyelement.Begin && !swapper.Begin)
                     {
-                        lock (fullOverlaps)
+                        if (CheckBoundingBoxes(swapper.Body, keyelement.Body))
                         {
-                            if (CheckBoundingBoxes(swapper.Body, keyelement.Body)) 
-                                fullOverlaps.Add(new BodyPair(swapper.Body, keyelement.Body));
+                            lock (fullOverlaps) fullOverlaps.Add(new BroadphasePair(swapper.Body, keyelement.Body));
                         }
                     }
 
                     if (!keyelement.Begin && swapper.Begin)
                     {
-                        lock (fullOverlaps)
-                        {
-                            fullOverlaps.Remove(new BodyPair(swapper.Body, keyelement.Body));
-                        }
+                        lock (fullOverlaps) fullOverlaps.Remove(new BroadphasePair(swapper.Body, keyelement.Body));
                     }
 
                     axis[i + 1] = swapper;
@@ -226,8 +223,6 @@ namespace Jitter.Collision
         int addCounter = 0;
         public override void AddEntity(IBroadphaseEntity body)
         {
-            if (body.BroadphaseTag < bodyList.Count && bodyList[body.BroadphaseTag] == body) return;
-
             body.BroadphaseTag = bodyList.Count;
 
             bodyList.Add(body);
@@ -239,7 +234,7 @@ namespace Jitter.Collision
             addCounter++;
         }
 
-        Stack<BodyPair> depricated = new Stack<BodyPair>();
+        Stack<BroadphasePair> depricated = new Stack<BroadphasePair>();
         public override bool RemoveEntity(IBroadphaseEntity body)
         {
             int count;
@@ -256,7 +251,7 @@ namespace Jitter.Collision
             for (int i = 0; i < axis3.Count; i++)
             { if (axis3[i].Body == body) { count++; axis3.RemoveAt(i); if (count == 2) break; i--; } }
 
-            foreach (var pair in fullOverlaps) if (pair.body1 == body || pair.body2 == body) depricated.Push(pair);
+            foreach (var pair in fullOverlaps) if (pair.entity1 == body || pair.entity2 == body) depricated.Push(pair);
             while (depricated.Count > 0) fullOverlaps.Remove(depricated.Pop());
 
             bodyList.Remove(body);
@@ -294,50 +289,39 @@ namespace Jitter.Collision
                 }
                 else
                 {
-                    SortAxis(axis1);
-                    SortAxis(axis2);
-                    SortAxis(axis3);
+                    sortCallback(axis1);
+                    sortCallback(axis2);
+                    sortCallback(axis3);
                 }
             }
 
             addCounter = 0;
 
-            if (multiThreaded)
+            foreach (BroadphasePair key in fullOverlaps)
             {
-                foreach (BodyPair key in fullOverlaps)
-                {
-                    if (this.CheckBothStaticOrInactive(key.body1, key.body2)) continue;
+                if (this.CheckBothStaticOrInactive(key.entity1, key.entity2)) continue;
 
-                    if (base.RaisePassedBroadphase(key.body1, key.body2))
+                if (base.RaisePassedBroadphase(key.entity1, key.entity2))
+                {
+                    if (multiThreaded)
                     {
                         Pair pair = Pair.Pool.GetNew();
-
-                        if (swapOrder) { pair.entity1 = key.body1; pair.entity2 = key.body2; }
-                        else { pair.entity2 = key.body2; pair.entity1 = key.body1; }
-                        swapOrder = !swapOrder;
-
+                        if (swapOrder) { pair.entity1 = key.entity1; pair.entity2 = key.entity2; }
+                        else { pair.entity2 = key.entity2; pair.entity1 = key.entity1; }
                         ThreadManager.internalInstance.AddTask(detectCallback, pair);
                     }
-                }
-
-                ThreadManager.internalInstance.Execute();
-            }
-            else
-            {
-                foreach (BodyPair key in fullOverlaps)
-                {
-                    if (this.CheckBothStaticOrInactive(key.body1, key.body2)) continue;
-
-                    if (base.RaisePassedBroadphase(key.body1, key.body2))
+                    else
                     {
-
-                        if (swapOrder) { Detect(key.body1, key.body2); }
-                        else Detect(key.body2, key.body1);
-                        swapOrder = !swapOrder;
-
+                        if (swapOrder) { Detect(key.entity1, key.entity2); }
+                        else Detect(key.entity2, key.entity1);
                     }
+
+                    swapOrder = !swapOrder;
                 }
             }
+
+            ThreadManager.internalInstance.Execute();
+
         }
 
         private void SortCallback(object obj)

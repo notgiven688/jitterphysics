@@ -48,6 +48,7 @@
     <Compile Include="Collision\CollisionSystemSAP.cs" />
     <Compile Include="Collision\CollisionSystemPersistentSAP.cs" />
     <Compile Include="Collision\GJKCollide.cs" />
+    <Compile Include="Collision\IslandManager.cs" />
     <Compile Include="Collision\Shapes\BoxShape.cs" />
     <Compile Include="Collision\Shapes\CapsuleShape.cs" />
     <Compile Include="Collision\Shapes\CompoundShape.cs" />

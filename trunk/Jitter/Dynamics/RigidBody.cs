@@ -136,8 +136,8 @@ namespace Jitter.Dynamics
             return hashCode;
         }
 
-        public ReadOnlyHashset<Arbiter> ArbiterConnections { get { return readOnlyArbiters; } }
-        public ReadOnlyHashset<Constraint> ConstraintConnections { get { return readOnlyConstraints; } }
+        public ReadOnlyHashset<Arbiter> Arbiters { get { return readOnlyArbiters; } }
+        public ReadOnlyHashset<Constraint> Constraints { get { return readOnlyConstraints; } }
 
         /// <summary>
         /// If set to false the body will never be deactived by the

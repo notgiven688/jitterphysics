@@ -25,6 +25,7 @@
     </SupportedCultures>
     <ApplicationIcon>Game.ico</ApplicationIcon>
     <Thumbnail>GameThumbnail.png</Thumbnail>
+    <GameStartupType>SimpleJitterPhoneDemo.DemoGame</GameStartupType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|Windows Phone' ">
     <DebugSymbols>true</DebugSymbols>
@@ -50,7 +51,7 @@
     <XnaCompressContent>false</XnaCompressContent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="JitterPhone, Version=0.1.5.0, Culture=neutral, processorArchitecture=MSIL" />
+    <Reference Include="JitterPhone, Version=0.1.6.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Xna.Framework">
       <Private>False</Private>
     </Reference>
@@ -105,12 +106,6 @@
     <Content Include="Background.png">
       <XnaPlatformSpecific>true</XnaPlatformSpecific>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\SimpleJitterPhoneDemoContent\SimpleJitterPhoneDemoContent.contentproj">
-      <Name>SimpleJitterPhoneDemoContent</Name>
-      <XnaReferenceType>Content</XnaReferenceType>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />

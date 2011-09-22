@@ -638,7 +638,7 @@ namespace JitterDemo
             //    for (int i = 0; i < arbiter.ContactList.Count; i++)
             //    {
             //        Contact c = arbiter.ContactList[i];
-            //        DebugDrawer.DrawLine(c.Body1.Position, c.Normal + c.Body1.Position,Color.Green);
+            //        DebugDrawer.DrawLine(c.Body1.Position, c.Normal + c.Body1.Position, Color.Green);
             //    }
             //}
 
