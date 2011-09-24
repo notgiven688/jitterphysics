@@ -59,8 +59,6 @@ namespace Jitter.LinearMath
 
             int iterations = (int)factor;
 
-            Random rnd = new Random();
-
             for (int i = 0; i < iterations; i++)
             {
                 for (int e = 0; e < iterations; e++)

@@ -3,6 +3,10 @@ TODO
 
  - Optimize raycasting for PersistentSweepAndPrune
  - Name it 0.2.0 and release.
+ - Make AccumulatedTangent Impulse public in contact ?
+ - Give the rigidBody a flag IsParticle and remove the masspoint madness.
+ - Fix the direction stuff in jconvexhull.cs
+
 
 REFACTORING ! REFACTORING ! REFACTORING ! REFACTORING !
 
