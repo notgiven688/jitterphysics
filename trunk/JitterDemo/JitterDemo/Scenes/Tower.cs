@@ -30,38 +30,38 @@ namespace JitterDemo.Scenes
 
             BoxShape shape = new BoxShape(2, 1, 1);
 
-            for (int i = 0; i < 15; i++)
-            {
-                for (int e = 0; e < 15; e++)
-                {
-                    for (int k = 0; k < 15; k++)
-                    {
-                        RigidBody b = new RigidBody(shape);
-                        Demo.World.AddBody(b);
-                        b.Position = new JVector(i, e, k) * 4.0f;
-                        b.AffectedByGravity = true;
-                    }
-                }
-            }
-
-            //for (int e = 0; e < 40; e++)
+            //for (int i = 0; i < 15; i++)
             //{
-            //    orientation *= halfRotationStep;
-
-            //    for (int i = 0; i < 12; i++)
+            //    for (int e = 0; e < 15; e++)
             //    {
-            //        Vector3 position = Vector3.Transform(
-            //            new Vector3(0, 0.5f + e, 6.5f), orientation);
-
-            //        RigidBody body = new RigidBody(shape);
-            //        body.Orientation = Conversion.ToJitterMatrix(orientation);
-            //        body.Position = Conversion.ToJitterVector(position);
-
-            //        world.AddBody(body);
-
-            //        orientation *= fullRotationStep;
+            //        for (int k = 0; k < 15; k++)
+            //        {
+            //            RigidBody b = new RigidBody(shape);
+            //            Demo.World.AddBody(b);
+            //            b.Position = new JVector(i, e, k) * 4.0f;
+            //            b.AffectedByGravity = true;
+            //        }
             //    }
             //}
+
+            for (int e = 0; e < 40; e++)
+            {
+                orientation *= halfRotationStep;
+
+                for (int i = 0; i < 12; i++)
+                {
+                    Vector3 position = Vector3.Transform(
+                        new Vector3(0, 0.5f + e, 6.5f), orientation);
+
+                    RigidBody body = new RigidBody(shape);
+                    body.Orientation = Conversion.ToJitterMatrix(orientation);
+                    body.Position = Conversion.ToJitterVector(position);
+
+                    world.AddBody(body);
+
+                    orientation *= fullRotationStep;
+                }
+            }
 
             //for (int e = 0; e < 40; e++)
             //{

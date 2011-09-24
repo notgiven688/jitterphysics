@@ -99,8 +99,7 @@ namespace Jitter.Collision.Shapes
         /// <summary>
         /// Hull making.
         /// </summary>
-        /// <remarks>Based/Completely from
-        /// http://www.xbdev.net/physics/MinkowskiDifference/index.php
+        /// <remarks>Based/Completely from http://www.xbdev.net/physics/MinkowskiDifference/index.php
         /// I don't (100%) see why this should always work.
         /// </remarks>
         /// <param name="triangleList"></param>

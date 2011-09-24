@@ -89,6 +89,7 @@ namespace JitterDemo
             cullMode = new RasterizerState();
             cullMode.CullMode = CullMode.None;
 
+ 
             normal = new RasterizerState();
 
         }
