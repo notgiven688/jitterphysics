@@ -281,11 +281,11 @@ namespace Jitter.Collision
             {
                 if (multiThreaded)
                 {
-                    ThreadManager.internalInstance.AddTask(sortCallback, axis1);
-                    ThreadManager.internalInstance.AddTask(sortCallback, axis2);
-                    ThreadManager.internalInstance.AddTask(sortCallback, axis3);
+                    threadManager.AddTask(sortCallback, axis1);
+                    threadManager.AddTask(sortCallback, axis2);
+                    threadManager.AddTask(sortCallback, axis3);
 
-                    ThreadManager.internalInstance.Execute();
+                    threadManager.Execute();
                 }
                 else
                 {
@@ -308,7 +308,7 @@ namespace Jitter.Collision
                         Pair pair = Pair.Pool.GetNew();
                         if (swapOrder) { pair.entity1 = key.entity1; pair.entity2 = key.entity2; }
                         else { pair.entity2 = key.entity2; pair.entity1 = key.entity1; }
-                        ThreadManager.internalInstance.AddTask(detectCallback, pair);
+                        threadManager.AddTask(detectCallback, pair);
                     }
                     else
                     {
@@ -320,7 +320,7 @@ namespace Jitter.Collision
                 }
             }
 
-            ThreadManager.internalInstance.Execute();
+            threadManager.Execute();
 
         }
 

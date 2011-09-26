@@ -102,7 +102,7 @@ namespace Jitter.Collision
                 for (int i = 0; i < bodyList.Count; i++)
                     AddToActiveMultithreaded(bodyList[i], false);
 
-                ThreadManager.internalInstance.Execute();
+                threadManager.Execute();
             }
             else
             {
@@ -192,7 +192,7 @@ namespace Jitter.Collision
                             else { pair.entity2 = body; pair.entity1 = ac; }
                             swapOrder = !swapOrder;
 
-                            ThreadManager.internalInstance.AddTask(detectCallback, pair);
+                            threadManager.AddTask(detectCallback, pair);
                         }
                     }
 

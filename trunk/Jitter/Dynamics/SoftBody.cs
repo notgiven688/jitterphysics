@@ -219,47 +219,10 @@ namespace Jitter.Dynamics
             public SoftBody SoftBody { get; private set; }
 
             public MassPoint(Shape shape, SoftBody owner, Material material)
-                : base(shape, material)
+                : base(shape, material, true)
             {
-                this.isMassPoint = true; this.SoftBody = owner;
-                useShapeMassProperties = false;
+                this.SoftBody = owner;
             }
-
-            public override void Update()
-            {
-                this.inertia = JMatrix.Zero;
-                this.invInertia = this.invInertiaWorld = JMatrix.Zero;
-                this.invOrientation = this.orientation = JMatrix.Identity;
-
-                this.boundingBox = base.Shape.boundingBox;
-                this.boundingBox.Min += position;
-                this.boundingBox.Max += position;
-
-                angularVelocity.MakeZero();
-            }
-
-            // Setting angular velocity or inertia does not have any effect.
-
-            public new void SetMassProperties(JMatrix inertia, float mass, bool setAsInverseValues)
-            {
-                if (setAsInverseValues) inverseMass = mass;
-                else inverseMass = 1.0f / mass;
-            }
-
-            public new void SetMassProperties() { }
-
-            public new float Mass
-            {
-                get { return 1.0f / inverseMass; }
-                set { inverseMass = 1.0f / value; }
-            }
-
-            public new JVector AngularVelocity
-            {
-                get { return angularVelocity; }
-                set { }
-            }
-
 
         }
         #endregion

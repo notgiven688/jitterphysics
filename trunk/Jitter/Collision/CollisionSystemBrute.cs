@@ -100,13 +100,13 @@ namespace Jitter.Collision
                                 else { pair.entity2 = bodyList[e]; pair.entity1 = bodyList[i]; }
                                 swapOrder = !swapOrder;
 
-                                ThreadManager.internalInstance.AddTask(detectCallback, pair);
+                                threadManager.AddTask(detectCallback, pair);
                             }
                         }
                     }
                 }
 
-                ThreadManager.internalInstance.Execute();
+                threadManager.Execute();
             }
             else
             {

@@ -90,18 +90,33 @@ namespace Jitter.Dynamics
 
 
         public RigidBody(Shape shape)
-            : this(shape, new Material())
+            : this(shape, new Material(), false)
         {
         }
 
-        internal bool isMassPoint = false;
-        public bool IsMassPoint { get { return isMassPoint; } }
+        internal bool isParticle = false;
+
+        /// <summary>
+        /// If true, the body as no angular movement.
+        /// </summary>
+        public bool IsParticle { get { return isParticle; } }
 
         /// <summary>
         /// Initializes a new instance of the RigidBody class.
         /// </summary>
         /// <param name="shape">The shape of the body.</param>
         public RigidBody(Shape shape, Material material)
+            :this(shape,material,false)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the RigidBody class.
+        /// </summary>
+        /// <param name="shape">The shape of the body.</param>
+        /// <param name="isParticle">If set to true the body doesn't rotate. 
+        /// Also contacts are only solved for the linear motion part.</param>
+        public RigidBody(Shape shape, Material material, bool isParticle)
         {
             readOnlyArbiters = new ReadOnlyHashset<Arbiter>(arbiters);
             readOnlyConstraints = new ReadOnlyHashset<Constraint>(constraints);
@@ -112,15 +127,25 @@ namespace Jitter.Dynamics
             this.Shape = shape;
             orientation = JMatrix.Identity;
 
-            updatedHandler = new ShapeUpdatedHandler(ShapeUpdated);
-
-            this.Shape.ShapeUpdated += updatedHandler;
-
-            SetMassProperties();
+            if (!isParticle)
+            {
+                updatedHandler = new ShapeUpdatedHandler(ShapeUpdated);
+                this.Shape.ShapeUpdated += updatedHandler;
+                SetMassProperties();
+            }
+            else
+            {
+                this.inertia = JMatrix.Zero;
+                this.invInertia = this.invInertiaWorld = JMatrix.Zero;
+                this.invOrientation = this.orientation = JMatrix.Identity;
+                inverseMass = 1.0f;
+            }
 
             this.material = material;
 
             AllowDeactivation = true;
+
+            this.isParticle = isParticle;
 
             Update();
         }
@@ -309,14 +334,20 @@ namespace Jitter.Dynamics
         {
             if (setAsInverseValues)
             {
-                this.invInertia = inertia;
-                JMatrix.Inverse(ref inertia, out this.inertia);
+                if (!isParticle)
+                {
+                    this.invInertia = inertia;
+                    JMatrix.Inverse(ref inertia, out this.inertia);
+                }
                 this.inverseMass = mass;
             }
             else
             {
-                this.inertia = inertia;
-                JMatrix.Inverse(ref inertia, out this.invInertia);
+                if (!isParticle)
+                {
+                    this.inertia = inertia;
+                    JMatrix.Inverse(ref inertia, out this.invInertia);
+                }
                 this.inverseMass = 1.0f / mass;
             }
 
@@ -468,8 +499,11 @@ namespace Jitter.Dynamics
                 if (value <= 0.0f) throw new ArgumentException("Mass can't be less or equal zero.");
 
                 // scale inertia
-                JMatrix.Multiply(ref Shape.inertia, value / Shape.mass, out inertia);
-                JMatrix.Inverse(ref inertia, out invInertia);
+                if (!isParticle)
+                {
+                    JMatrix.Multiply(ref Shape.inertia, value / Shape.mass, out inertia);
+                    JMatrix.Inverse(ref inertia, out invInertia);
+                }
 
                 inverseMass = 1.0f / value;
             }
@@ -483,17 +517,30 @@ namespace Jitter.Dynamics
         /// </summary>
         public virtual void Update()
         {
-            // Given: Orientation, Inertia
-
-            JMatrix.Transpose(ref orientation, out invOrientation);
-            this.Shape.GetBoundingBox(ref orientation, out boundingBox);
-            JVector.Add(ref boundingBox.Min, ref this.position, out boundingBox.Min);
-            JVector.Add(ref boundingBox.Max, ref this.position, out boundingBox.Max);
-
-            if (!isStatic)
+            if (isParticle)
             {
-                JMatrix.Multiply(ref invOrientation, ref invInertia, out invInertiaWorld);
-                JMatrix.Multiply(ref invInertiaWorld, ref orientation, out invInertiaWorld);
+                this.inertia = JMatrix.Zero;
+                this.invInertia = this.invInertiaWorld = JMatrix.Zero;
+                this.invOrientation = this.orientation = JMatrix.Identity;
+                this.boundingBox = shape.boundingBox;
+                JVector.Add(ref boundingBox.Min, ref this.position, out boundingBox.Min);
+                JVector.Add(ref boundingBox.Max, ref this.position, out boundingBox.Max);
+
+                angularVelocity.MakeZero();
+            }
+            else
+            {
+                // Given: Orientation, Inertia
+                JMatrix.Transpose(ref orientation, out invOrientation);
+                this.Shape.GetBoundingBox(ref orientation, out boundingBox);
+                JVector.Add(ref boundingBox.Min, ref this.position, out boundingBox.Min);
+                JVector.Add(ref boundingBox.Max, ref this.position, out boundingBox.Max);
+
+                if (!isStatic)
+                {
+                    JMatrix.Multiply(ref invOrientation, ref invInertia, out invInertiaWorld);
+                    JMatrix.Multiply(ref invInertiaWorld, ref orientation, out invInertiaWorld);
+                }
             }
         }
 

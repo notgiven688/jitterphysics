@@ -162,46 +162,7 @@ namespace Jitter
         private WorldEvents events = new WorldEvents();
         public WorldEvents Events { get { return events; } }
 
-        public void AddBody(SoftBody body)
-        {
-            if (body == null) throw new ArgumentNullException("body", "body can't be null.");
-            if (softbodies.Contains(body)) throw new ArgumentException("The body was already added to the world.", "body");
-
-            this.softbodies.Add(body);
-            this.CollisionSystem.AddEntity(body);
-
-            events.RaiseAddedSoftBody(body);
-
-            foreach (Constraint constraint in body.springs)
-                AddConstraint(constraint);
-
-            foreach (SoftBody.MassPoint massPoint in body.points)
-                AddBody(massPoint);
-        }
-
-        public bool RemoveBody(SoftBody body)
-        {
-            if(!this.softbodies.Remove(body)) return false;
-
-            this.CollisionSystem.RemoveEntity(body);
-
-            events.RaiseRemovedSoftBody(body);
-
-            foreach (Constraint constraint in body.springs)
-                RemoveConstraint(constraint);
-
-            foreach (SoftBody.MassPoint massPoint in body.points)
-                RemoveBody(massPoint,true);
-
-            return true;
-        }
-
-        /// <summary>
-        /// Gets the <see cref="CollisionSystem"/> used
-        /// to detect collisions.
-        /// </summary>
-        public CollisionSystem CollisionSystem {  set; get; }
-
+        private ThreadManager threadManager = ThreadManager.Instance;
 
         /// <summary>
         /// Holds a list of <see cref="Arbiter"/>. All currently
@@ -216,7 +177,6 @@ namespace Jitter
         private JVector gravity = new JVector(0, -9.81f, 0);
 
         public ContactSettings ContactSettings { get { return contactSettings; } }
-
 
         /// <summary>
         /// Gets a read only collection of the <see cref="Jitter.Collision.CollisionIsland"/> objects managed by
@@ -241,8 +201,6 @@ namespace Jitter
             if (collision == null)
                 throw new ArgumentNullException("The CollisionSystem can't be null.", "collision");
 
-            ThreadManager.InitializeInstance();
-
             arbiterCallback = new Action<object>(ArbiterCallback);
             integrateCallback = new Action<object>(IntegrateCallback);
 
@@ -262,6 +220,49 @@ namespace Jitter
 
             AllowDeactivation = true;
         }
+
+        public void AddBody(SoftBody body)
+        {
+            if (body == null) throw new ArgumentNullException("body", "body can't be null.");
+            if (softbodies.Contains(body)) throw new ArgumentException("The body was already added to the world.", "body");
+
+            this.softbodies.Add(body);
+            this.CollisionSystem.AddEntity(body);
+
+            events.RaiseAddedSoftBody(body);
+
+            foreach (Constraint constraint in body.springs)
+                AddConstraint(constraint);
+
+            foreach (SoftBody.MassPoint massPoint in body.points)
+            {
+                events.RaiseAddedRigidBody(massPoint);
+                rigidBodies.Add(massPoint);
+            }
+        }
+
+        public bool RemoveBody(SoftBody body)
+        {
+            if (!this.softbodies.Remove(body)) return false;
+
+            this.CollisionSystem.RemoveEntity(body);
+
+            events.RaiseRemovedSoftBody(body);
+
+            foreach (Constraint constraint in body.springs)
+                RemoveConstraint(constraint);
+
+            foreach (SoftBody.MassPoint massPoint in body.points)
+                RemoveBody(massPoint, true);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="CollisionSystem"/> used
+        /// to detect collisions.
+        /// </summary>
+        public CollisionSystem CollisionSystem { set; get; }
 
         /// <summary>
         /// In Jitter many objects get added to stacks after they were used.
@@ -423,7 +424,7 @@ namespace Jitter
         private bool RemoveBody(RigidBody body, bool removeMassPoints)
         {
             // Its very important to clean up, after removing a body
-            if (!removeMassPoints && body.IsMassPoint) return false;
+            if (!removeMassPoints && body.IsParticle) return false;
 
             // remove the body from the world list
             if (!rigidBodies.Remove(body)) return false;
@@ -464,7 +465,7 @@ namespace Jitter
 
             events.RaiseAddedRigidBody(body);
 
-            if(!(body.isMassPoint)) this.CollisionSystem.AddEntity(body);
+            this.CollisionSystem.AddEntity(body);
 
             rigidBodies.Add(body);
         }
@@ -521,9 +522,6 @@ namespace Jitter
         private double[] debugTimes = new double[(int)DebugType.Num];
         public double[] DebugTimes { get { return debugTimes; } }
 #endif
-
-        float stupidCalculus = 0.0f;
-
 
         /// <summary>
         /// Integrates the whole world a timestep further in time.
@@ -771,10 +769,10 @@ namespace Jitter
             {
                 for (int i = 0; i < islands.Count; i++)
                 {
-                    if(islands[i].IsActive()) ThreadManager.internalInstance.AddTask(arbiterCallback, islands[i]);
+                    if(islands[i].IsActive()) threadManager.AddTask(arbiterCallback, islands[i]);
                 }
 
-                ThreadManager.internalInstance.Execute();
+                threadManager.Execute();
             }
             else
             {
@@ -796,7 +794,7 @@ namespace Jitter
                     JVector.Multiply(ref body.force, body.inverseMass * timestep, out temp);
                     JVector.Add(ref temp, ref body.linearVelocity, out body.linearVelocity);
 
-                    if (!(body.isMassPoint))
+                    if (!(body.isParticle))
                     {
                         JVector.Multiply(ref body.torque, timestep, out temp);
                         JVector.Transform(ref temp, ref body.invInertiaWorld, out temp);
@@ -825,7 +823,7 @@ namespace Jitter
             JVector.Multiply(ref body.linearVelocity, timestep, out temp);
             JVector.Add(ref temp, ref body.position, out body.position);
 
-            if (!(body.isMassPoint))
+            if (!(body.isParticle))
             {
 
                 //exponential map
@@ -869,10 +867,10 @@ namespace Jitter
                 foreach(RigidBody body in rigidBodies)
                 {
                     if (body.isStatic || !body.IsActive) continue;
-                    ThreadManager.internalInstance.AddTask(integrateCallback, body);
+                    threadManager.AddTask(integrateCallback, body);
                 }
 
-                ThreadManager.internalInstance.Execute();
+                threadManager.Execute();
             }
             else
             {

@@ -39,7 +39,12 @@ namespace Jitter.Dynamics
     /// </summary>
     public class ContactList : List<Contact>
     {
-        // #region TODO: Write an implementation which only has 4 elements.
+
+        public ContactList() : base(4) { }
+
+
+        #region TODO: Write an implementation which only has 4 elements.
+
         //Contact[] contacts = new Contact[4];
         //int count = 0;
 
@@ -76,7 +81,7 @@ namespace Jitter.Dynamics
         //        contacts[1] = contacts[2];
         //        contacts[2] = contacts[3];
         //    }
-            
+
         //    count--;
         //}
 
@@ -84,7 +89,7 @@ namespace Jitter.Dynamics
         //{
         //    count = 0;
         //}
-        //#endregion
+        #endregion
     }
 
     /// <summary>
