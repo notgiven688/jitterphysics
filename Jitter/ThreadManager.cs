@@ -58,27 +58,23 @@ namespace Jitter
         /// </summary>
         public int ThreadCount { private set { this.threadCount = value; } get { return threadCount; } }
 
-        internal static ThreadManager internalInstance = null;
+        static ThreadManager instance = null;
 
         public static ThreadManager Instance 
         { 
             get 
             {
-                InitializeInstance();
-                return internalInstance;
+                if (instance == null)
+                {
+                    instance = new ThreadManager();
+                    instance.Initialize();
+                }
+
+                return instance;
             }
         }
 
         private ThreadManager() { }
-
-        internal static void InitializeInstance()
-        {
-            if (internalInstance == null)
-            {
-                internalInstance = new ThreadManager();
-                internalInstance.Initialize();
-            }
-        }
 
         private void Initialize()
         {

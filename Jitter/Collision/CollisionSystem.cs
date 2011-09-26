@@ -143,12 +143,14 @@ namespace Jitter.Collision
         /// </summary>
         public event CollisionDetectedHandler CollisionDetected;
 
+
+        protected ThreadManager threadManager = ThreadManager.Instance;
+
         /// <summary>
         /// Initializes a new instance of the CollisionSystem.
         /// </summary>
         public CollisionSystem()
         {
-            ThreadManager.InitializeInstance();
         }
 
         internal bool useTerrainNormal = true;

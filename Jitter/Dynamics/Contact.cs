@@ -39,7 +39,7 @@ namespace Jitter.Dynamics
         internal float bias = 0.25f;
         internal float minVelocity = 0.001f;
         internal float allowedPenetration = 0.01f;
-        internal float breakThreshold = 0.01f;
+        internal float breakThreshold = 0.03f;
 
         internal MaterialCoefficientMixingType materialMode = MaterialCoefficientMixingType.UseAverage;
 
@@ -303,20 +303,25 @@ namespace Jitter.Dynamics
         /// </summary>
         public void UpdatePosition()
         {
-            if (!body1IsMassPoint)
+            if (body1IsMassPoint)
+            {
+                JVector.Add(ref realRelPos1, ref body1.position, out p1);
+            }
+            else
             {
                 JVector.Transform(ref realRelPos1, ref body1.orientation, out p1);
+                JVector.Add(ref p1, ref body1.position, out p1);
             }
 
-            JVector.Add(ref p1, ref body1.position, out p1);
-
-
-            if (!body2IsMassPoint)
+            if (body2IsMassPoint)
+            {
+                JVector.Add(ref realRelPos2, ref body2.position, out p2);
+            }
+            else
             {
                 JVector.Transform(ref realRelPos2, ref body2.orientation, out p2);
+                JVector.Add(ref p2, ref body2.position, out p2);
             }
-
-            JVector.Add(ref p2, ref body2.position, out p2);
 
 
             JVector dist; JVector.Subtract(ref p1, ref p2, out dist);
@@ -768,8 +773,8 @@ namespace Jitter.Dynamics
             this.initialPen = penetration;
             this.penetration = penetration;
 
-            body1IsMassPoint = body1.isMassPoint;
-            body2IsMassPoint = body2.isMassPoint;
+            body1IsMassPoint = body1.isParticle;
+            body2IsMassPoint = body2.isParticle;
 
             // Material Properties
             if (newContact)
