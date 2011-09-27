@@ -43,7 +43,7 @@ namespace JitterDemo.Scenes
             CompoundShape cs = new CompoundShape(transformedShapes);
             RigidBody compoundBody = new RigidBody(cs);
             compoundBody.EnableDebugDraw = true;
-            compoundBody.Position = new JVector(0, 5, 0) - cs.Shift;
+            compoundBody.Position = new JVector(0, 2, 0) - cs.Shift;
             Demo.World.AddBody(compoundBody);
 
 
@@ -51,8 +51,17 @@ namespace JitterDemo.Scenes
             for (int i = 0; i < shapes.Count; i++)
             {
                 RigidBody body = new RigidBody(shapes[i]);
-                body.Position = -1.0f * shapes[i].Shift + new JVector(-10, 5, 0);
+                body.Position = -1.0f * shapes[i].Shift + new JVector(-10, 2, 0);
                 body.EnableDebugDraw = true;
+                Demo.World.AddBody(body);
+            }
+
+            for (int i = 0; i < shapes.Count; i++)
+            {
+                RigidBody body = new RigidBody(shapes[i]);
+                body.Position = -1.0f * shapes[i].Shift + new JVector(-20, 2, 0);
+                body.EnableDebugDraw = true;
+                body.IsStatic = true;
                 Demo.World.AddBody(body);
             }
 
@@ -99,7 +108,7 @@ namespace JitterDemo.Scenes
                         float.Parse(values[2], NumberFormatInfo.InvariantInfo),
                         float.Parse(values[3], NumberFormatInfo.InvariantInfo));
 
-                    convexPoints.Add(vertex * 3f);
+                    convexPoints.Add(vertex * 5f);
                 }
 
                 if(line.StartsWith("#"))
@@ -110,7 +119,8 @@ namespace JitterDemo.Scenes
                         convexPoints.Clear();
 
                         ConvexHullShape cvhs = new ConvexHullShape(copyVertex);
-                        shapes.Add(cvhs);
+
+                        if(cvhs.Mass > 0.001f) shapes.Add(cvhs);
                     }
                 }
             }
