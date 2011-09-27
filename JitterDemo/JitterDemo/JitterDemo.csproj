@@ -134,6 +134,7 @@
     <Compile Include="QuadDrawer.cs" />
     <Compile Include="Scenes\Cardhouse.cs" />
     <Compile Include="Scenes\BroadphaseStress.cs" />
+    <Compile Include="Scenes\ConvexDecomposition.cs" />
     <Compile Include="Scenes\CylinderWall.cs" />
     <Compile Include="Scenes\Domino.cs" />
     <Compile Include="Scenes\EmptyScene.cs" />

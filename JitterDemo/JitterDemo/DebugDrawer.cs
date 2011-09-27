@@ -161,9 +161,11 @@ namespace JitterDemo
            // DrawPoint(pos, Color.Red);
         }
 
+        public Color Color { get; set; }
+
         public void DrawTriangle(JVector pos1, JVector pos2, JVector pos3)
         {
-            DrawTriangle(pos1, pos2, pos3, Color.Green);
+            DrawTriangle(pos1, pos2, pos3, Color);
         }
     }
 }

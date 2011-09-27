@@ -39,7 +39,7 @@ namespace Jitter.Dynamics
         internal float bias = 0.25f;
         internal float minVelocity = 0.001f;
         internal float allowedPenetration = 0.01f;
-        internal float breakThreshold = 0.03f;
+        internal float breakThreshold = 0.01f;
 
         internal MaterialCoefficientMixingType materialMode = MaterialCoefficientMixingType.UseAverage;
 
