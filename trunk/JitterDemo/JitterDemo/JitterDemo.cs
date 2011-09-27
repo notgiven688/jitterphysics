@@ -57,6 +57,8 @@ namespace JitterDemo
         RasterizerState cullMode;
         RasterizerState normal;
 
+        Color[] rndColors;
+
         public JitterDemo()
         {
             this.IsMouseVisible = true;
@@ -80,6 +82,14 @@ namespace JitterDemo
 
             this.Window.Title = "Jitter Physics Demo - Jitter "
                 + Assembly.GetAssembly(typeof(Jitter.World)).GetName().Version.ToString();
+
+            Random rr = new Random();
+            rndColors = new Color[20];
+
+            for (int i = 0; i < 20; i++)
+            {
+                rndColors[i] = new Color((float)rr.NextDouble(), (float)rr.NextDouble(), (float)rr.NextDouble());
+            }
 
            // this.World.Events.ContactCreated += new Action<Contact>(Events_ContactCreated);
 
@@ -231,10 +241,6 @@ namespace JitterDemo
 
             }
 
-            //if (keyState.IsKeyDown(Keys.O) && !keyboardPreviousState.IsKeyDown(Keys.O))
-            //{
-            //    enumerator = World.RigidBodies.GetEnumerator();
-            //}
 
             #region drag and drop physical objects with the mouse
             if (mouseState.LeftButton == ButtonState.Pressed &&
@@ -334,7 +340,6 @@ namespace JitterDemo
             float step = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             if (step > 1.0f / 100.0f) step = 1.0f / 100.0f;
-
             World.Step(step, multithread);
 
 
@@ -495,6 +500,7 @@ namespace JitterDemo
                 primitive = primitives[(int)Primitives.cone];
             }
 
+            if(primitive != null)
             primitive.AddWorldMatrix(scaleMatrix * Conversion.ToXNAMatrix(ori) *
                         Matrix.CreateTranslation(Conversion.ToXNAVector(pos)));
         }
@@ -538,11 +544,17 @@ namespace JitterDemo
 
         private void DrawJitterDebugInfo()
         {
+            int cc = 0;
+
             foreach (Constraint constr in World.Constraints)
                 constr.DebugDraw(DebugDrawer);
 
-            //foreach (RigidBody body in World.RigidBodies)
-            //    body.DebugDraw(DebugDrawer);
+            foreach (RigidBody body in World.RigidBodies)
+            {
+                DebugDrawer.Color = rndColors[cc % rndColors.Length];
+                body.DebugDraw(DebugDrawer);
+                cc++;
+            }
         }
 
         private void Walk(DynamicTree<SoftBody.Triangle> tree, int index)

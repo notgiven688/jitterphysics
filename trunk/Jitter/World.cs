@@ -693,9 +693,9 @@ namespace Jitter
                     diff = diff - distance * c.normal;
                     distance = diff.LengthSquared();
 
-                    // Removed a hack (multiplication by factor 100) in the
+                    // hack (multiplication by factor 100) in the
                     // following line.
-                    if (distance > contactSettings.breakThreshold * contactSettings.breakThreshold)
+                    if (distance > contactSettings.breakThreshold * contactSettings.breakThreshold * 100)
                     {
                         Contact.Pool.GiveBack(c);
                         arbiter.contactList.RemoveAt(i);
