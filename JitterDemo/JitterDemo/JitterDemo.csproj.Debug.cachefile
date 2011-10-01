@@ -1,6 +1,7 @@
 Content\checker.xnb
 Content\logo1.xnb
 Content\logo2.xnb
+Content\cloth.xnb
 Content\font1.xnb
 Content\font2.xnb
 Content\StaticMesh.xnb
@@ -10,3 +11,4 @@ Content\car.xnb
 Content\wheel.xnb
 Content\car_0.xnb
 Content\car_1.xnb
+Content\ConvexDecomposition.obj

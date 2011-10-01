@@ -173,7 +173,7 @@ namespace Jitter.Dynamics
 
         public IEnumerator GetEnumerator()
         {
-            return dictionary.GetEnumerator();
+            return dictionary.Values.GetEnumerator();
         }
     }
 
