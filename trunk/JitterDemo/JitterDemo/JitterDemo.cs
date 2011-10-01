@@ -411,8 +411,6 @@ namespace JitterDemo
 
             body.Position = position;
             body.LinearVelocity = velocity;
-            //body.EnableDebugDraw = true;
-
             lastBody = body;
         }
 
@@ -645,16 +643,6 @@ namespace JitterDemo
             DrawIslands();
             DrawJitterDebugInfo();
 
-            //foreach (Arbiter arbiter in World.ArbiterMap.Values)
-            //{
-            //    DebugDrawer.DrawLine(arbiter.Body1.Position, arbiter.Body2.Position);
-
-            //    for (int i = 0; i < arbiter.ContactList.Count; i++)
-            //    {
-            //        Contact c = arbiter.ContactList[i];
-            //        DebugDrawer.DrawLine(c.Body1.Position, c.Normal + c.Body1.Position, Color.Green);
-            //    }
-            //}
 
             this.GraphicsDevice.RasterizerState = cullMode;
                 

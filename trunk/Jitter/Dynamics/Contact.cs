@@ -297,6 +297,9 @@ namespace Jitter.Dynamics
 
         }
 
+        public float AppliedNormalImpulse { get { return accumulatedNormalImpulse; } }
+        public float AppliedTangentImpulse { get { return accumulatedTangentImpulse; } }
+
         /// <summary>
         /// The points in wolrd space gets recalculated by transforming the
         /// local coordinates. Also new penetration depth is estimated.

@@ -99,7 +99,32 @@ namespace Jitter.Dynamics
         /// <summary>
         /// If true, the body as no angular movement.
         /// </summary>
-        public bool IsParticle { get { return isParticle; } }
+        public bool IsParticle { 
+            get { return isParticle; }
+            set
+            {
+                if (isParticle && !value)
+                {
+                    updatedHandler = new ShapeUpdatedHandler(ShapeUpdated);
+                    this.Shape.ShapeUpdated += updatedHandler;
+                    SetMassProperties();
+                    isParticle = false;
+                }
+                else if (!isParticle && value)
+                {
+                    this.inertia = JMatrix.Zero;
+                    this.invInertia = this.invInertiaWorld = JMatrix.Zero;
+                    this.invOrientation = this.orientation = JMatrix.Identity;
+                    inverseMass = 1.0f;
+
+                    this.Shape.ShapeUpdated -= updatedHandler;
+
+                    isParticle = true;
+                }
+
+                Update();
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the RigidBody class.
