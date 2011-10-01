@@ -786,7 +786,7 @@ namespace Jitter
 
         private void IntegrateForces()
         {
-            foreach(RigidBody body in rigidBodies)
+            foreach (RigidBody body in rigidBodies)
             {
                 if (!body.isStatic && body.IsActive)
                 {
@@ -860,11 +860,12 @@ namespace Jitter
         }
         #endregion
 
+
         private void Integrate(bool multithread)
         {
             if (multithread)
             {
-                foreach(RigidBody body in rigidBodies)
+                foreach (RigidBody body in rigidBodies)
                 {
                     if (body.isStatic || !body.IsActive) continue;
                     threadManager.AddTask(integrateCallback, body);
