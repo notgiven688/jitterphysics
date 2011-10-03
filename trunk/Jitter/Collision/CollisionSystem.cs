@@ -146,6 +146,11 @@ namespace Jitter.Collision
 
         protected ThreadManager threadManager = ThreadManager.Instance;
 
+        private bool continuousCollisionDetection = true;
+        public bool ContinuousCollisionDetection { get { return continuousCollisionDetection; }
+            set { continuousCollisionDetection = value; }
+        }
+
         /// <summary>
         /// Initializes a new instance of the CollisionSystem.
         /// </summary>
@@ -270,9 +275,31 @@ namespace Jitter.Collision
                     if (this.RaisePassedNarrowphase(body1, body2, ref point, ref normal, penetration))
                     {
                         JVector point1, point2;
+
                         FindSupportPoints(body1, body2, body1.Shape, body2.Shape, ref point, ref normal, out point1, out point2);
+
                         RaiseCollisionDetected(body1, body2, ref point1, ref point2, ref normal, penetration);
                     }
+                }
+                else
+                {
+                    if (continuousCollisionDetection && this.RaisePassedNarrowphase(body1, body2, ref point, ref normal, penetration))
+                    {
+                        JVector hit1, hit2;
+
+                        if (GJKCollide.TimeOfImpact(body1.Shape, body2.Shape,ref body1.orientation,ref body2.orientation,
+                            ref body1.position,ref body2.position,ref body1.sweptDirection, ref body2.sweptDirection,
+                            out hit1, out hit2, out normal))
+                        {
+                            penetration = (hit2 - hit1) * normal;
+
+                            if (penetration < 0.0f)
+                            {
+                                RaiseCollisionDetected(body1, body2, ref hit1, ref hit2, ref normal, penetration);
+                            }
+                        }
+                    }
+
                 }
             }
             else if (b1IsMulti && b2IsMulti)
@@ -319,6 +346,26 @@ namespace Jitter.Collision
                                 
                                 RaiseCollisionDetected(body1, body2, ref point1, ref point2, ref normal, penetration);
                             }
+                        }
+                        else
+                        {
+                            if (continuousCollisionDetection && this.RaisePassedNarrowphase(body1, body2, ref point, ref normal, penetration))
+                            {
+                                JVector hit1, hit2;
+
+                                if (GJKCollide.TimeOfImpact(ms1, ms2,ref body1.orientation,ref body2.orientation,
+                                    ref body1.position, ref body2.position,ref body1.sweptDirection, ref body2.sweptDirection,
+                                    out hit1, out hit2, out normal))
+                                {
+                                    penetration = (hit2 - hit1) * normal;
+
+                                    if (penetration < 0.0f)
+                                    {
+                                        RaiseCollisionDetected(body1, body2, ref hit1, ref hit2, ref normal, penetration);
+                                    }
+                                }
+                            }
+
                         }
                     }
                 }
@@ -375,6 +422,26 @@ namespace Jitter.Collision
 
                             RaiseCollisionDetected(b1, b2, ref point1, ref point2, ref normal, penetration);
                         }
+                    }
+                    else
+                    {
+                        if (continuousCollisionDetection && this.RaisePassedNarrowphase(b1, b2, ref point, ref normal, penetration))
+                        {
+                            JVector hit1, hit2;
+
+                            if (GJKCollide.TimeOfImpact(ms, b2.Shape,ref b1.orientation,ref b2.orientation,
+                                ref b1.position,ref b2.position, ref b1.sweptDirection, ref b2.sweptDirection,
+                                out hit1, out hit2, out normal))
+                            {
+                                penetration = (hit2 - hit1) * normal;
+
+                                if (penetration < 0.0f)
+                                {
+                                    RaiseCollisionDetected(body1, body2, ref hit1, ref hit2, ref normal, penetration);
+                                }
+                            }
+                        }
+
                     }
                 }
 
@@ -496,6 +563,7 @@ namespace Jitter.Collision
                 else return triangle.indices.I2;
             }
         }
+
 
         private void FindSupportPoints(RigidBody body1, RigidBody body2,
             Shape shape1, Shape shape2, ref JVector point, ref JVector normal,
