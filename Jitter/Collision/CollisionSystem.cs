@@ -142,7 +142,7 @@ namespace Jitter.Collision
 
         protected ThreadManager threadManager = ThreadManager.Instance;
 
-        private bool speculativeContacts = true;
+        private bool speculativeContacts = false;
         public bool EnableSpeculativeContacts { get { return speculativeContacts; }
             set { speculativeContacts = value; }
         }
