@@ -324,7 +324,7 @@ namespace JitterDemo
             if (keyState.IsKeyDown(Keys.Space) && !keyboardPreviousState.IsKeyDown(Keys.Space))
             {
                 SpawnRandomPrimitive(Conversion.ToJitterVector(Camera.Position),
-                    Conversion.ToJitterVector((Camera.Target - Camera.Position) * 700.0f));
+                    Conversion.ToJitterVector((Camera.Target - Camera.Position) * 400.0f));
 
             }
             #endregion
