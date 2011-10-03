@@ -144,7 +144,7 @@ namespace JitterDemo.Scenes
 
 
             ground.Material.StaticFriction = 1.0f;
-            ground.Material.DynamicFriction = 1.0f;
+            ground.Material.KineticFriction = 1.0f;
         }
 
 

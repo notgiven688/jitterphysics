@@ -209,13 +209,6 @@ namespace Jitter.Dynamics
                 dvz = dvz + (body2.angularVelocity.X * relativePos2.Y) - (body2.angularVelocity.Y * relativePos2.X);
             }
 
-            //if (penetration < 0.0f)
-            //{
-            //    dvx += penetration * (1.0f / 80.0f) * 0.2f;
-            //    dvy += penetration * (1.0f / 80.0f) * 0.2f;
-            //    dvz += penetration * (1.0f / 80.0f) * 0.2f;
-            //}
-
             // this gets us some performance
             if (dvx * dvx + dvy * dvy + dvz * dvz < settings.minVelocity * settings.minVelocity)
             { return; }
@@ -801,8 +794,6 @@ namespace Jitter.Dynamics
             this.normal = n; normal.Normalize();
             this.p1 = point1; this.p2 = point2;
 
-            if (newContact) lostSpeculativeBounce = 0.0f;
-
             this.newContact = newContact;
 
             JVector.Subtract(ref p1, ref body1.position, out relativePos1);
@@ -824,6 +815,8 @@ namespace Jitter.Dynamics
 
                 accumulatedNormalImpulse = 0.0f;
                 accumulatedTangentImpulse = 0.0f;
+
+                lostSpeculativeBounce = 0.0f;
 
                 switch (settings.MaterialCoefficientMixing)
                 {

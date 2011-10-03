@@ -39,7 +39,7 @@ namespace JitterDemo.Scenes
             ground.Tag = BodyTag.DontDrawMe;
             ground.IsStatic = true; Demo.World.AddBody(ground);
             //ground.Restitution = 1.0f;
-            ground.Material.DynamicFriction = 0.0f;
+            ground.Material.KineticFriction = 0.0f;
 
             quadDrawer = new QuadDrawer(Demo,100);
             Demo.Components.Add(quadDrawer);
