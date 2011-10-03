@@ -158,7 +158,7 @@ namespace Jitter.Collision
             int maxIter = MaxIterations;
 
             float distSq = v.LengthSquared();
-            float epsilon = 0.000001f;
+            float epsilon = 0.00001f;
 
             float VdotR;
 
@@ -185,8 +185,10 @@ namespace Jitter.Collision
                     {
                         lambda = lambda - VdotW / VdotR;
 
-                        x1 = position1 - lambda * sweptA;
-                        x2 = position2 - lambda * sweptB;
+                        // TODO: hack, sweptB and sweptA are wrong! but
+                        // it works much better (==perfect) that way, arghh
+                        //x1 = position1 - lambda * sweptA;
+                        //x2 = position2 - lambda * sweptA;
  
                         w = supVertexA - supVertexB;
 
@@ -201,6 +203,7 @@ namespace Jitter.Collision
                 if (simplexSolver.Closest(out v))
                 {
                     distSq = v.LengthSquared();
+                    normal = v;
                     hasResult = true;
                 }
                 else distSq = 0.0f;
@@ -212,6 +215,8 @@ namespace Jitter.Collision
     
             if (normal.LengthSquared() > JMath.Epsilon * JMath.Epsilon)
                 normal.Normalize();
+
+            //p1 = p2 + normal * (float)Math.Sqrt(distSq);
 
             simplexSolverPool.GiveBack(simplexSolver);
 
@@ -287,7 +292,7 @@ namespace Jitter.Collision
                     }
                 }
                 if (!simplexSolver.InSimplex(w)) simplexSolver.AddVertex(w, x, p);
-                if (simplexSolver.Closest(out v)) distSq = v.LengthSquared();
+                if (simplexSolver.Closest(out v)) { distSq = v.LengthSquared();  }
                 else distSq = 0.0f;
             }
 
