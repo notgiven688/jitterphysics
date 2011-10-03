@@ -34,10 +34,18 @@ namespace JitterDemo.Scenes
                     RigidBody body = new RigidBody(new BoxShape(size));
                     body.Position = new JVector(3.0f + (even ? e : 1.0f), i + 0.5f,-13.0f +  (even ? 1.0f : e));
 
-                    Demo.World.AddBody(body);
+                   Demo.World.AddBody(body);
                 }
 
             }
+
+            BoxShape bs = new BoxShape(10, 10, 0.5f);
+            RigidBody bb = new RigidBody(bs);
+
+            bb.Position = new JVector(10, 5, 0);
+
+           // Demo.World.AddBody(bb);
+            bb.IsStatic = true;
             
         }
         

@@ -857,6 +857,8 @@ namespace Jitter
                 JVector.Multiply(ref body.angularVelocity, currentAngularDampFactor, out body.angularVelocity);
 
             body.Update();
+
+            if (CollisionSystem.ContinuousCollisionDetection) body.SweptExpandBoundingBox(timestep);
         }
         #endregion
 

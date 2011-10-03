@@ -76,6 +76,8 @@ namespace JitterDemo
             this.graphics.SynchronizeWithVerticalRetrace = false;
 
             CollisionSystem collision = new CollisionSystemPersistentSAP();
+
+            collision.ContinuousCollisionDetection = true;
             World = new World(collision); World.AllowDeactivation = true;
 
             this.Window.AllowUserResizing = true;
@@ -99,9 +101,30 @@ namespace JitterDemo
             cullMode = new RasterizerState();
             cullMode.CullMode = CullMode.None;
 
+
  
             normal = new RasterizerState();
 
+
+
+        }
+
+        class SweptShape : BoxShape
+        {
+            public SweptShape()
+                : base(1,1,1)
+            {
+            }
+
+            public override void SupportMapping(ref JVector direction, out JVector result)
+            {
+                base.SupportMapping(ref direction, out result);
+
+                JVector rayEndPoint = new JVector(5, 10, 0);
+                if (direction * rayEndPoint > 0.0f)
+                    result += rayEndPoint;
+  
+            }
         }
 
         //void Events_ContactCreated(Contact obj)
@@ -144,7 +167,7 @@ namespace JitterDemo
             {
                 if (type.Namespace == "JitterDemo.Scenes" && !type.IsAbstract)
                 {
-                    if (type.Name == "SoftBodyJenga") currentScene = PhysicScenes.Count;
+                    if (type.Name == "Jenga") currentScene = PhysicScenes.Count;
                     Scenes.Scene scene = (Scenes.Scene)Activator.CreateInstance(type, this);
                     this.PhysicScenes.Add(scene);
                 }
@@ -233,12 +256,7 @@ namespace JitterDemo
 
             if (keyState.IsKeyDown(Keys.P) && !keyboardPreviousState.IsKeyDown(Keys.P))
             {
-                enumerator = World.RigidBodies.GetEnumerator();
-                enumerator.MoveNext();
-                enumerator.MoveNext();
-
-                World.RemoveBody((RigidBody)enumerator.Current);
-
+                World.Step(1.0f / 100.0f, multithread);
             }
 
 
@@ -303,7 +321,7 @@ namespace JitterDemo
             if (keyState.IsKeyDown(Keys.Space) && !keyboardPreviousState.IsKeyDown(Keys.Space))
             {
                 SpawnRandomPrimitive(Conversion.ToJitterVector(Camera.Position),
-                    Conversion.ToJitterVector((Camera.Target - Camera.Position) * 40.0f));
+                    Conversion.ToJitterVector((Camera.Target - Camera.Position) * 700.0f));
 
             }
             #endregion
@@ -339,9 +357,8 @@ namespace JitterDemo
 
             float step = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            if (step > 1.0f / 100.0f) step = 1.0f / 100.0f;
+            step = 1.0f / 100.0f;
             World.Step(step, multithread);
-
 
             gamePadPreviousState = padState;
             keyboardPreviousState = keyState;
@@ -363,7 +380,7 @@ namespace JitterDemo
         private void SpawnRandomPrimitive(JVector position, JVector velocity)
         {
             RigidBody body = null;
-            int rndn = random.Next(7);
+            int rndn = 2;
 
             // less of the more advanced objects
             if (rndn == 5 || rndn == 6) rndn = random.Next(7);
@@ -408,7 +425,7 @@ namespace JitterDemo
             }
 
             World.AddBody(body);
-
+            //body.IsParticle = true;
             body.Position = position;
             body.LinearVelocity = velocity;
             lastBody = body;
@@ -574,6 +591,7 @@ namespace JitterDemo
             Walk(cloth.DynamicTree,cloth.DynamicTree.Root);
         }
 
+
         private void DrawIslands()
         {
             JBBox box;
@@ -628,28 +646,54 @@ namespace JitterDemo
             foreach (RigidBody body in World.RigidBodies)
             {
                 if (body.IsActive) activeBodies++;
-                if (body.Tag is int || body.IsParticle) continue;
+                if (body.Tag is int) continue;
                 AddBodyToDrawList(body);
             }
 
+       
+
+
             BasicEffect.DiffuseColor = Color.LightGray.ToVector3();
-            foreach (Primitives3D.GeometricPrimitive prim in primitives) prim.Draw(BasicEffect);
+           // BasicEffect.Alpha = 0.2f;
 
             DrawCloth();
+
+
 
             PhysicScenes[currentScene].Draw();
 
             // Draw the debug data provided by Jitter
-            DrawIslands();
+           // DrawIslands();
             DrawJitterDebugInfo();
+
+            #region Debug Draw All Contacts
+            //foreach (Arbiter a in World.ArbiterMap)
+            //{
+            //    foreach (Contact c in a.ContactList)
+            //    {
+            //        DebugDrawer.DrawLine(c.Position1 + 0.5f * JVector.Left, c.Position1 + 0.5f * JVector.Right, Color.Green);
+            //        DebugDrawer.DrawLine(c.Position1 + 0.5f * JVector.Up, c.Position1 + 0.5f * JVector.Down, Color.Green);
+            //        DebugDrawer.DrawLine(c.Position1 + 0.5f * JVector.Forward, c.Position1 + 0.5f * JVector.Backward, Color.Green);
+
+
+            //        DebugDrawer.DrawLine(c.Position2 + 0.5f * JVector.Left, c.Position2 + 0.5f * JVector.Right, Color.Red);
+            //        DebugDrawer.DrawLine(c.Position2 + 0.5f * JVector.Up, c.Position2 + 0.5f * JVector.Down, Color.Red);
+            //        DebugDrawer.DrawLine(c.Position2 + 0.5f * JVector.Forward, c.Position2 + 0.5f * JVector.Backward, Color.Red);
+            //    }
+            //}
+            #endregion
 
 
             this.GraphicsDevice.RasterizerState = cullMode;
-                
+
+            foreach (Primitives3D.GeometricPrimitive prim in primitives) prim.Draw(BasicEffect);
+
 
             base.Draw(gameTime);
 
             this.GraphicsDevice.RasterizerState = normal;
+
+    
         }
 
 

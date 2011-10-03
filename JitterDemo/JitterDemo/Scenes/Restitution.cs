@@ -24,9 +24,9 @@ namespace JitterDemo.Scenes
 
             for (int i = 0; i < 11; i++)
             {
-                RigidBody box = new RigidBody(new BoxShape(JVector.One));
+                RigidBody box = new RigidBody(new BoxShape(1,0.01f,1));
                 this.Demo.World.AddBody(box);
-                JVector boxPos = new JVector(-15 + i * 3 + 5, 5, 0);
+                JVector boxPos = new JVector(-15 + i * 3 + 1, 5, 0);
 
                 box.Position = boxPos;
                 box.IsStatic = true;
@@ -37,7 +37,12 @@ namespace JitterDemo.Scenes
                 sphere.Position = boxPos + JVector.Up * 30;
                
                 // set restitution
-                sphere.Material.Restitution = box.Material.Restitution = i / 10.0f;
+                sphere.Material.Restitution = box.Material.Restitution = 1.0f / 10.0f * i;
+
+                box.Material.StaticFriction = box.Material.DynamicFriction = 0;
+
+                sphere.LinearVelocity = new JVector(0, 0, 0);
+                //sphere.IsParticle = true;
 
                 sphere.Damping = RigidBody.DampingType.Angular;
             }

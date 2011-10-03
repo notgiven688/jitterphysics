@@ -89,6 +89,12 @@ namespace Jitter.Dynamics
         private bool treatBody1AsStatic = false;
         private bool treatBody2AsStatic = false;
 
+
+        bool body1IsMassPoint; bool body2IsMassPoint;
+
+        float lostSpeculativeBounce = 0.0f;
+        float speculativeVelocity = 0.0f;
+
         /// <summary>
         /// A contact resource pool.
         /// </summary>
@@ -177,6 +183,10 @@ namespace Jitter.Dynamics
         /// </summary>
         public void Iterate()
         {
+            //body1.linearVelocity = JVector.Zero;
+            //body2.linearVelocity = JVector.Zero;
+            //return;
+
             if (treatBody1AsStatic && treatBody2AsStatic) return;
 
             float dvx, dvy, dvz;
@@ -199,12 +209,19 @@ namespace Jitter.Dynamics
                 dvz = dvz + (body2.angularVelocity.X * relativePos2.Y) - (body2.angularVelocity.Y * relativePos2.X);
             }
 
+            //if (penetration < 0.0f)
+            //{
+            //    dvx += penetration * (1.0f / 80.0f) * 0.2f;
+            //    dvy += penetration * (1.0f / 80.0f) * 0.2f;
+            //    dvz += penetration * (1.0f / 80.0f) * 0.2f;
+            //}
+
             // this gets us some performance
             if (dvx * dvx + dvy * dvy + dvz * dvz < settings.minVelocity * settings.minVelocity)
             { return; }
 
             float vn = normal.X * dvx + normal.Y * dvy + normal.Z * dvz;
-            float normalImpulse = massNormal * (-vn + restitutionBias);
+            float normalImpulse = massNormal * (-vn + restitutionBias + speculativeVelocity);
 
             float oldNormalImpulse = accumulatedNormalImpulse;
             accumulatedNormalImpulse = oldNormalImpulse + normalImpulse;
@@ -631,7 +648,9 @@ namespace Jitter.Dynamics
             if (!treatBody2AsStatic) kTangent += JVector.Dot(ref rbntrb, ref tangent);
             massTangent = 1.0f / kTangent;
 
-            restitutionBias = 0.0f;
+            restitutionBias = lostSpeculativeBounce;
+
+            speculativeVelocity = 0.0f;
 
             float relNormalVel = normal.X * dvx + normal.Y * dvy + normal.Z * dvz; //JVector.Dot(ref normal, ref dv);
 
@@ -639,7 +658,9 @@ namespace Jitter.Dynamics
             {
                 restitutionBias = settings.bias * (1.0f / timestep) * JMath.Max(0.0f, Penetration - settings.allowedPenetration);
                 restitutionBias = JMath.Clamp(restitutionBias, 0.0f, settings.maximumBias);
+              //  body1IsMassPoint = body2IsMassPoint = false;
             }
+      
 
             float timeStepRatio = timestep / lastTimeStep;
             accumulatedNormalImpulse *= timeStepRatio;
@@ -663,6 +684,22 @@ namespace Jitter.Dynamics
             if (relNormalVel < -1.0f && newContact)
             {
                 restitutionBias = Math.Max(-restitution * relNormalVel, restitutionBias);
+            }
+
+            // Speculative Contacts!
+            // if the penetration is negative (which means the bodies are not already in contact, but they will
+            // be in the future) we store the current bounce bias in the variable 'lostSpeculativeBounce'
+            // and apply it the next frame, when the speculative contact was already solved.
+            if (penetration < 0.0f)
+            {
+                speculativeVelocity = penetration / timestep;
+
+                lostSpeculativeBounce = restitutionBias;
+                restitutionBias = 0.0f;
+            }
+            else
+            {
+                lostSpeculativeBounce = 0.0f;
             }
 
             impulse.X = normal.X * accumulatedNormalImpulse + tangent.X * accumulatedTangentImpulse;
@@ -748,8 +785,6 @@ namespace Jitter.Dynamics
         }
 
 
-        bool body1IsMassPoint; bool body2IsMassPoint;
-
         /// <summary>
         /// Initializes a contact.
         /// </summary>
@@ -765,6 +800,8 @@ namespace Jitter.Dynamics
             this.body1 = body1;  this.body2 = body2;
             this.normal = n; normal.Normalize();
             this.p1 = point1; this.p2 = point2;
+
+            if (newContact) lostSpeculativeBounce = 0.0f;
 
             this.newContact = newContact;
 
@@ -810,6 +847,9 @@ namespace Jitter.Dynamics
             }
 
             this.settings = settings;
+            
+
+
         }
     }
 }

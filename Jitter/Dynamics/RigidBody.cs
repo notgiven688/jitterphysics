@@ -536,6 +536,41 @@ namespace Jitter.Dynamics
 
         #endregion
 
+
+        internal JVector sweptDirection = JVector.Zero;
+
+        public void SweptExpandBoundingBox(float timestep)
+        {
+            sweptDirection = linearVelocity * timestep;
+
+            if (sweptDirection.X < 0.0f)
+            {
+                boundingBox.Min.X += sweptDirection.X;
+            }
+            else
+            {
+                boundingBox.Max.X += sweptDirection.X;
+            }
+
+            if (sweptDirection.Y < 0.0f)
+            {
+                boundingBox.Min.Y += sweptDirection.Y;
+            }
+            else
+            {
+                boundingBox.Max.Y += sweptDirection.Y;
+            }
+
+            if (sweptDirection.Z < 0.0f)
+            {
+                boundingBox.Min.Z += sweptDirection.Z;
+            }
+            else
+            {
+                boundingBox.Max.Z += sweptDirection.Z;
+            }
+        }
+
         /// <summary>
         /// Recalculates the axis aligned bounding box and the inertia
         /// values in world space.
@@ -560,6 +595,7 @@ namespace Jitter.Dynamics
                 this.Shape.GetBoundingBox(ref orientation, out boundingBox);
                 JVector.Add(ref boundingBox.Min, ref this.position, out boundingBox.Min);
                 JVector.Add(ref boundingBox.Max, ref this.position, out boundingBox.Max);
+
 
                 if (!isStatic)
                 {
