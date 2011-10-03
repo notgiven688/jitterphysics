@@ -185,16 +185,12 @@ namespace Jitter.Collision
                     {
                         lambda = lambda - VdotW / VdotR;
 
-                        // TODO: hack, sweptB and sweptA are wrong! but
-                        // it works much better (==perfect) that way, arghh
-                        //x1 = position1 - lambda * sweptA;
-                        //x2 = position2 - lambda * sweptA;
+             
+                        x1 = position1 + lambda * sweptA;
+                        x2 = position2 + lambda * sweptB;
  
                         w = supVertexA - supVertexB;
 
-                        //JVector.Multiply(ref r, lambda, out x);
-                        //JVector.Add(ref position1, ref x, out x);
-                        //JVector.Subtract(ref x, ref p, out w);
                         normal = v;
                         hasResult = true;
                     }
@@ -216,7 +212,8 @@ namespace Jitter.Collision
             if (normal.LengthSquared() > JMath.Epsilon * JMath.Epsilon)
                 normal.Normalize();
 
-            //p1 = p2 + normal * (float)Math.Sqrt(distSq);
+            p1 = p1 - lambda * sweptA;
+            p2 = p2 - lambda * sweptB;
 
             simplexSolverPool.GiveBack(simplexSolver);
 

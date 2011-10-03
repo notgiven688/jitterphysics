@@ -39,13 +39,13 @@ namespace JitterDemo.Scenes
 
             }
 
-           // BoxShape bs = new BoxShape(10, 10, 0.01f);
-           // RigidBody bb = new RigidBody(bs);
+            //BoxShape bs = new BoxShape(10, 10, 0.01f);
+            //RigidBody bb = new RigidBody(bs);
 
-           // bb.Position = new JVector(10, 5, 0);
+            //bb.Position = new JVector(10, 5, 0);
 
-           // Demo.World.AddBody(bb);
-           //// bb.IsStatic = true;
+            //Demo.World.AddBody(bb);
+            //bb.IsStatic = true;
             
         }
         

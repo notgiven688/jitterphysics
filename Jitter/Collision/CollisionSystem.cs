@@ -30,6 +30,7 @@ using System.Diagnostics;
 namespace Jitter.Collision
 {
 
+
     public interface IBroadphaseEntity
     {
         JBBox BoundingBox { get; }
