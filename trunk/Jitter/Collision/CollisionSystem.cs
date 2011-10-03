@@ -135,11 +135,6 @@ namespace Jitter.Collision
         public event PassedBroadphaseHandler PassedBroadphase;
 
         /// <summary>
-        /// Gets called when the narrowphase system has detected possible collisions.
-        /// </summary>
-        public event PassedNarrowphaseHandler PassedNarrowphase;
-
-        /// <summary>
         /// Gets called when broad- and narrow phase collision were positive.
         /// </summary>
         public event CollisionDetectedHandler CollisionDetected;
@@ -245,12 +240,9 @@ namespace Jitter.Collision
                     int minIndexMy = FindNearestTrianglePoint(body1, my[i], ref point);
                     int minIndexOther = FindNearestTrianglePoint(body2, other[i], ref point);
 
-                    if (this.RaisePassedNarrowphase(body1.points[minIndexMy], body2.points[minIndexOther],
-                        ref point, ref normal, penetration))
-                    {
-                        RaiseCollisionDetected(body1.points[minIndexMy],
-                            body2.points[minIndexOther], ref point, ref point, ref normal, penetration);
-                    }
+
+                    RaiseCollisionDetected(body1.points[minIndexMy],
+                        body2.points[minIndexOther], ref point, ref point, ref normal, penetration);
                 }
             }
 
@@ -273,31 +265,29 @@ namespace Jitter.Collision
                     ref body2.orientation, ref body1.position, ref body2.position,
                     out point, out normal, out penetration))
                 {
-                    if (this.RaisePassedNarrowphase(body1, body2, ref point, ref normal, penetration))
-                    {
-                        JVector point1, point2;
+                    JVector point1, point2;
+                    FindSupportPoints(body1, body2, body1.Shape, body2.Shape, ref point, ref normal, out point1, out point2);
+                    RaiseCollisionDetected(body1, body2, ref point1, ref point2, ref normal, penetration);
 
-                        FindSupportPoints(body1, body2, body1.Shape, body2.Shape, ref point, ref normal, out point1, out point2);
-
-                        RaiseCollisionDetected(body1, body2, ref point1, ref point2, ref normal, penetration);
-                    }
                 }
-                else
+                else if (speculativeContacts)
                 {
-                    if (speculativeContacts && this.RaisePassedNarrowphase(body1, body2, ref point, ref normal, penetration))
-                    {
-                        JVector hit1, hit2;
+                    JVector hit1, hit2;
 
-                        if (GJKCollide.TimeOfImpact(body1.Shape, body2.Shape,ref body1.orientation,ref body2.orientation,
-                            ref body1.position,ref body2.position,ref body1.sweptDirection, ref body2.sweptDirection,
-                            out hit1, out hit2, out normal))
+                    if (GJKCollide.ClosestPoints(body1.Shape, body2.Shape, ref body1.orientation, ref body2.orientation,
+                        ref body1.position, ref body2.position, out hit1, out hit2, out normal))
+                    {
+                        JVector delta = hit2 - hit1;
+
+                        if (delta.LengthSquared() < (body1.sweptDirection - body2.sweptDirection).LengthSquared())
                         {
-                            penetration = (hit2 - hit1) * normal;
+                            penetration = delta * normal;
 
                             if (penetration < 0.0f)
                             {
                                 RaiseCollisionDetected(body1, body2, ref hit1, ref hit2, ref normal, penetration);
                             }
+
                         }
                     }
 
@@ -340,25 +330,22 @@ namespace Jitter.Collision
                             ref body2.orientation, ref body1.position, ref body2.position,
                             out point, out normal, out penetration))
                         {
-                            if (this.RaisePassedNarrowphase(body1, body2, ref point, ref normal, penetration))
-                            {
-                                JVector point1, point2;
-                                FindSupportPoints(body1, body2, ms1, ms2, ref point, ref normal, out point1, out point2);
-                                
-                                RaiseCollisionDetected(body1, body2, ref point1, ref point2, ref normal, penetration);
-                            }
+                            JVector point1, point2;
+                            FindSupportPoints(body1, body2, ms1, ms2, ref point, ref normal, out point1, out point2);
+                            RaiseCollisionDetected(body1, body2, ref point1, ref point2, ref normal, penetration);
                         }
-                        else
+                        else if (speculativeContacts)
                         {
-                            if (speculativeContacts && this.RaisePassedNarrowphase(body1, body2, ref point, ref normal, penetration))
-                            {
-                                JVector hit1, hit2;
+                            JVector hit1, hit2;
 
-                                if (GJKCollide.TimeOfImpact(ms1, ms2,ref body1.orientation,ref body2.orientation,
-                                    ref body1.position, ref body2.position,ref body1.sweptDirection, ref body2.sweptDirection,
-                                    out hit1, out hit2, out normal))
+                            if (GJKCollide.ClosestPoints(ms1, ms2, ref body1.orientation, ref body2.orientation,
+                                ref body1.position, ref body2.position, out hit1, out hit2, out normal))
+                            {
+                                JVector delta = hit2 - hit1;
+
+                                if (delta.LengthSquared() < (body1.sweptDirection - body2.sweptDirection).LengthSquared())
                                 {
-                                    penetration = (hit2 - hit1) * normal;
+                                    penetration = delta * normal;
 
                                     if (penetration < 0.0f)
                                     {
@@ -366,6 +353,7 @@ namespace Jitter.Collision
                                     }
                                 }
                             }
+
 
                         }
                     }
@@ -405,37 +393,34 @@ namespace Jitter.Collision
                         ref b2.orientation, ref b1.position, ref b2.position,
                         out point, out normal, out penetration))
                     {
-                        if (this.RaisePassedNarrowphase(b1, b2, ref point, ref normal, penetration))
+                        JVector point1, point2;
+                        FindSupportPoints(b1, b2, ms, b2.Shape, ref point, ref normal, out point1, out point2);
+
+                        if (useTerrainNormal && ms is TerrainShape)
                         {
-                            JVector point1, point2;
-                            FindSupportPoints(b1, b2, ms, b2.Shape, ref point, ref normal, out point1, out point2);
-
-                            if (useTerrainNormal && ms is TerrainShape)
-                            {
-                                (ms as TerrainShape).CollisionNormal(out normal);
-                                JVector.Transform(ref normal, ref b1.orientation, out normal);
-                            }
-                            else if (useTriangleMeshNormal && ms is TriangleMeshShape)
-                            {
-                                (ms as TriangleMeshShape).CollisionNormal(out normal);
-                                JVector.Transform(ref normal, ref b1.orientation, out normal);
-                            }
-
-                            RaiseCollisionDetected(b1, b2, ref point1, ref point2, ref normal, penetration);
+                            (ms as TerrainShape).CollisionNormal(out normal);
+                            JVector.Transform(ref normal, ref b1.orientation, out normal);
                         }
-                    }
-                    else
-                    {
-                        if (speculativeContacts && this.RaisePassedNarrowphase(b1, b2, ref point, ref normal, penetration))
+                        else if (useTriangleMeshNormal && ms is TriangleMeshShape)
                         {
-                            JVector hit1, hit2;
+                            (ms as TriangleMeshShape).CollisionNormal(out normal);
+                            JVector.Transform(ref normal, ref b1.orientation, out normal);
+                        }
 
-                            if (GJKCollide.TimeOfImpact(ms, b2.Shape,ref b1.orientation,ref b2.orientation,
-                                ref b1.position,ref b2.position, ref b1.sweptDirection, ref b2.sweptDirection,
-                                out hit1, out hit2, out normal))
+                        RaiseCollisionDetected(b1, b2, ref point1, ref point2, ref normal, penetration);
+                    }
+                    else if (speculativeContacts)
+                    {
+                        JVector hit1, hit2;
+
+                        if (GJKCollide.ClosestPoints(ms, b2.Shape, ref b1.orientation, ref b2.orientation,
+                            ref b1.position, ref b2.position, out hit1, out hit2, out normal))
+                        {
+                            JVector delta = hit2 - hit1;
+
+                            if (delta.LengthSquared() < (body1.sweptDirection - body2.sweptDirection).LengthSquared())
                             {
-
-                                penetration = (hit2 - hit1) * normal;
+                                penetration = delta * normal;
 
                                 if (penetration < 0.0f)
                                 {
@@ -443,7 +428,6 @@ namespace Jitter.Collision
                                 }
                             }
                         }
-
                     }
                 }
 
@@ -485,13 +469,8 @@ namespace Jitter.Collision
                         {
                             int minIndex = FindNearestTrianglePoint(softBody, i, ref point);
 
-                            if (this.RaisePassedNarrowphase(rigidBody, softBody.points[minIndex],
-                                ref point, ref normal, penetration))
-                            {
-
-                                RaiseCollisionDetected(rigidBody,
-                                    softBody.points[minIndex], ref point, ref point, ref normal, penetration);
-                            }
+                            RaiseCollisionDetected(rigidBody,
+                                softBody.points[minIndex], ref point, ref point, ref normal, penetration);
                         }
                     }
 
@@ -520,12 +499,8 @@ namespace Jitter.Collision
                     {
                         int minIndex = FindNearestTrianglePoint(softBody, i, ref point);
 
-                        if (this.RaisePassedNarrowphase(rigidBody, softBody.points[minIndex],
-                            ref point, ref normal, penetration))
-                        {
-                            RaiseCollisionDetected(rigidBody,
-                                softBody.points[minIndex], ref point, ref point, ref normal, penetration);
-                        }
+                        RaiseCollisionDetected(rigidBody,
+                            softBody.points[minIndex], ref point, ref point, ref normal, penetration);
                     }
                 }
 
@@ -653,22 +628,6 @@ namespace Jitter.Collision
         {
             if (this.PassedBroadphase != null)
                 return this.PassedBroadphase(entity1, entity2);
-
-            // allow this detection by default
-            return true;
-        }
-
-        /// <summary>
-        /// Raises the PassedNarrowphase event.
-        /// </summary>
-        /// <param name="body1">The first body.</param>
-        /// <param name="body2">The second body.</param>
-        /// <returns>Returns false if the collision information
-        /// should be dropped</returns>
-        public bool RaisePassedNarrowphase(RigidBody body1, RigidBody body2, ref JVector point,ref JVector normal, float penetration)
-        {
-            if (this.PassedNarrowphase != null)
-                return this.PassedNarrowphase(body1, body2,ref point,ref normal,penetration);
 
             // allow this detection by default
             return true;
