@@ -122,152 +122,48 @@ namespace Jitter.Collision
 
         }
 
-        ///// <summary>
-        ///// TOI Calculation.
-        ///// </summary>
-        ///// <param name="p1">A point on support1 where it is now. After the estimated time the points p1,p2
-        ///// are the same.</param>
-        ///// <param name="p2">A point on support2 where it is now. After the estimated time the points p1,p2
-        ///// are the same.</param>
-        ///// <returns></returns>
-        //public static bool TimeOfImpact(ISupportMappable support1,ISupportMappable support2,ref JMatrix orientation1,
-        //    ref JMatrix orientation2,ref JVector position1,ref JVector position2,ref JVector sweptA,ref JVector sweptB,
-        //    out JVector p1,out JVector p2,out JVector normal)
-        //{
 
-        //    VoronoiSimplexSolver simplexSolver = simplexSolverPool.GetNew();
-        //    simplexSolver.Reset();
-
-        //    p1 = p2 = JVector.Zero;
-
-        //    JVector r = sweptA - sweptB;
-        //    JVector w, v;
-
-        //    JVector supVertexA;
-        //    JVector rn = JVector.Negate(r);
-        //    SupportMapTransformed(support1, ref orientation1, ref position1, ref rn, out supVertexA);
-
-        //    JVector supVertexB;
-        //    SupportMapTransformed(support2, ref orientation2, ref position2, ref r, out supVertexB);
-
-        //    v = supVertexA - supVertexB;
-
-        //    normal = JVector.Zero;
-
-        //    int maxIter = MaxIterations;
-
-        //    float distSq = v.LengthSquared();
-        //    float epsilon = 0.00001f;
-
-        //    while ((distSq > epsilon) && (maxIter-- != 0))
-        //    {
-        //        JVector vn = JVector.Negate(v);
-        //        SupportMapTransformed(support1, ref orientation1, ref position1, ref vn, out supVertexA);
-        //        SupportMapTransformed(support2, ref orientation2, ref position2, ref v, out supVertexB);
-        //        w = supVertexA - supVertexB;
-
-        //        if (!simplexSolver.InSimplex(w)) simplexSolver.AddVertex(w, supVertexA, supVertexB);
-        //        if (simplexSolver.Closest(out v))
-        //        {
-        //            distSq = v.LengthSquared();
-        //            normal = v;
-        //        }
-        //        else distSq = 0.0f;
-        //    }
-
-
-        //    simplexSolver.ComputePoints(out p1, out p2);
-
-        //    if (normal.LengthSquared() > JMath.Epsilon * JMath.Epsilon)
-        //        normal.Normalize();
-
-        //    simplexSolverPool.GiveBack(simplexSolver);
-
-        //    return true;
-
-        //}
-
-        #region TimeOfImpact Conservative Advancement - Depricated
-        public static bool TimeOfImpact(ISupportMappable support1, ISupportMappable support2, ref JMatrix orientation1,
-    ref JMatrix orientation2, ref JVector position1, ref JVector position2, ref JVector sweptA, ref JVector sweptB,
-    out JVector p1, out JVector p2, out JVector normal)
+        public static bool ClosestPoints(ISupportMappable support1, ISupportMappable support2, ref JMatrix orientation1,
+            ref JMatrix orientation2, ref JVector position1, ref JVector position2,
+            out JVector p1, out JVector p2, out JVector normal)
         {
 
             VoronoiSimplexSolver simplexSolver = simplexSolverPool.GetNew();
             simplexSolver.Reset();
 
-            float lambda = 0.0f;
-
             p1 = p2 = JVector.Zero;
 
-            JVector x1 = position1;
-            JVector x2 = position2;
-
-            JVector r = sweptA - sweptB;
+            JVector r = position1 - position2;
             JVector w, v;
 
             JVector supVertexA;
             JVector rn = JVector.Negate(r);
-            SupportMapTransformed(support1, ref orientation1, ref x1, ref rn, out supVertexA);
+            SupportMapTransformed(support1, ref orientation1, ref position1, ref rn, out supVertexA);
 
             JVector supVertexB;
-            SupportMapTransformed(support2, ref orientation2, ref x2, ref r, out supVertexB);
+            SupportMapTransformed(support2, ref orientation2, ref position2, ref r, out supVertexB);
 
             v = supVertexA - supVertexB;
 
-            bool hasResult = false;
-
             normal = JVector.Zero;
-
-
-            float lastLambda = lambda;
 
             int maxIter = MaxIterations;
 
             float distSq = v.LengthSquared();
             float epsilon = 0.00001f;
 
-            float VdotR;
-
             while ((distSq > epsilon) && (maxIter-- != 0))
             {
-
                 JVector vn = JVector.Negate(v);
-                SupportMapTransformed(support1, ref orientation1, ref x1, ref vn, out supVertexA);
-                SupportMapTransformed(support2, ref orientation2, ref x2, ref v, out supVertexB);
+                SupportMapTransformed(support1, ref orientation1, ref position1, ref vn, out supVertexA);
+                SupportMapTransformed(support2, ref orientation2, ref position2, ref v, out supVertexB);
                 w = supVertexA - supVertexB;
 
-                float VdotW = JVector.Dot(ref v, ref w);
-
-                if (VdotW > 0.0f)
-                {
-                    VdotR = JVector.Dot(ref v, ref r);
-
-                    if (VdotR >= -JMath.Epsilon)
-                    {
-                        simplexSolverPool.GiveBack(simplexSolver);
-                        return false;
-                    }
-                    else
-                    {
-                        lambda = lambda - VdotW / VdotR;
-
-
-                        x1 = position1 + lambda * sweptA;
-                        x2 = position2 + lambda * sweptB;
-
-                        w = supVertexA - supVertexB;
-
-                        normal = v;
-                        hasResult = true;
-                    }
-                }
                 if (!simplexSolver.InSimplex(w)) simplexSolver.AddVertex(w, supVertexA, supVertexB);
                 if (simplexSolver.Closest(out v))
                 {
                     distSq = v.LengthSquared();
                     normal = v;
-                    hasResult = true;
                 }
                 else distSq = 0.0f;
             }
@@ -275,18 +171,115 @@ namespace Jitter.Collision
 
             simplexSolver.ComputePoints(out p1, out p2);
 
-
             if (normal.LengthSquared() > JMath.Epsilon * JMath.Epsilon)
                 normal.Normalize();
-
-            p1 = p1 - lambda * sweptA;
-            p2 = p2 - lambda * sweptB;
 
             simplexSolverPool.GiveBack(simplexSolver);
 
             return true;
 
         }
+
+        #region TimeOfImpact Conservative Advancement - Depricated
+    //    public static bool TimeOfImpact(ISupportMappable support1, ISupportMappable support2, ref JMatrix orientation1,
+    //ref JMatrix orientation2, ref JVector position1, ref JVector position2, ref JVector sweptA, ref JVector sweptB,
+    //out JVector p1, out JVector p2, out JVector normal)
+    //    {
+
+    //        VoronoiSimplexSolver simplexSolver = simplexSolverPool.GetNew();
+    //        simplexSolver.Reset();
+
+    //        float lambda = 0.0f;
+
+    //        p1 = p2 = JVector.Zero;
+
+    //        JVector x1 = position1;
+    //        JVector x2 = position2;
+
+    //        JVector r = sweptA - sweptB;
+    //        JVector w, v;
+
+    //        JVector supVertexA;
+    //        JVector rn = JVector.Negate(r);
+    //        SupportMapTransformed(support1, ref orientation1, ref x1, ref rn, out supVertexA);
+
+    //        JVector supVertexB;
+    //        SupportMapTransformed(support2, ref orientation2, ref x2, ref r, out supVertexB);
+
+    //        v = supVertexA - supVertexB;
+
+    //        bool hasResult = false;
+
+    //        normal = JVector.Zero;
+
+
+    //        float lastLambda = lambda;
+
+    //        int maxIter = MaxIterations;
+
+    //        float distSq = v.LengthSquared();
+    //        float epsilon = 0.00001f;
+
+    //        float VdotR;
+
+    //        while ((distSq > epsilon) && (maxIter-- != 0))
+    //        {
+
+    //            JVector vn = JVector.Negate(v);
+    //            SupportMapTransformed(support1, ref orientation1, ref x1, ref vn, out supVertexA);
+    //            SupportMapTransformed(support2, ref orientation2, ref x2, ref v, out supVertexB);
+    //            w = supVertexA - supVertexB;
+
+    //            float VdotW = JVector.Dot(ref v, ref w);
+
+    //            if (VdotW > 0.0f)
+    //            {
+    //                VdotR = JVector.Dot(ref v, ref r);
+
+    //                if (VdotR >= -JMath.Epsilon)
+    //                {
+    //                    simplexSolverPool.GiveBack(simplexSolver);
+    //                    return false;
+    //                }
+    //                else
+    //                {
+    //                    lambda = lambda - VdotW / VdotR;
+
+
+    //                    x1 = position1 + lambda * sweptA;
+    //                    x2 = position2 + lambda * sweptB;
+
+    //                    w = supVertexA - supVertexB;
+
+    //                    normal = v;
+    //                    hasResult = true;
+    //                }
+    //            }
+    //            if (!simplexSolver.InSimplex(w)) simplexSolver.AddVertex(w, supVertexA, supVertexB);
+    //            if (simplexSolver.Closest(out v))
+    //            {
+    //                distSq = v.LengthSquared();
+    //                normal = v;
+    //                hasResult = true;
+    //            }
+    //            else distSq = 0.0f;
+    //        }
+
+
+    //        simplexSolver.ComputePoints(out p1, out p2);
+
+
+    //        if (normal.LengthSquared() > JMath.Epsilon * JMath.Epsilon)
+    //            normal.Normalize();
+
+    //        p1 = p1 - lambda * sweptA;
+    //        p2 = p2 - lambda * sweptB;
+
+    //        simplexSolverPool.GiveBack(simplexSolver);
+
+    //        return true;
+
+    //    }
         #endregion
 
         // see: btSubSimplexConvexCast.cpp
