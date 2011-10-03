@@ -858,7 +858,7 @@ namespace Jitter
 
             body.Update();
 
-            if (CollisionSystem.ContinuousCollisionDetection) body.SweptExpandBoundingBox(timestep);
+            if (CollisionSystem.EnableSpeculativeContacts) body.SweptExpandBoundingBox(timestep);
         }
         #endregion
 

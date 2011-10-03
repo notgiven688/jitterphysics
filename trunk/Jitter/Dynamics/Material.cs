@@ -28,7 +28,7 @@ namespace Jitter.Dynamics
             set { staticFriction = value; }
         }
 
-        public float DynamicFriction
+        public float KineticFriction
         {
             get { return kineticFriction; }
             set { kineticFriction = value; }

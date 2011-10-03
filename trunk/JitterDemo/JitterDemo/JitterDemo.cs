@@ -77,7 +77,7 @@ namespace JitterDemo
 
             CollisionSystem collision = new CollisionSystemPersistentSAP();
 
-            collision.ContinuousCollisionDetection = true;
+            collision.EnableSpeculativeContacts = true;
             World = new World(collision); World.AllowDeactivation = true;
 
             this.Window.AllowUserResizing = true;
@@ -100,6 +100,9 @@ namespace JitterDemo
 
             cullMode = new RasterizerState();
             cullMode.CullMode = CullMode.None;
+
+           // World.SetIterations(5, 5);
+            World.CollisionSystem.EnableSpeculativeContacts = true;
 
 
  

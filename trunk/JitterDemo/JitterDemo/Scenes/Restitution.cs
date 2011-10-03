@@ -39,7 +39,7 @@ namespace JitterDemo.Scenes
                 // set restitution
                 sphere.Material.Restitution = box.Material.Restitution = 1.0f / 10.0f * i;
 
-                box.Material.StaticFriction = box.Material.DynamicFriction = 0;
+                box.Material.StaticFriction = box.Material.KineticFriction = 0;
 
                 sphere.LinearVelocity = new JVector(0, 0, 0);
                 //sphere.IsParticle = true;

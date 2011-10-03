@@ -99,7 +99,7 @@ namespace JitterDemo.Scenes
 
             cloth.Translate(new JVector(0, 10, 10));
 
-            cloth.Material.DynamicFriction = 0.9f;
+            cloth.Material.KineticFriction = 0.9f;
             cloth.Material.StaticFriction = 0.95f;
 
             cloth.VertexBodies[0].IsStatic = true;

@@ -146,9 +146,9 @@ namespace Jitter.Collision
 
         protected ThreadManager threadManager = ThreadManager.Instance;
 
-        private bool continuousCollisionDetection = true;
-        public bool ContinuousCollisionDetection { get { return continuousCollisionDetection; }
-            set { continuousCollisionDetection = value; }
+        private bool speculativeContacts = true;
+        public bool EnableSpeculativeContacts { get { return speculativeContacts; }
+            set { speculativeContacts = value; }
         }
 
         /// <summary>
@@ -283,7 +283,7 @@ namespace Jitter.Collision
                 }
                 else
                 {
-                    if (continuousCollisionDetection && this.RaisePassedNarrowphase(body1, body2, ref point, ref normal, penetration))
+                    if (speculativeContacts && this.RaisePassedNarrowphase(body1, body2, ref point, ref normal, penetration))
                     {
                         JVector hit1, hit2;
 
@@ -349,7 +349,7 @@ namespace Jitter.Collision
                         }
                         else
                         {
-                            if (continuousCollisionDetection && this.RaisePassedNarrowphase(body1, body2, ref point, ref normal, penetration))
+                            if (speculativeContacts && this.RaisePassedNarrowphase(body1, body2, ref point, ref normal, penetration))
                             {
                                 JVector hit1, hit2;
 
@@ -425,7 +425,7 @@ namespace Jitter.Collision
                     }
                     else
                     {
-                        if (continuousCollisionDetection && this.RaisePassedNarrowphase(b1, b2, ref point, ref normal, penetration))
+                        if (speculativeContacts && this.RaisePassedNarrowphase(b1, b2, ref point, ref normal, penetration))
                         {
                             JVector hit1, hit2;
 
@@ -433,6 +433,7 @@ namespace Jitter.Collision
                                 ref b1.position,ref b2.position, ref b1.sweptDirection, ref b2.sweptDirection,
                                 out hit1, out hit2, out normal))
                             {
+
                                 penetration = (hit2 - hit1) * normal;
 
                                 if (penetration < 0.0f)
