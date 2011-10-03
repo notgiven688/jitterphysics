@@ -147,7 +147,7 @@ namespace Jitter.Collision
 
             normal = JVector.Zero;
 
-            int maxIter = MaxIterations;
+            int maxIter = 15;
 
             float distSq = v.LengthSquared();
             float epsilon = 0.00001f;
