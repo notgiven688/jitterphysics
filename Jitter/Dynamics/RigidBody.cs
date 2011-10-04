@@ -169,6 +169,7 @@ namespace Jitter.Dynamics
             this.material = material;
 
             AllowDeactivation = true;
+            EnableSpeculativeContacts = false;
 
             this.isParticle = isParticle;
 
@@ -194,6 +195,8 @@ namespace Jitter.Dynamics
         /// world.
         /// </summary>
         public bool AllowDeactivation { get; set; }
+
+        public bool EnableSpeculativeContacts { get; set; }
 
         /// <summary>
         /// The axis aligned bounding box of the body.

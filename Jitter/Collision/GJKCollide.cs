@@ -137,7 +137,10 @@ namespace Jitter.Collision
             JVector w, v;
 
             JVector supVertexA;
-            JVector rn = JVector.Negate(r);
+            JVector rn,vn;
+
+            rn = JVector.Negate(r);
+
             SupportMapTransformed(support1, ref orientation1, ref position1, ref rn, out supVertexA);
 
             JVector supVertexB;
@@ -154,7 +157,7 @@ namespace Jitter.Collision
 
             while ((distSq > epsilon) && (maxIter-- != 0))
             {
-                JVector vn = JVector.Negate(v);
+                vn = JVector.Negate(v);
                 SupportMapTransformed(support1, ref orientation1, ref position1, ref vn, out supVertexA);
                 SupportMapTransformed(support2, ref orientation2, ref position2, ref v, out supVertexB);
                 w = supVertexA - supVertexB;
