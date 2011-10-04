@@ -256,6 +256,9 @@ namespace Jitter.Collision
             bool b1IsMulti = (body1.Shape is Multishape);
             bool b2IsMulti = (body2.Shape is Multishape);
 
+            bool speculative = speculativeContacts || 
+                (body1.EnableSpeculativeContacts || body2.EnableSpeculativeContacts);
+
             JVector point, normal;
             float penetration;
 
@@ -270,7 +273,7 @@ namespace Jitter.Collision
                     RaiseCollisionDetected(body1, body2, ref point1, ref point2, ref normal, penetration);
 
                 }
-                else if (speculativeContacts)
+                else if (speculative)
                 {
                     JVector hit1, hit2;
 
@@ -334,7 +337,7 @@ namespace Jitter.Collision
                             FindSupportPoints(body1, body2, ms1, ms2, ref point, ref normal, out point1, out point2);
                             RaiseCollisionDetected(body1, body2, ref point1, ref point2, ref normal, penetration);
                         }
-                        else if (speculativeContacts)
+                        else if (speculative)
                         {
                             JVector hit1, hit2;
 
@@ -409,7 +412,7 @@ namespace Jitter.Collision
 
                         RaiseCollisionDetected(b1, b2, ref point1, ref point2, ref normal, penetration);
                     }
-                    else if (speculativeContacts)
+                    else if (speculative)
                     {
                         JVector hit1, hit2;
 

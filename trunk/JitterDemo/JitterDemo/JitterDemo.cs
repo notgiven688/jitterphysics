@@ -102,7 +102,8 @@ namespace JitterDemo
             cullMode.CullMode = CullMode.None;
 
            // World.SetIterations(5, 5);
-            World.CollisionSystem.EnableSpeculativeContacts = true;
+            World.CollisionSystem.EnableSpeculativeContacts = false;
+
 
 
  
@@ -112,31 +113,6 @@ namespace JitterDemo
 
         }
 
-        class SweptShape : BoxShape
-        {
-            public SweptShape()
-                : base(1,1,1)
-            {
-            }
-
-            public override void SupportMapping(ref JVector direction, out JVector result)
-            {
-                base.SupportMapping(ref direction, out result);
-
-                JVector rayEndPoint = new JVector(5, 10, 0);
-                if (direction * rayEndPoint > 0.0f)
-                    result += rayEndPoint;
-  
-            }
-        }
-
-        //void Events_ContactCreated(Contact obj)
-        //{
-        //    if (obj.Body1.Shape is CapsuleShape && !(obj.Body2.Shape is CapsuleShape))
-        //        obj.TreatBodyAsStatic(RigidBodyIndex.RigidBody1);
-        //    else if (obj.Body2.Shape is CapsuleShape && !(obj.Body1.Shape is CapsuleShape))
-        //        obj.TreatBodyAsStatic(RigidBodyIndex.RigidBody2);
-        //}
 
 
         protected override void Initialize()
@@ -360,7 +336,7 @@ namespace JitterDemo
 
             float step = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            step = 1.0f / 100.0f;
+            step = 1.0f / 60.0f;
             World.Step(step, multithread);
 
             gamePadPreviousState = padState;
@@ -429,6 +405,7 @@ namespace JitterDemo
 
             World.AddBody(body);
             //body.IsParticle = true;
+            body.EnableSpeculativeContacts = true;
             body.Position = position;
             body.LinearVelocity = velocity;
             lastBody = body;
