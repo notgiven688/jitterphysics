@@ -40,12 +40,6 @@ namespace JitterDemo.Scenes
             AddCar(new JVector(0, 4, 0));
         }
 
-        public override void Destroy()
-        {
-            RemoveCar();
-            Demo.World.Clear();
-        }
-
         public override void Draw()
         {
             terrain.AddWorldMatrix(Matrix.CreateTranslation(-50, 0, -50));

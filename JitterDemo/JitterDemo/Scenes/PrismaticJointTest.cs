@@ -45,11 +45,5 @@ namespace JitterDemo.Scenes
             Demo.World.AddBody(body2);
         }
 
-        public override void Destroy()
-        {
-            RemoveGround();
-            this.Demo.World.Clear();
-        }
-
     }
 }

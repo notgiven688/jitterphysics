@@ -94,10 +94,10 @@ namespace Jitter.Collision
                         {
                             if (RaisePassedBroadphase(bodyList[i], bodyList[e]))
                             {
-                                Pair pair = Pair.Pool.GetNew();
+                                BroadphasePair pair = BroadphasePair.Pool.GetNew();
 
-                                if (swapOrder) { pair.entity1 = bodyList[i]; pair.entity2 = bodyList[e]; }
-                                else { pair.entity2 = bodyList[e]; pair.entity1 = bodyList[i]; }
+                                if (swapOrder) { pair.Entity1 = bodyList[i]; pair.Entity2 = bodyList[e]; }
+                                else { pair.Entity2 = bodyList[e]; pair.Entity1 = bodyList[i]; }
                                 swapOrder = !swapOrder;
 
                                 threadManager.AddTask(detectCallback, pair);
@@ -134,9 +134,9 @@ namespace Jitter.Collision
 
         private void DetectCallback(object obj)
         {
-            Pair pair = obj as Pair;
-            base.Detect(pair.entity1, pair.entity2);
-            Pair.Pool.GiveBack(pair);
+            BroadphasePair pair = obj as BroadphasePair;
+            base.Detect(pair.Entity1, pair.Entity2);
+            BroadphasePair.Pool.GiveBack(pair);
         }
 
         /// <summary>

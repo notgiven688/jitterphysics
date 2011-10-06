@@ -112,10 +112,6 @@ namespace JitterDemo.Scenes
             AddCar(new JVector(-20, 20, 0));
         }
 
-        public override void Destroy()
-        {
-            RemoveCar();
-            Demo.World.Clear();
-        }
+
     }
 }

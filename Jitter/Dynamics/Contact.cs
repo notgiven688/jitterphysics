@@ -683,7 +683,7 @@ namespace Jitter.Dynamics
             // if the penetration is negative (which means the bodies are not already in contact, but they will
             // be in the future) we store the current bounce bias in the variable 'lostSpeculativeBounce'
             // and apply it the next frame, when the speculative contact was already solved.
-            if (penetration < 0.0f)
+            if (penetration < -settings.allowedPenetration)
             {
                 speculativeVelocity = penetration / timestep;
 

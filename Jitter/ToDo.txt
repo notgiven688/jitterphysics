@@ -1,7 +1,6 @@
 TODO
 ======
 
- - Optimize raycasting for PersistentSweepAndPrune
  - Name it 0.2.0 and release.
 
 

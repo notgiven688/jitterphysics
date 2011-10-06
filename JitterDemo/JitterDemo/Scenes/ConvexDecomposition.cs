@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using Jitter.LinearMath;
+#if WINDOWS
+
 using Jitter.Collision;
 using System.Globalization;
 using Jitter.Collision.Shapes;
@@ -67,23 +69,6 @@ namespace JitterDemo.Scenes
                 Demo.World.AddBody(body);
             }
 
-            // body.enabledebugdraw = true lets jitter draw
-            // all the shapes.
-
-            // in the JitterDemo class this is done with
-            //
-            // foreach (RigidBody body in World.RigidBodies)
-            // {
-            //    body.DebugDraw(DebugDrawer);
-            // }
-
-
-        }
-
-        public override void Destroy()
-        {
-            RemoveGround();
-            Demo.World.Clear();
         }
 
         /// <summary>
@@ -131,6 +116,7 @@ namespace JitterDemo.Scenes
             return shapes;
         }
 
-
     }
 }
+
+#endif

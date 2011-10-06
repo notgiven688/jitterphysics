@@ -20,13 +20,6 @@ namespace JitterDemo.Scenes
         }
 
         public abstract void Build();
-        public abstract void Destroy();
-
-        public void Restore()
-        {
-            Destroy();
-            Build();
-        }
 
         private QuadDrawer quadDrawer = null;
         protected RigidBody ground = null;
@@ -63,7 +56,6 @@ namespace JitterDemo.Scenes
         public void RemoveCar()
         {
             Demo.World.RemoveBody(car.carBody);
-            car.carBody.RemoveCar();
             Demo.Components.Remove(quadDrawer);
             Demo.Components.Remove(car);
         }

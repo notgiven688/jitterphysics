@@ -30,11 +30,12 @@ using System.Diagnostics;
 namespace Jitter.Collision
 {
 
-
+    /// <summary>
+    /// Entity of the Broadphase system. (Either a Softbody or a RigidBody)
+    /// </summary>
     public interface IBroadphaseEntity
     {
         JBBox BoundingBox { get; }
-        int BroadphaseTag { get; set; }
         bool IsStaticOrInactive{ get; }
     }
 
@@ -95,22 +96,22 @@ namespace Jitter.Collision
         /// for multithreaded detection. (Passing this as
         /// the object parameter to ThreadManager.Instance.AddTask)
         /// </summary>
-        #region protected class Pair
-        protected class Pair
+        #region protected class BroadphasePair
+        protected class BroadphasePair
         {
             /// <summary>
             /// The first body.
             /// </summary>
-            public IBroadphaseEntity entity1;
+            public IBroadphaseEntity Entity1;
             /// <summary>
             /// The second body.
             /// </summary>
-            public IBroadphaseEntity entity2;
+            public IBroadphaseEntity Entity2;
 
             /// <summary>
             /// A resource pool of Pairs.
             /// </summary>
-            public static ResourcePool<Pair> Pool = new ResourcePool<Pair>();
+            public static ResourcePool<BroadphasePair> Pool = new ResourcePool<BroadphasePair>();
         }
         #endregion
 
@@ -138,7 +139,6 @@ namespace Jitter.Collision
         /// Gets called when broad- and narrow phase collision were positive.
         /// </summary>
         public event CollisionDetectedHandler CollisionDetected;
-
 
         protected ThreadManager threadManager = ThreadManager.Instance;
 
@@ -176,8 +176,8 @@ namespace Jitter.Collision
         /// </summary>
         /// <param name="body1">The first body.</param>
         /// <param name="body2">The second body.</param>
-        #region  public void Detect(IBroadphaseEntity body1, IBroadphaseEntity body2)
-        public void Detect(IBroadphaseEntity entity1, IBroadphaseEntity entity2)
+        #region public virtual void Detect(IBroadphaseEntity body1, IBroadphaseEntity body2)
+        public virtual void Detect(IBroadphaseEntity entity1, IBroadphaseEntity entity2)
         {
             Debug.Assert(entity1 != entity2, "CollisionSystem reports selfcollision. Something is wrong.");
 
@@ -256,7 +256,7 @@ namespace Jitter.Collision
             bool b1IsMulti = (body1.Shape is Multishape);
             bool b2IsMulti = (body2.Shape is Multishape);
 
-            bool speculative = speculativeContacts || 
+            bool speculative = speculativeContacts ||
                 (body1.EnableSpeculativeContacts || body2.EnableSpeculativeContacts);
 
             JVector point, normal;
@@ -271,7 +271,6 @@ namespace Jitter.Collision
                     JVector point1, point2;
                     FindSupportPoints(body1, body2, body1.Shape, body2.Shape, ref point, ref normal, out point1, out point2);
                     RaiseCollisionDetected(body1, body2, ref point1, ref point2, ref normal, penetration);
-
                 }
                 else if (speculative)
                 {

@@ -24,11 +24,6 @@ namespace JitterDemo.Scenes
         {
             AddGround();
         }
-
-        public override void Destroy()
-        {
-            RemoveGround();
-        }
     }
 
 

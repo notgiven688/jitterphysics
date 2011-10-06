@@ -117,12 +117,5 @@ namespace JitterDemo.Scenes
             world.AddConstraint(leg2torso);
         }
 
-        public override void Destroy()
-        {
-            RemoveGround();
-            Demo.World.Clear();
-        }
-
-
     }
 }

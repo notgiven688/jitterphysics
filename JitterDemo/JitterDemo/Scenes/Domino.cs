@@ -38,11 +38,5 @@ namespace JitterDemo.Scenes
             ground.Material.StaticFriction = 0.4f;
         }
 
-        public override void Destroy()
-        {
-            RemoveGround();
-            this.Demo.World.Clear();
-        }
-
     }
 }

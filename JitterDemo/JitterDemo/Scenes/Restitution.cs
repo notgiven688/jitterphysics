@@ -35,28 +35,18 @@ namespace JitterDemo.Scenes
                 this.Demo.World.AddBody(sphere);
 
                 sphere.Position = boxPos + JVector.Up * 30;
-               
+                sphere.EnableSpeculativeContacts = true;
+
                 // set restitution
                 sphere.Material.Restitution = box.Material.Restitution = 1.0f / 10.0f * i;
-
-                box.Material.StaticFriction = box.Material.KineticFriction = 0;
-
                 sphere.LinearVelocity = new JVector(0, 0, 0);
-                //sphere.IsParticle = true;
+    
 
                 sphere.Damping = RigidBody.DampingType.Angular;
             }
 
          
         }
-
-
-        public override void Destroy()
-        {
-            RemoveGround();
-            Demo.World.Clear();
-        }
-
 
     }
 }
