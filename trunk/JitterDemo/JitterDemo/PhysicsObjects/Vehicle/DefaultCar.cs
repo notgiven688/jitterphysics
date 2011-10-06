@@ -67,7 +67,7 @@ namespace JitterDemo
         private const float dampingFrac = 0.5f;
         private const float springFrac = 0.1f;
 
-        World.WorldStep postStep;
+        //World.WorldStep postStep;
 
         /// <summary>
         /// Initializes a new instance of the DefaultCar class.
@@ -77,9 +77,9 @@ namespace JitterDemo
         public DefaultCar(World world,Shape shape) : base(shape)
         {
             this.world = world;
-            postStep = new World.WorldStep(world_PostStep);
+            //postStep = new World.WorldStep(world_PostStep);
 
-            world.Events.PostStep += postStep;
+            //world.Events.PostStep += postStep;
 
             // set some default values
             this.AccelerationRate = 5.0f;
@@ -94,12 +94,6 @@ namespace JitterDemo
             wheels[(int)WheelPosition.BackRight] = new Wheel(world, this, JVector.Right + 1.8f * JVector.Backward + 0.8f * JVector.Down, 0.4f);
 
             AdjustWheelValues();
-        }
-
-        public void RemoveCar()
-        {
-            world.Events.PostStep -= postStep;
-            foreach (Wheel w in wheels) w.RemoveWheel();
         }
 
         /// <summary>
@@ -139,10 +133,15 @@ namespace JitterDemo
             destSteering = steer;
         }
 
-        private void world_PostStep(float timeStep)
+        public override void PreStep(float timestep)
         {
-            float deltaAccelerate = timeStep * AccelerationRate;
-            float deltaSteering = timeStep * SteerRate;
+            foreach (Wheel w in wheels) w.PreStep(timestep);
+        }
+
+        public override void PostStep(float timestep)
+        {
+            float deltaAccelerate = timestep * AccelerationRate;
+            float deltaSteering = timestep * SteerRate;
 
             float dAccelerate = destAccelerate - accelerate;
             dAccelerate = JMath.Clamp(dAccelerate, -deltaAccelerate, deltaAccelerate);
@@ -165,7 +164,11 @@ namespace JitterDemo
 
             wheels[(int)WheelPosition.FrontLeft].SteerAngle = alpha;
             wheels[(int)WheelPosition.FrontRight].SteerAngle = alpha;
+
+
+            foreach (Wheel w in wheels) w.PostStep(timestep);
         }
+
 
 
     }

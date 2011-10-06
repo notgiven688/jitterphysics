@@ -623,12 +623,12 @@ namespace Jitter.Dynamics
         public int BroadphaseTag { get; set; }
 
 
-        public virtual void PreStep()
+        public virtual void PreStep(float timestep)
         {
             //
         }
 
-        public virtual void PostStep()
+        public virtual void PostStep(float timestep)
         {
             //
         }

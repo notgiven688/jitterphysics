@@ -42,7 +42,9 @@ namespace JitterDemo
         private bool multithread = true;
         private int activeBodies = 0;
 
-        private bool debugDraw = false;
+        private GamePadState padState;
+        private KeyboardState keyState;
+        private MouseState mouseState;
 
         public Camera Camera { private set; get; }
         public Display Display { private set; get; }
@@ -53,9 +55,7 @@ namespace JitterDemo
 
         private int currentScene = 0;
 
-        RasterizerState wireframe;
-        RasterizerState cullMode;
-        RasterizerState normal;
+        RasterizerState wireframe, cullMode,normal;
 
         Color[] rndColors;
 
@@ -77,13 +77,17 @@ namespace JitterDemo
 
             CollisionSystem collision = new CollisionSystemPersistentSAP();
 
-            collision.EnableSpeculativeContacts = true;
             World = new World(collision); World.AllowDeactivation = true;
 
             this.Window.AllowUserResizing = true;
 
+#if(WINDOWS)
             this.Window.Title = "Jitter Physics Demo - Jitter "
                 + Assembly.GetAssembly(typeof(Jitter.World)).GetName().Version.ToString();
+#else
+            this.Window.Title = "Jitter Physics Demo - Jitter";
+#endif
+
 
             Random rr = new Random();
             rndColors = new Color[20];
@@ -93,7 +97,6 @@ namespace JitterDemo
                 rndColors[i] = new Color((float)rr.NextDouble(), (float)rr.NextDouble(), (float)rr.NextDouble());
             }
 
-           // this.World.Events.ContactCreated += new Action<Contact>(Events_ContactCreated);
 
             wireframe = new RasterizerState();
             wireframe.FillMode = FillMode.WireFrame;
@@ -101,19 +104,9 @@ namespace JitterDemo
             cullMode = new RasterizerState();
             cullMode.CullMode = CullMode.None;
 
-           // World.SetIterations(5, 5);
-            World.CollisionSystem.EnableSpeculativeContacts = false;
-
-
-
  
             normal = new RasterizerState();
-
-
-
         }
-
-
 
         protected override void Initialize()
         {
@@ -146,7 +139,7 @@ namespace JitterDemo
             {
                 if (type.Namespace == "JitterDemo.Scenes" && !type.IsAbstract)
                 {
-                    if (type.Name == "Jenga") currentScene = PhysicScenes.Count;
+                    if (type.Name == "SoftBodyJenga") currentScene = PhysicScenes.Count;
                     Scenes.Scene scene = (Scenes.Scene)Activator.CreateInstance(type, this);
                     this.PhysicScenes.Add(scene);
                 }
@@ -156,18 +149,6 @@ namespace JitterDemo
                 this.PhysicScenes[currentScene].Build();
 
             base.Initialize();
-
-
-            //for (int i = 0; i < 10; i++)
-            //{
-            //    for (int e = 0; e < 10; e++)
-            //    {
-            //        for (int k = 0; k < 10; k++)
-            //        {
-            //            SpawnRandomPrimitive(new JVector(i, e + 5, k) * 3, JVector.Zero);
-            //        }
-            //    }
-            //}
 
         }
 
@@ -186,6 +167,37 @@ namespace JitterDemo
             return direction;
         }
 
+        private void DestroyCurrentScene()
+        {
+            for (int i = this.Components.Count - 1; i >= 0; i--)
+            {
+                IGameComponent component = this.Components[i];
+
+                if (component is Camera) continue;
+                if (component is Display) continue;
+                if (component is DebugDrawer) continue;
+
+                this.Components.RemoveAt(i);
+            }
+
+            World.Clear();
+        }
+
+        private bool PressedOnce(Keys key, Buttons button)
+        {
+            bool keyboard = keyState.IsKeyDown(key) && !keyboardPreviousState.IsKeyDown(key);
+
+            if (key == Keys.Add) key = Keys.OemPlus;
+            keyboard |= keyState.IsKeyDown(key) && !keyboardPreviousState.IsKeyDown(key);
+
+            if (key == Keys.Subtract) key = Keys.OemMinus;
+            keyboard |= keyState.IsKeyDown(key) && !keyboardPreviousState.IsKeyDown(key);
+
+            bool gamePad = padState.IsButtonDown(button) && !gamePadPreviousState.IsButtonDown(button);
+
+            return keyboard || gamePad;
+        }
+
 
         #region update - global variables
         // Hold previous input states.
@@ -201,47 +213,23 @@ namespace JitterDemo
         int scrollWheel = 0;
         #endregion
 
-        private void RemoveComponents()
-        {
-            for (int i = this.Components.Count - 1; i >= 0; i--)
-            {
-                IGameComponent component = this.Components[i];
-
-                if (component is QuadDrawer) continue;
-                if (component is Camera) continue;
-                if (component is Display) continue;
-                if (component is DebugDrawer) continue;
-
-                this.Components.RemoveAt(i);
-
-            }
-        }
-
-        System.Collections.IEnumerator enumerator;
-
         protected override void Update(GameTime gameTime)
         {
-            GamePadState padState = GamePad.GetState(PlayerIndex.One);
-            KeyboardState keyState = Keyboard.GetState();
-            MouseState mouseState = Mouse.GetState();
+            padState = GamePad.GetState(PlayerIndex.One);
+            keyState = Keyboard.GetState();
+            mouseState = Mouse.GetState();
 
             // let the user escape the demo
-            if (keyState.IsKeyDown(Keys.Escape) || 
-                padState.IsButtonDown(Buttons.Back)) this.Exit();
+            if (PressedOnce(Keys.Escape, Buttons.Back)) this.Exit();
 
             // change threading mode
-            if (keyState.IsKeyDown(Keys.M) && !keyboardPreviousState.IsKeyDown(Keys.M))
-                multithread = !multithread;
-
-            if (keyState.IsKeyDown(Keys.P) && !keyboardPreviousState.IsKeyDown(Keys.P))
-            {
-                World.Step(1.0f / 100.0f, multithread);
-            }
-
+            if (PressedOnce(Keys.M, Buttons.A)) multithread = !multithread;
 
             #region drag and drop physical objects with the mouse
             if (mouseState.LeftButton == ButtonState.Pressed &&
-                mousePreviousState.LeftButton == ButtonState.Released)
+                mousePreviousState.LeftButton == ButtonState.Released ||
+                padState.IsButtonDown(Buttons.RightThumbstickDown) &&
+                gamePadPreviousState.IsButtonUp(Buttons.RightThumbstickUp))
             {
                 JVector ray = Conversion.ToJitterVector(RayTo(mouseState.X, mouseState.Y));
                 JVector camp = Conversion.ToJitterVector(Camera.Position);
@@ -249,6 +237,7 @@ namespace JitterDemo
                 ray = JVector.Normalize(ray) * 100;
 
                 float fraction;
+
                 bool result = World.CollisionSystem.Raycast(camp, ray, RaycastCallback, out grabBody, out hitNormal, out fraction);
 
                 if (result)
@@ -271,7 +260,7 @@ namespace JitterDemo
                 }
             }
 
-            if (mouseState.LeftButton == ButtonState.Pressed)
+            if (mouseState.LeftButton == ButtonState.Pressed || padState.IsButtonDown(Buttons.RightThumbstickDown))
             {
                 hitDistance += (mouseState.ScrollWheelValue - scrollWheel) * 0.01f;
                 scrollWheel = mouseState.ScrollWheelValue;
@@ -290,55 +279,47 @@ namespace JitterDemo
             }
             else
             {
-                grabBody = null;
                 if (grabConstraint != null) World.RemoveConstraint(grabConstraint);
+                grabBody = null;
+                grabConstraint = null;
             }
             #endregion
 
             #region create random primitives
 
-            if (keyState.IsKeyDown(Keys.Space) && !keyboardPreviousState.IsKeyDown(Keys.Space))
+            if (PressedOnce(Keys.Space,Buttons.B))
             {
                 SpawnRandomPrimitive(Conversion.ToJitterVector(Camera.Position),
-                    Conversion.ToJitterVector((Camera.Target - Camera.Position) * 400.0f));
+                    Conversion.ToJitterVector((Camera.Target - Camera.Position) * 40.0f));
 
             }
             #endregion
 
             #region switch through physic scenes
-            if (keyState.IsKeyDown(Keys.Add) &&
-                !keyboardPreviousState.IsKeyDown(Keys.Add) ||
-                keyState.IsKeyDown(Keys.OemPlus) &&
-                !keyboardPreviousState.IsKeyDown(Keys.OemPlus))
+            if (PressedOnce(Keys.Add,Buttons.X))
             {
-                PhysicScenes[currentScene].Destroy();
-                RemoveComponents();
+                DestroyCurrentScene();
                 currentScene++;
                 currentScene = currentScene % PhysicScenes.Count;
                 PhysicScenes[currentScene].Build();
             }
 
-            if (keyState.IsKeyDown(Keys.OemMinus) &&
-                 !keyboardPreviousState.IsKeyDown(Keys.OemMinus) ||
-                 keyState.IsKeyDown(Keys.Subtract) &&
-                !keyboardPreviousState.IsKeyDown(Keys.Subtract))
+            if (PressedOnce(Keys.Subtract, Buttons.Y))
             {
-                PhysicScenes[currentScene].Destroy();
-                RemoveComponents();
+                DestroyCurrentScene();
                 currentScene += PhysicScenes.Count - 1;
                 currentScene = currentScene % PhysicScenes.Count;
                 PhysicScenes[currentScene].Build();
             }
             #endregion
 
-
             UpdateDisplayText(gameTime);
 
             float step = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            step = 1.0f / 60.0f;
-            World.Step(step, multithread);
-
+            if(step > 1.0f / 100.0f) step = 1.0f / 100.0f;
+            World.Step(step,multithread);
+   
             gamePadPreviousState = padState;
             keyboardPreviousState = keyState;
             mousePreviousState = mouseState;
@@ -356,10 +337,11 @@ namespace JitterDemo
 
         RigidBody lastBody = null;
 
+        #region Spawn Random Primitive
         private void SpawnRandomPrimitive(JVector position, JVector velocity)
         {
             RigidBody body = null;
-            int rndn = 2;
+            int rndn = rndn = random.Next(7);
 
             // less of the more advanced objects
             if (rndn == 5 || rndn == 6) rndn = random.Next(7);
@@ -405,11 +387,12 @@ namespace JitterDemo
 
             World.AddBody(body);
             //body.IsParticle = true;
-            body.EnableSpeculativeContacts = true;
+           // body.EnableSpeculativeContacts = true;
             body.Position = position;
             body.LinearVelocity = velocity;
             lastBody = body;
         }
+        #endregion
 
         #region update the display text informations
 
@@ -451,10 +434,11 @@ namespace JitterDemo
             Display.DisplayText[9 + entries] = "Total Physics Time: " + total.ToString("0.00");
             Display.DisplayText[10 + entries] = "Physics Framerate: " + (1000.0d / total).ToString("0") + " fps";
 
-
+#if(WINDOWS)
             Display.DisplayText[6] = "gen0: " + GC.CollectionCount(0).ToString() +
                 "  gen1: " + GC.CollectionCount(1).ToString() +
                 "  gen2: " + GC.CollectionCount(2).ToString();
+#endif
 
         }
         #endregion
@@ -567,7 +551,6 @@ namespace JitterDemo
 
         private void DrawDynamicTree(SoftBody cloth)
         {
-            if(!debugDraw) return;
             Walk(cloth.DynamicTree,cloth.DynamicTree.Root);
         }
 
@@ -607,10 +590,11 @@ namespace JitterDemo
                         body.Triangles[i].VertexBody3.Position,
                         new Color(0, 0.95f, 0, 0.5f));
                 }
-                DrawDynamicTree(body);
+                //DrawDynamicTree(body);
             }
         }
         #endregion
+
 
         protected override void Draw(GameTime gameTime)
         {
@@ -630,20 +614,14 @@ namespace JitterDemo
                 AddBodyToDrawList(body);
             }
 
-       
-
-
             BasicEffect.DiffuseColor = Color.LightGray.ToVector3();
-           // BasicEffect.Alpha = 0.2f;
 
             DrawCloth();
-
-
 
             PhysicScenes[currentScene].Draw();
 
             // Draw the debug data provided by Jitter
-           // DrawIslands();
+            // DrawIslands();
             DrawJitterDebugInfo();
 
             #region Debug Draw All Contacts
@@ -663,17 +641,13 @@ namespace JitterDemo
             //}
             #endregion
 
-
-            this.GraphicsDevice.RasterizerState = cullMode;
-
             foreach (Primitives3D.GeometricPrimitive prim in primitives) prim.Draw(BasicEffect);
 
+            GraphicsDevice.RasterizerState = cullMode;
 
             base.Draw(gameTime);
 
-            this.GraphicsDevice.RasterizerState = normal;
-
-    
+            GraphicsDevice.RasterizerState = normal;
         }
 
 

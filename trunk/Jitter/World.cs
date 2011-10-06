@@ -68,6 +68,7 @@ namespace Jitter
             internal WorldEvents() { }
 
             #region Raise Events
+
             internal void RaiseWorldPreStep(float timestep)
             {
                 if (PreStep != null) PreStep(timestep);
@@ -216,7 +217,6 @@ namespace Jitter
             this.CollisionSystem.CollisionDetected += collisionDetectionHandler;
 
             this.arbiterMap = new ArbiterMap();
-
 
             AllowDeactivation = true;
         }
@@ -486,7 +486,7 @@ namespace Jitter
         }
 
         /// <summary>
-        /// Add a <see cref="Constraint"/> to the world.  Fast, O(1).
+        /// Add a <see cref="Constraint"/> to the world.
         /// </summary>
         /// <param name="constraint">The constraint which should be removed.</param>
         public void AddConstraint(Constraint constraint)
@@ -548,7 +548,7 @@ namespace Jitter
 
 #if(WINDOWS_PHONE)
             events.RaiseWorldPreStep(timestep);
-            foreach (RigidBody body in rigidBodies) body.PreStep();
+            foreach (RigidBody body in rigidBodies) body.PreStep(timestep);
             UpdateContacts();
 
             while (removedArbiterQueue.Count > 0) islands.ArbiterRemoved(removedArbiterQueue.Dequeue());
@@ -570,12 +570,12 @@ namespace Jitter
             HandleArbiter(contactIterations, multithread);
             Integrate(multithread);
 
-            foreach (RigidBody body in rigidBodies) body.PostStep();
+            foreach (RigidBody body in rigidBodies) body.PostStep(timestep);
             events.RaiseWorldPostStep(timestep);
 #else
             sw.Reset(); sw.Start();
             events.RaiseWorldPreStep(timestep);
-            foreach (RigidBody body in rigidBodies) body.PreStep();
+            foreach (RigidBody body in rigidBodies) body.PreStep(timestep);
 
             sw.Stop(); debugTimes[(int)DebugType.PreStep] = sw.Elapsed.TotalMilliseconds;
 
@@ -624,7 +624,7 @@ namespace Jitter
             sw.Stop(); debugTimes[(int)DebugType.Integrate] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
-            foreach (RigidBody body in rigidBodies) body.PostStep();
+            foreach (RigidBody body in rigidBodies) body.PostStep(timestep);
             events.RaiseWorldPostStep(timestep);
             sw.Stop(); debugTimes[(int)DebugType.PostStep] = sw.Elapsed.TotalMilliseconds;
 #endif

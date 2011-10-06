@@ -41,11 +41,6 @@ namespace JitterDemo.Scenes
             }
         }
 
-        public override void Destroy()
-        {
-            Demo.World.Clear();
-        }
-
 
     }
 }
