@@ -289,24 +289,24 @@ namespace Jitter2D.Collision
                 }
                 else if (speculative)
                 {
-                    JVector hit1, hit2;
+                    //JVector hit1, hit2;
 
-                    if (GJKCollide.ClosestPoints(body1.Shape, body2.Shape, ref o1, ref o2,
-                        ref body1.position, ref body2.position, out hit1, out hit2, out normal))
-                    {
-                        JVector delta = hit2 - hit1;
+                    //if (GJKCollide.ClosestPoints(body1.Shape, body2.Shape, ref o1, ref o2,
+                    //    ref body1.position, ref body2.position, out hit1, out hit2, out normal))
+                    //{
+                    //    JVector delta = hit2 - hit1;
 
-                        if (delta.LengthSquared() < (body1.sweptDirection - body2.sweptDirection).LengthSquared())
-                        {
-                            penetration = delta * normal;
+                    //    if (delta.LengthSquared() < (body1.sweptDirection - body2.sweptDirection).LengthSquared())
+                    //    {
+                    //        penetration = delta * normal;
 
-                            if (penetration < 0.0f)
-                            {
-                                RaiseCollisionDetected(body1, body2, ref hit1, ref hit2, ref normal, penetration);
-                            }
+                    //        if (penetration < 0.0f)
+                    //        {
+                    //            RaiseCollisionDetected(body1, body2, ref hit1, ref hit2, ref normal, penetration);
+                    //        }
 
-                        }
-                    }
+                    //    }
+                    //}
 
                 }
             }

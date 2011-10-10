@@ -54,8 +54,8 @@ namespace JitterDemo
 
             Content.RootDirectory = "Content";
 
-            graphics.PreferredBackBufferHeight = 720;
-            graphics.PreferredBackBufferWidth = 1280;
+            graphics.PreferredBackBufferHeight = 600;
+            graphics.PreferredBackBufferWidth = 800;
 
             this.IsFixedTimeStep = false;
             this.graphics.SynchronizeWithVerticalRetrace = false;
@@ -202,12 +202,12 @@ namespace JitterDemo
 
             if (keyState.IsKeyDown(Keys.Space) && !keyboardPreviousState.IsKeyDown(Keys.Space))
             {
-                RigidBody body = new RigidBody(new CircleShape((float)r.NextDouble() * 2f + 0.25f))
+                RigidBody body = new RigidBody(new BoxShape(1,1))
                 {
                     EnableDebugDraw = true,
                     Position = new JVector(0, 10),
                     AngularVelocity = 0,
-                    LinearVelocity = new JVector(-10, -10),
+                    LinearVelocity = new JVector(-1, -1),
                     Material = new Material()
                     {
                         DynamicFriction = 1f,

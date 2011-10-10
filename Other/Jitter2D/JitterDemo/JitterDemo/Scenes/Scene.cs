@@ -27,8 +27,8 @@ namespace JitterDemo.Scenes
 
         public void AddGround()
         {
-            ground = new RigidBody(new BoxShape(new JVector(200, 2)));
-            ground.Position = new JVector(0, -10);
+            ground = new RigidBody(new BoxShape(new JVector(2, 2)));
+            ground.Position = new JVector(-2, -10);
             //ground.Tag = BodyTag.DontDrawMe;
             ground.IsStatic = true; Demo.World.AddBody(ground);
             //ground.Restitution = 1.0f;

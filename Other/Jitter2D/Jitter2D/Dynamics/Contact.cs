@@ -213,8 +213,8 @@ namespace Jitter2D.Dynamics
                 //dvy = dvy + (body2.angularVelocity.Z * relativePos2.X) - (body2.angularVelocity.X * relativePos2.Z);
                 //dvz = dvz + (body2.angularVelocity.X * relativePos2.Y) - (body2.angularVelocity.Y * relativePos2.X);
                 // left in the 0 * 0 for readability
-                dvx = dvx - (0 * 0) - (body2.angularVelocity * relativePos2.Y);
-                dvy = dvy - (body2.angularVelocity * relativePos2.X) - (0 * 0);
+                dvx = dvx + (0 * 0) - (body2.angularVelocity * relativePos2.Y);
+                dvy = dvy + (body2.angularVelocity * relativePos2.X) - (0 * 0);
             }
 
             // this gets us some performance
@@ -275,7 +275,7 @@ namespace Jitter2D.Dynamics
                     body1.angularVelocity.X -= num3;
                     body1.angularVelocity.Y -= num4;
                      * */
-                    //body1.angularVelocity -= num2 * body1.invInertia;
+                    body1.angularVelocity -= num2 * body1.invInertia;
                 }
             }
 
@@ -289,7 +289,7 @@ namespace Jitter2D.Dynamics
                 if (!body2IsMassPoint)
                 {
 
-                    float num0, num1, num2;
+                    float num2;
                     //num0 = relativePos2.Y * impulse.Z - relativePos2.Z * impulse.Y;
                     //num1 = relativePos2.Z * impulse.X - relativePos2.X * impulse.Z;
                     num2 = relativePos2.X * impulse.Y - relativePos2.Y * impulse.X;
@@ -310,7 +310,7 @@ namespace Jitter2D.Dynamics
                     body2.angularVelocity.X += num3;
                     body2.angularVelocity.Y += num4;
                      * */
-                    //body2.angularVelocity += num2 * body2.invInertia;
+                    body2.angularVelocity += num2 * body2.invInertia;
 
                 }
             }
@@ -533,7 +533,9 @@ namespace Jitter2D.Dynamics
                     // JVector.Cross(ref relativePos1, ref normal, out rantra);
                     //rantra.X = (relativePos1.Y * normal.Z) - (relativePos1.Z * normal.Y);
                     //rantra.Y = (relativePos1.Z * normal.X) - (relativePos1.X * normal.Z);
-                    rantra = (relativePos1.X * normal.Y) - (relativePos1.Y * normal.X);
+                    //rantra = (relativePos1.X * normal.Y) - (relativePos1.Y * normal.X);
+
+                    rantra = relativePos1 * normal;
 
                     // JVector.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
                     //float num0 = ((rantra.X * body1.invInertiaWorld.M11) + (rantra.Y * body1.invInertiaWorld.M21)) + (rantra.Z * body1.invInertiaWorld.M31);
@@ -564,7 +566,9 @@ namespace Jitter2D.Dynamics
                     // JVector.Cross(ref relativePos1, ref normal, out rbntrb);
                     //rbntrb.X = (relativePos2.Y * normal.Z) - (relativePos2.Z * normal.Y);
                     //rbntrb.Y = (relativePos2.Z * normal.X) - (relativePos2.X * normal.Z);
-                    rbntrb = (relativePos2.X * normal.Y) - (relativePos2.Y * normal.X);
+                    //rbntrb = (relativePos2.X * normal.Y) - (relativePos2.Y * normal.X);
+
+                    rbntrb = relativePos2 * normal;
 
                     // JVector.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
                     //float num0 = ((rbntrb.X * body2.invInertiaWorld.M11) + (rbntrb.Y * body2.invInertiaWorld.M21)) + (rbntrb.Z * body2.invInertiaWorld.M31);
@@ -582,24 +586,24 @@ namespace Jitter2D.Dynamics
                 }
             }
              // this doesn't make sense
-            //if (!treatBody1AsStatic) kNormal += rantra.X * normal.X + rantra.Y * normal.Y;
-            //if (!treatBody2AsStatic) kNormal += rbntrb.X * normal.X + rbntrb.Y * normal.Y;
+            if (!treatBody1AsStatic) kNormal += body1.invInertia * relativePos1.LengthSquared() - rantra * rantra;
+            if (!treatBody2AsStatic) kNormal += body2.invInertia * relativePos2.LengthSquared() - rbntrb * rbntrb;
 
             massNormal = 1.0f / kNormal;
 
-            float num = dvx * normal.X + dvy * normal.Y;
+            //float num = dvx * normal.X + dvy * normal.Y;
 
-            tangent.X = dvx - normal.X * num;
-            tangent.Y = dvy - normal.Y * num;
+            tangent.X = -normal.Y;
+            tangent.Y = normal.X;
 
-            num = tangent.X * tangent.X + tangent.Y * tangent.Y;
+            //num = tangent.X * tangent.X + tangent.Y * tangent.Y;
 
-            if (num != 0.0f)
-            {
-                num = (float)Math.Sqrt(num);
-                tangent.X /= num;
-                tangent.Y /= num;
-            }
+            //if (num != 0.0f)
+            //{
+            //    num = (float)Math.Sqrt(num);
+            //    tangent.X /= num;
+            //    tangent.Y /= num;
+            //}
 
             float kTangent = 0.0f;
 
@@ -614,7 +618,8 @@ namespace Jitter2D.Dynamics
                     // JVector.Cross(ref relativePos1, ref normal, out rantra);
                     //rantra.X = (relativePos1.Y * tangent.Z) - (relativePos1.Z * tangent.Y);
                     //rantra.Y = (relativePos1.Z * tangent.X) - (relativePos1.X * tangent.Z);
-                    rantra = (relativePos1.X * tangent.Y) - (relativePos1.Y * tangent.X);
+
+                    rantra = relativePos1 * tangent;
 
                     // JVector.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
                     //float num0 = ((rantra.X * body1.invInertiaWorld.M11) + (rantra.Y * body1.invInertiaWorld.M21)) + (rantra.Z * body1.invInertiaWorld.M31);
@@ -643,7 +648,8 @@ namespace Jitter2D.Dynamics
                     // JVector.Cross(ref relativePos1, ref normal, out rantra);
                     //rbntrb.X = (relativePos2.Y * tangent.Z) - (relativePos2.Z * tangent.Y);
                     //rbntrb.Y = (relativePos2.Z * tangent.X) - (relativePos2.X * tangent.Z);
-                    rbntrb = (relativePos2.X * tangent.Y) - (relativePos2.Y * tangent.X);
+
+                    rantra = relativePos1 * tangent;
 
                     // JVector.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
                     //float num0 = ((rbntrb.X * body2.invInertiaWorld.M11) + (rbntrb.Y * body2.invInertiaWorld.M21)) + (rbntrb.Z * body2.invInertiaWorld.M31);
@@ -726,8 +732,8 @@ namespace Jitter2D.Dynamics
 
             if (!treatBody1AsStatic)
             {
-                body1.linearVelocity.X -= (impulse.X * body1.inverseMass);
-                body1.linearVelocity.Y -= (impulse.Y * body1.inverseMass);
+                //body1.linearVelocity.X -= (impulse.X * body1.inverseMass);
+                //body1.linearVelocity.Y -= (impulse.Y * body1.inverseMass);
                 //body1.linearVelocity.Z -= (impulse.Z * body1.inverseMass);
 
                 if (!body1IsMassPoint)
@@ -761,8 +767,8 @@ namespace Jitter2D.Dynamics
             if (!treatBody2AsStatic)
             {
 
-                body2.linearVelocity.X += (impulse.X * body2.inverseMass);
-                body2.linearVelocity.Y += (impulse.Y * body2.inverseMass);
+                //body2.linearVelocity.X += (impulse.X * body2.inverseMass);
+                //body2.linearVelocity.Y += (impulse.Y * body2.inverseMass);
                 //body2.linearVelocity.Z += (impulse.Z * body2.inverseMass);
 
                 if (!body2IsMassPoint)
