@@ -19,9 +19,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GJK Collision Demo", "GJK C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GJKCollisionDemo", "GJKCollisionDemo\GJKCollisionDemo\GJKCollisionDemo.csproj", "{F037942C-5A94-498A-91A5-89BA72C2588E}"
 EndProject
-Project("{96E2B04D-8817-42C6-938A-82C39BA4D311}") = "GJKCollisionDemoContent", "GJKCollisionDemo\GJKCollisionDemoContent\GJKCollisionDemoContent.contentproj", "{3A7A8A16-27FF-427E-AA5A-B7C77A8B8421}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GJKCollisionDemoContent", "GJKCollisionDemo\GJKCollisionDemoContent\GJKCollisionDemoContent.contentproj", "{3A7A8A16-27FF-427E-AA5A-B7C77A8B8421}"
 EndProject
 Global
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms
