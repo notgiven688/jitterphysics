@@ -1,7 +1,6 @@
 ﻿TODO
 ======
 
- - Add Shapes...Circle, Box, Polygon...
  - Add collision detection...
 	- GJK for Speculative Contacts
 	- MPR for Penetration?
