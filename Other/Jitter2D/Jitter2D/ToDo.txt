@@ -1,0 +1,20 @@
+﻿TODO
+======
+
+ - Add Shapes...Circle, Box, Polygon...
+ - Add collision detection...
+	- GJK for Speculative Contacts
+	- MPR for Penetration?
+	or 
+	- EPA?
+ - Convert Contact to 2D
+ - Add a better CollisionSystem...thinking DynamicTree...
+ - Add Joint's...Pin, Slide, Pivot, Groove, Spring, Angular Spring, Angular Limit,
+		Ratchet, Gear, Motor, Friction, Pulley, Rope, Weld, Wheel...
+ -
+
+
+ Future
+ ======
+
+ - Add SoftBody back in!
