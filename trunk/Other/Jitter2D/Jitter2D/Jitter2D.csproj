@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{D3B7B44F-8633-4BAE-9A53-BF14488E33B7}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Jitter2D</RootNamespace>
+    <AssemblyName>Jitter2D</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Collision\CollisionIsland.cs" />
+    <Compile Include="Collision\CollisionSystem.cs" />
+    <Compile Include="Collision\CollisionSystemBrute.cs" />
+    <Compile Include="Collision\CollisionSystemDynamicTree.cs" />
+    <Compile Include="Collision\DynamicTree.cs" />
+    <Compile Include="Collision\GJKCollide.cs" />
+    <Compile Include="Collision\IslandManager.cs" />
+    <Compile Include="Collision\ISupportMappable.cs" />
+    <Compile Include="Collision\Shapes\BoxShape.cs" />
+    <Compile Include="Collision\Shapes\CapsuleShape.cs" />
+    <Compile Include="Collision\Shapes\CircleShape.cs" />
+    <Compile Include="Collision\Shapes\ConvexHullShape.cs" />
+    <Compile Include="Collision\Shapes\Shape.cs" />
+    <Compile Include="Collision\XenoCollide.cs" />
+    <Compile Include="DataStructures\Hashset.cs" />
+    <Compile Include="DataStructures\ReadOnlyHashset.cs" />
+    <Compile Include="Dynamics\Arbiter.cs" />
+    <Compile Include="Dynamics\ArbiterMap.cs" />
+    <Compile Include="Dynamics\Constraint.cs" />
+    <Compile Include="Dynamics\Contact.cs" />
+    <Compile Include="Dynamics\Joints\Joint.cs" />
+    <Compile Include="Dynamics\Material.cs" />
+    <Compile Include="Dynamics\RigidBody.cs" />
+    <Compile Include="Dynamics\SoftBody.cs" />
+    <Compile Include="IDebugDraw.cs" />
+    <Compile Include="LinearMath\JBBox.cs" />
+    <Compile Include="LinearMath\JMath.cs" />
+    <Compile Include="LinearMath\JMatrix.cs" />
+    <Compile Include="LinearMath\JVector.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResourcePool.cs" />
+    <Compile Include="ThreadManager.cs" />
+    <Compile Include="World.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Milestones.txt" />
+    <Content Include="ToDo.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
