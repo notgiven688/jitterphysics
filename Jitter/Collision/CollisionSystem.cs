@@ -426,7 +426,7 @@ namespace Jitter.Collision
 
                                 if (penetration < 0.0f)
                                 {
-                                    RaiseCollisionDetected(body1, body2, ref hit1, ref hit2, ref normal, penetration);
+                                    RaiseCollisionDetected(b1, b2, ref hit1, ref hit2, ref normal, penetration);
                                 }
                             }
                         }
