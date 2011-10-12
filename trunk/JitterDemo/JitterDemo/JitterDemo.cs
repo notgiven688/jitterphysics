@@ -225,6 +225,13 @@ namespace JitterDemo
             // change threading mode
             if (PressedOnce(Keys.M, Buttons.A)) multithread = !multithread;
 
+            if (PressedOnce(Keys.P,Buttons.A))
+            {
+                var e = World.RigidBodies.GetEnumerator();
+                e.MoveNext(); e.MoveNext();
+                World.RemoveBody(e.Current as RigidBody);
+            }
+
             #region drag and drop physical objects with the mouse
             if (mouseState.LeftButton == ButtonState.Pressed &&
                 mousePreviousState.LeftButton == ButtonState.Released ||
@@ -407,6 +414,7 @@ namespace JitterDemo
             int contactCount = 0;
             foreach (Arbiter ar in World.ArbiterMap.Arbiters)
                 contactCount += ar.ContactList.Count;
+
 
             Display.DisplayText[1] = World.CollisionSystem.ToString();
 

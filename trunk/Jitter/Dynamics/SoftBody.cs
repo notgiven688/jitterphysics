@@ -319,9 +319,9 @@ namespace Jitter.Dynamics
 
         private SphereShape sphere = new SphereShape(0.1f);
 
-        internal List<Spring> springs = new List<Spring>();
-        internal List<MassPoint> points = new List<MassPoint>();
-        private List<Triangle> triangles = new List<Triangle>();
+        protected List<Spring> springs = new List<Spring>();
+        protected List<MassPoint> points = new List<MassPoint>();
+        protected List<Triangle> triangles = new List<Triangle>();
 
         public ReadOnlyCollection<Spring> EdgeSprings { get; private set; }
         public ReadOnlyCollection<MassPoint> VertexBodies { get; private set; }
@@ -351,6 +351,14 @@ namespace Jitter.Dynamics
 
         bool active = true;
 
+
+        /// <summary>
+        /// Does create an empty body. Derive from SoftBody and fill 
+        /// EdgeSprings,VertexBodies and Triangles by yourself.
+        /// </summary>
+        public SoftBody()
+        {
+        }
 
         /// <summary>
         /// Creates a 2D-Cloth. Connects Nearest Neighbours (4x, called EdgeSprings) and adds additional
@@ -475,7 +483,7 @@ namespace Jitter.Dynamics
         }
 
         #region AddPressureForces
-        public void AddPressureForces(float timeStep)
+        private void AddPressureForces(float timeStep)
         {
             if (pressure == 0.0f || volume == 0.0f) return;
 
@@ -547,7 +555,7 @@ namespace Jitter.Dynamics
 
         List<int> queryList = new List<int>();
 
-        public void DoSelfCollision(CollisionDetectedHandler collision)
+        public virtual void DoSelfCollision(CollisionDetectedHandler collision)
         {
             if (!selfCollision) return;
 
@@ -643,7 +651,7 @@ namespace Jitter.Dynamics
             }
         }
 
-        public void Update(float timestep)
+        public virtual void Update(float timestep)
         {
             active = false;
 
@@ -690,6 +698,8 @@ namespace Jitter.Dynamics
             }
 
             volume /= 6.0f;
+
+            AddPressureForces(timestep);
         }
 
         public float Mass
