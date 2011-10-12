@@ -231,10 +231,10 @@ namespace Jitter
 
             events.RaiseAddedSoftBody(body);
 
-            foreach (Constraint constraint in body.springs)
+            foreach (Constraint constraint in body.EdgeSprings)
                 AddConstraint(constraint);
 
-            foreach (SoftBody.MassPoint massPoint in body.points)
+            foreach (SoftBody.MassPoint massPoint in body.VertexBodies)
             {
                 events.RaiseAddedRigidBody(massPoint);
                 rigidBodies.Add(massPoint);
@@ -249,10 +249,10 @@ namespace Jitter
 
             events.RaiseRemovedSoftBody(body);
 
-            foreach (Constraint constraint in body.springs)
+            foreach (Constraint constraint in body.EdgeSprings)
                 RemoveConstraint(constraint);
 
-            foreach (SoftBody.MassPoint massPoint in body.points)
+            foreach (SoftBody.MassPoint massPoint in body.VertexBodies)
                 RemoveBody(massPoint, true);
 
             return true;
@@ -592,7 +592,6 @@ namespace Jitter
             foreach (SoftBody body in softbodies)
             {
                 body.Update(timestep);
-                body.AddPressureForces(timestep);
                 body.DoSelfCollision(collisionDetectionHandler);
             }
             sw.Stop(); debugTimes[(int)DebugType.ClothUpdate] = sw.Elapsed.TotalMilliseconds;

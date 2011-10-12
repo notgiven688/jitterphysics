@@ -241,8 +241,8 @@ namespace Jitter.Collision
                     int minIndexOther = FindNearestTrianglePoint(body2, other[i], ref point);
 
 
-                    RaiseCollisionDetected(body1.points[minIndexMy],
-                        body2.points[minIndexOther], ref point, ref point, ref normal, penetration);
+                    RaiseCollisionDetected(body1.VertexBodies[minIndexMy],
+                        body2.VertexBodies[minIndexOther], ref point, ref point, ref normal, penetration);
                 }
             }
 
@@ -472,7 +472,7 @@ namespace Jitter.Collision
                             int minIndex = FindNearestTrianglePoint(softBody, i, ref point);
 
                             RaiseCollisionDetected(rigidBody,
-                                softBody.points[minIndex], ref point, ref point, ref normal, penetration);
+                                softBody.VertexBodies[minIndex], ref point, ref point, ref normal, penetration);
                         }
                     }
 
@@ -502,7 +502,7 @@ namespace Jitter.Collision
                         int minIndex = FindNearestTrianglePoint(softBody, i, ref point);
 
                         RaiseCollisionDetected(rigidBody,
-                            softBody.points[minIndex], ref point, ref point, ref normal, penetration);
+                            softBody.VertexBodies[minIndex], ref point, ref point, ref normal, penetration);
                     }
                 }
 
@@ -516,17 +516,17 @@ namespace Jitter.Collision
             SoftBody.Triangle triangle = sb.dynamicTree.GetUserData(id);
             JVector p;
 
-            p = sb.points[triangle.indices.I0].position;
+            p = sb.VertexBodies[triangle.indices.I0].position;
             JVector.Subtract(ref p, ref point, out p);
 
             float length0 = p.LengthSquared();
 
-            p = sb.points[triangle.indices.I1].position;
+            p = sb.VertexBodies[triangle.indices.I1].position;
             JVector.Subtract(ref p, ref point, out p);
 
             float length1 = p.LengthSquared();
 
-            p = sb.points[triangle.indices.I2].position;
+            p = sb.VertexBodies[triangle.indices.I2].position;
             JVector.Subtract(ref p, ref point, out p);
 
             float length2 = p.LengthSquared();

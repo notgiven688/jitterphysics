@@ -328,23 +328,25 @@ namespace Jitter.Collision
                         return hit;
                     }
 
-                    // Compute the tetrahedron dividing face (v4,v0,v1)
-                    JVector.Cross(ref v4, ref v1, out temp1);
-                    float d1 = JVector.Dot(ref temp1, ref v0);
+                    //// Compute the tetrahedron dividing face (v4,v0,v1)
+                    //JVector.Cross(ref v4, ref v1, out temp1);
+                    //float d1 = JVector.Dot(ref temp1, ref v0);
 
 
-                    // Compute the tetrahedron dividing face (v4,v0,v2)
-                    JVector.Cross(ref v4, ref v2, out temp1);
-                    float d2 = JVector.Dot(ref temp1, ref v0);
+                    //// Compute the tetrahedron dividing face (v4,v0,v2)
+                    //JVector.Cross(ref v4, ref v2, out temp1);
+                    //float d2 = JVector.Dot(ref temp1, ref v0);
 
 
                     // Compute the tetrahedron dividing face (v4,v0,v3)
-                    JVector.Cross(ref v4, ref v3, out temp1);
-                    float d3 = JVector.Dot(ref temp1, ref v0);
+                    JVector.Cross(ref v4, ref v0, out temp1);
+                    float dot = JVector.Dot(ref temp1, ref v1);
 
-                    if (d1 < 0.0f)
+                    if (dot >= 0.0f)
                     {
-                        if (d2 < 0.0f)
+                        dot = JVector.Dot(ref temp1, ref v2);
+
+                        if (dot >= 0.0f)
                         {
                             // Inside d1 & inside d2 ==> eliminate v1
                             v1 = v4;
@@ -361,7 +363,9 @@ namespace Jitter.Collision
                     }
                     else
                     {
-                        if (d3 < 0.0f)
+                        dot = JVector.Dot(ref temp1, ref v3);
+
+                        if (dot >= 0.0f)
                         {
                             // Outside d1 & inside d3 ==> eliminate v2
                             v2 = v4;
