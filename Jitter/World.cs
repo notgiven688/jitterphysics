@@ -556,7 +556,6 @@ namespace Jitter
             foreach (SoftBody body in softbodies)
             {
                 body.Update(timestep);
-                body.AddPressureForces(timestep);
                 body.DoSelfCollision(collisionDetectionHandler);
             }
 
