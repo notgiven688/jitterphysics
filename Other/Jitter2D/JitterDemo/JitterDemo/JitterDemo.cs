@@ -61,7 +61,7 @@ namespace JitterDemo
             this.graphics.SynchronizeWithVerticalRetrace = false;
 
             CollisionSystem collision = new CollisionSystemBrute();
-            collision.EnableSpeculativeContacts = true;
+            collision.EnableSpeculativeContacts = false;
             World = new World(collision); World.AllowDeactivation = true;
 
             World.Gravity = new JVector(0, -10);
@@ -206,8 +206,9 @@ namespace JitterDemo
                 {
                     EnableDebugDraw = true,
                     Position = new JVector(0, 10),
-                    AngularVelocity = 0,
+                    AngularVelocity = 10,
                     LinearVelocity = new JVector(-1, -1),
+                    Orientation = 1,
                     Material = new Material()
                     {
                         DynamicFriction = 1f,

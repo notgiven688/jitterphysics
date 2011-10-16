@@ -186,135 +186,192 @@ namespace Jitter2D.Dynamics
         /// </summary>
         public void Iterate()
         {
-            //body1.linearVelocity = JVector.Zero;
-            //body2.linearVelocity = JVector.Zero;
-            //return;
-
             if (treatBody1AsStatic && treatBody2AsStatic) return;
 
-            float dvx, dvy;//, dvz;
+            #region Jitter Version
+            ////body1.linearVelocity = JVector.Zero;
+            ////body2.linearVelocity = JVector.Zero;
+            ////return;
 
-            dvx = body2.linearVelocity.X - body1.linearVelocity.X;
-            dvy = body2.linearVelocity.Y - body1.linearVelocity.Y;
+            //if (treatBody1AsStatic && treatBody2AsStatic) return;
 
-            if (!body1IsMassPoint)
-            {
-                //dvx = dvx - (body1.angularVelocity.Y * relativePos1.Z) + (body1.angularVelocity.Z * relativePos1.Y);
-                //dvy = dvy - (body1.angularVelocity.Z * relativePos1.X) + (body1.angularVelocity.X * relativePos1.Z);
-                //dvz = dvz - (body1.angularVelocity.X * relativePos1.Y) + (body1.angularVelocity.Y * relativePos1.X);
-                // left in the 0 * 0 for readability
-                dvx = dvx - (0 * 0) + (body1.angularVelocity * relativePos1.Y);
-                dvy = dvy - (body1.angularVelocity * relativePos1.X) + (0 * 0);
-            }
+            //float dvx, dvy;//, dvz;
 
-            if (!body2IsMassPoint)
-            {
-                //dvx = dvx + (body2.angularVelocity.Y * relativePos2.Z) - (body2.angularVelocity.Z * relativePos2.Y);
-                //dvy = dvy + (body2.angularVelocity.Z * relativePos2.X) - (body2.angularVelocity.X * relativePos2.Z);
-                //dvz = dvz + (body2.angularVelocity.X * relativePos2.Y) - (body2.angularVelocity.Y * relativePos2.X);
-                // left in the 0 * 0 for readability
-                dvx = dvx + (0 * 0) - (body2.angularVelocity * relativePos2.Y);
-                dvy = dvy + (body2.angularVelocity * relativePos2.X) - (0 * 0);
-            }
+            //dvx = body2.linearVelocity.X - body1.linearVelocity.X;
+            //dvy = body2.linearVelocity.Y - body1.linearVelocity.Y;
 
-            // this gets us some performance
-            if (dvx * dvx + dvy * dvy < settings.minVelocity * settings.minVelocity)
-            { return; }
+            //if (!body1IsMassPoint)
+            //{
+            //    //dvx = dvx - (body1.angularVelocity.Y * relativePos1.Z) + (body1.angularVelocity.Z * relativePos1.Y);
+            //    //dvy = dvy - (body1.angularVelocity.Z * relativePos1.X) + (body1.angularVelocity.X * relativePos1.Z);
+            //    //dvz = dvz - (body1.angularVelocity.X * relativePos1.Y) + (body1.angularVelocity.Y * relativePos1.X);
+            //    // left in the 0 * 0 for readability
+            //    dvx = dvx - (0 * 0) + (body1.angularVelocity * relativePos1.Y);
+            //    dvy = dvy - (body1.angularVelocity * relativePos1.X) + (0 * 0);
+            //}
 
-            float vn = normal.X * dvx + normal.Y * dvy;
-            float normalImpulse = massNormal * (-vn + restitutionBias + speculativeVelocity);
+            //if (!body2IsMassPoint)
+            //{
+            //    //dvx = dvx + (body2.angularVelocity.Y * relativePos2.Z) - (body2.angularVelocity.Z * relativePos2.Y);
+            //    //dvy = dvy + (body2.angularVelocity.Z * relativePos2.X) - (body2.angularVelocity.X * relativePos2.Z);
+            //    //dvz = dvz + (body2.angularVelocity.X * relativePos2.Y) - (body2.angularVelocity.Y * relativePos2.X);
+            //    // left in the 0 * 0 for readability
+            //    dvx = dvx + (0 * 0) - (body2.angularVelocity * relativePos2.Y);
+            //    dvy = dvy + (body2.angularVelocity * relativePos2.X) - (0 * 0);
+            //}
 
-            float oldNormalImpulse = accumulatedNormalImpulse;
-            accumulatedNormalImpulse = oldNormalImpulse + normalImpulse;
-            if (accumulatedNormalImpulse < 0.0f) accumulatedNormalImpulse = 0.0f;
-            normalImpulse = accumulatedNormalImpulse - oldNormalImpulse;
+            //// this gets us some performance
+            //if (dvx * dvx + dvy * dvy < settings.minVelocity * settings.minVelocity)
+            //{ return; }
 
-            float vt = dvx * tangent.X + dvy * tangent.Y;
-            float maxTangentImpulse = friction * accumulatedNormalImpulse;
-            float tangentImpulse = massTangent * (-vt);
+            //float vn = normal.X * dvx + normal.Y * dvy;
+            //float normalImpulse = massNormal * (-vn + restitutionBias + speculativeVelocity);
 
-            float oldTangentImpulse = accumulatedTangentImpulse;
-            accumulatedTangentImpulse = oldTangentImpulse + tangentImpulse;
-            if (accumulatedTangentImpulse < -maxTangentImpulse) accumulatedTangentImpulse = -maxTangentImpulse;
-            else if (accumulatedTangentImpulse > maxTangentImpulse) accumulatedTangentImpulse = maxTangentImpulse;
+            //float oldNormalImpulse = accumulatedNormalImpulse;
+            //accumulatedNormalImpulse = oldNormalImpulse + normalImpulse;
+            //if (accumulatedNormalImpulse < 0.0f) accumulatedNormalImpulse = 0.0f;
+            //normalImpulse = accumulatedNormalImpulse - oldNormalImpulse;
 
-            tangentImpulse = accumulatedTangentImpulse - oldTangentImpulse;
+            //float vt = dvx * tangent.X + dvy * tangent.Y;
+            //float maxTangentImpulse = friction * accumulatedNormalImpulse;
+            //float tangentImpulse = massTangent * (-vt);
+
+            //float oldTangentImpulse = accumulatedTangentImpulse;
+            //accumulatedTangentImpulse = oldTangentImpulse + tangentImpulse;
+            //if (accumulatedTangentImpulse < -maxTangentImpulse) accumulatedTangentImpulse = -maxTangentImpulse;
+            //else if (accumulatedTangentImpulse > maxTangentImpulse) accumulatedTangentImpulse = maxTangentImpulse;
+
+            //tangentImpulse = accumulatedTangentImpulse - oldTangentImpulse;
+
+            //// Apply contact impulse
+            //JVector impulse;
+            //impulse.X = normal.X * normalImpulse + tangent.X * tangentImpulse;
+            //impulse.Y = normal.Y * normalImpulse + tangent.Y * tangentImpulse;
+            ////impulse.Z = normal.Z * normalImpulse + tangent.Z * tangentImpulse;
+
+            //if (!treatBody1AsStatic)
+            //{
+            //    body1.linearVelocity.X -= (impulse.X * body1.inverseMass);
+            //    body1.linearVelocity.Y -= (impulse.Y * body1.inverseMass);
+            //    //body1.linearVelocity.Z -= (impulse.Z * body1.inverseMass);
+
+            //    if (!body1IsMassPoint)
+            //    {
+            //        float num0, num1, num2;
+            //        //num0 = relativePos1.Y * impulse.Z - relativePos1.Z * impulse.Y;
+            //        //num1 = relativePos1.Z * impulse.X - relativePos1.X * impulse.Z;
+            //        num2 = relativePos1.X * impulse.Y - relativePos1.Y * impulse.X;
+            //        /*
+            //        float num3 =
+            //            (((num0 * body1.invInertiaWorld.M11) +
+            //            (num1 * body1.invInertiaWorld.M21)) +
+            //            (num2 * body1.invInertiaWorld.M31));
+            //        float num4 =
+            //            (((num0 * body1.invInertiaWorld.M12) +
+            //            (num1 * body1.invInertiaWorld.M22)) +
+            //            (num2 * body1.invInertiaWorld.M32));
+            //        float num5 =
+            //            (((num0 * body1.invInertiaWorld.M13) +
+            //            (num1 * body1.invInertiaWorld.M23)) +
+            //            (num2 * body1.invInertiaWorld.M33));
+
+            //        body1.angularVelocity.X -= num3;
+            //        body1.angularVelocity.Y -= num4;
+            //         * */
+            //        body1.angularVelocity -= num2 * body1.invInertia;
+            //    }
+            //}
+
+            //if (!treatBody2AsStatic)
+            //{
+
+            //    body2.linearVelocity.X += (impulse.X * body2.inverseMass);
+            //    body2.linearVelocity.Y += (impulse.Y * body2.inverseMass);
+            //    //body2.linearVelocity.Z += (impulse.Z * body2.inverseMass);
+
+            //    if (!body2IsMassPoint)
+            //    {
+
+            //        float num2;
+            //        //num0 = relativePos2.Y * impulse.Z - relativePos2.Z * impulse.Y;
+            //        //num1 = relativePos2.Z * impulse.X - relativePos2.X * impulse.Z;
+            //        num2 = relativePos2.X * impulse.Y - relativePos2.Y * impulse.X;
+            //        /*
+            //        float num3 =
+            //            (((num0 * body2.invInertiaWorld.M11) +
+            //            (num1 * body2.invInertiaWorld.M21)) +
+            //            (num2 * body2.invInertiaWorld.M31));
+            //        float num4 =
+            //            (((num0 * body2.invInertiaWorld.M12) +
+            //            (num1 * body2.invInertiaWorld.M22)) +
+            //            (num2 * body2.invInertiaWorld.M32));
+            //        float num5 =
+            //            (((num0 * body2.invInertiaWorld.M13) +
+            //            (num1 * body2.invInertiaWorld.M23)) +
+            //            (num2 * body2.invInertiaWorld.M33));
+
+            //        body2.angularVelocity.X += num3;
+            //        body2.angularVelocity.Y += num4;
+            //         * */
+            //        body2.angularVelocity += num2 * body2.invInertia;
+
+            //    }
+            //}
+            #endregion
+
+            // Relative velocity at contact
+            JVector dv = body2.linearVelocity + JVector.Cross(body2.angularVelocity, relativePos2) - body1.linearVelocity - JVector.Cross(body1.angularVelocity, relativePos1);
+
+            // Compute normal impulse
+            float vn = JVector.Dot(dv, normal);
+
+            float dPn = massNormal * (-vn + restitutionBias);
+
+            // Clamp the accumulated impulse
+            float Pn0 = accumulatedNormalImpulse;
+            accumulatedNormalImpulse = Math.Max(Pn0 + dPn, 0.0f);
+            dPn = accumulatedNormalImpulse - Pn0;
 
             // Apply contact impulse
-            JVector impulse;
-            impulse.X = normal.X * normalImpulse + tangent.X * tangentImpulse;
-            impulse.Y = normal.Y * normalImpulse + tangent.Y * tangentImpulse;
-            //impulse.Z = normal.Z * normalImpulse + tangent.Z * tangentImpulse;
+            JVector Pn = dPn * normal;
 
-            if (!treatBody1AsStatic)
+            if (!body1.isStatic)
             {
-                body1.linearVelocity.X -= (impulse.X * body1.inverseMass);
-                body1.linearVelocity.Y -= (impulse.Y * body1.inverseMass);
-                //body1.linearVelocity.Z -= (impulse.Z * body1.inverseMass);
-
-                if (!body1IsMassPoint)
-                {
-                    float num0, num1, num2;
-                    //num0 = relativePos1.Y * impulse.Z - relativePos1.Z * impulse.Y;
-                    //num1 = relativePos1.Z * impulse.X - relativePos1.X * impulse.Z;
-                    num2 = relativePos1.X * impulse.Y - relativePos1.Y * impulse.X;
-                    /*
-                    float num3 =
-                        (((num0 * body1.invInertiaWorld.M11) +
-                        (num1 * body1.invInertiaWorld.M21)) +
-                        (num2 * body1.invInertiaWorld.M31));
-                    float num4 =
-                        (((num0 * body1.invInertiaWorld.M12) +
-                        (num1 * body1.invInertiaWorld.M22)) +
-                        (num2 * body1.invInertiaWorld.M32));
-                    float num5 =
-                        (((num0 * body1.invInertiaWorld.M13) +
-                        (num1 * body1.invInertiaWorld.M23)) +
-                        (num2 * body1.invInertiaWorld.M33));
-
-                    body1.angularVelocity.X -= num3;
-                    body1.angularVelocity.Y -= num4;
-                     * */
-                    body1.angularVelocity -= num2 * body1.invInertia;
-                }
+                body1.linearVelocity -= body1.inverseMass * Pn;
+                body1.angularVelocity -= body1.invInertia * JVector.Cross(relativePos1, Pn);
             }
-
-            if (!treatBody2AsStatic)
+            if (!body2.isStatic)
             {
-
-                body2.linearVelocity.X += (impulse.X * body2.inverseMass);
-                body2.linearVelocity.Y += (impulse.Y * body2.inverseMass);
-                //body2.linearVelocity.Z += (impulse.Z * body2.inverseMass);
-
-                if (!body2IsMassPoint)
-                {
-
-                    float num2;
-                    //num0 = relativePos2.Y * impulse.Z - relativePos2.Z * impulse.Y;
-                    //num1 = relativePos2.Z * impulse.X - relativePos2.X * impulse.Z;
-                    num2 = relativePos2.X * impulse.Y - relativePos2.Y * impulse.X;
-                    /*
-                    float num3 =
-                        (((num0 * body2.invInertiaWorld.M11) +
-                        (num1 * body2.invInertiaWorld.M21)) +
-                        (num2 * body2.invInertiaWorld.M31));
-                    float num4 =
-                        (((num0 * body2.invInertiaWorld.M12) +
-                        (num1 * body2.invInertiaWorld.M22)) +
-                        (num2 * body2.invInertiaWorld.M32));
-                    float num5 =
-                        (((num0 * body2.invInertiaWorld.M13) +
-                        (num1 * body2.invInertiaWorld.M23)) +
-                        (num2 * body2.invInertiaWorld.M33));
-
-                    body2.angularVelocity.X += num3;
-                    body2.angularVelocity.Y += num4;
-                     * */
-                    body2.angularVelocity += num2 * body2.invInertia;
-
-                }
+                body2.linearVelocity += body2.inverseMass * Pn;
+                body2.angularVelocity += body2.invInertia * JVector.Cross(relativePos2, Pn);
             }
+            // Relative velocity at contact
+            dv = body2.linearVelocity + JVector.Cross(body2.angularVelocity, relativePos2) - body1.linearVelocity - JVector.Cross(body1.angularVelocity, relativePos1);
 
+            JVector tangent = JVector.Cross(normal, 1.0f);
+            float vt = JVector.Dot(dv, tangent);
+            float dPt = massTangent * (-vt);
+
+            // Compute friction impulse
+            float maxPt = friction * accumulatedNormalImpulse;
+
+            // Clamp friction
+            float oldTangentImpulse = accumulatedTangentImpulse;
+            accumulatedTangentImpulse = JMath.Clamp(oldTangentImpulse + dPt, -maxPt, maxPt);
+            dPt = accumulatedTangentImpulse - oldTangentImpulse;
+
+            // Apply contact impulse
+            JVector Pt = dPt * tangent;
+            if (!body1.isStatic)
+            {
+                body1.linearVelocity -= body1.inverseMass * Pt;
+                body1.angularVelocity -= body1.invInertia * JVector.Cross(relativePos1, Pt);
+            }
+            if (!body2.isStatic)
+            {
+                body2.linearVelocity += body2.inverseMass * Pt;
+                body2.angularVelocity += body2.invInertia * JVector.Cross(relativePos2, Pt);
+            }
         }
 
         public float AppliedNormalImpulse { get { return accumulatedNormalImpulse; } }
@@ -503,302 +560,327 @@ namespace Jitter2D.Dynamics
         /// <param name="timestep">The timestep of the simulation.</param>
         public void PrepareForIteration(float timestep)
         {
-            float dvx, dvy, dvz;
 
-            //dvx = (body2.angularVelocity.Y * relativePos2.Z) - (body2.angularVelocity.Z * relativePos2.Y) + body2.linearVelocity.X;
-            //dvy = (body2.angularVelocity.Z * relativePos2.X) - (body2.angularVelocity.X * relativePos2.Z) + body2.linearVelocity.Y;
-            //dvz = (body2.angularVelocity.X * relativePos2.Y) - (body2.angularVelocity.Y * relativePos2.X) + body2.linearVelocity.Z;
+            #region Jitter Version
+            //float dvx, dvy, dvz;
 
-            //dvx = dvx - (body1.angularVelocity.Y * relativePos1.Z) + (body1.angularVelocity.Z * relativePos1.Y) - body1.linearVelocity.X;
-            //dvy = dvy - (body1.angularVelocity.Z * relativePos1.X) + (body1.angularVelocity.X * relativePos1.Z) - body1.linearVelocity.Y;
-            //dvz = dvz - (body1.angularVelocity.X * relativePos1.Y) + (body1.angularVelocity.Y * relativePos1.X) - body1.linearVelocity.Z;
+            //dvx = (0 * 0) - (body2.angularVelocity * relativePos2.Y) + body2.linearVelocity.X;
+            //dvy = (body2.angularVelocity * relativePos2.X) - (0 * 0) + body2.linearVelocity.Y;
 
-            dvx = (0 * 0) - (body2.angularVelocity * relativePos2.Y) + body2.linearVelocity.X;
-            dvy = (body2.angularVelocity * relativePos2.X) - (0 * 0) + body2.linearVelocity.Y;
-
-            dvx = dvx - (0 * 0) + (body1.angularVelocity * relativePos1.Y) - body1.linearVelocity.X;
-            dvy = dvy - (body1.angularVelocity * relativePos1.X) + (0 * 0) - body1.linearVelocity.Y;
+            //dvx = dvx - (0 * 0) + (body1.angularVelocity * relativePos1.Y) - body1.linearVelocity.X;
+            //dvy = dvy - (body1.angularVelocity * relativePos1.X) + (0 * 0) - body1.linearVelocity.Y;
             
-            float kNormal = 0.0f;
+            //float kNormal = 0.0f;
 
-            //JVector rantra = JVector.Zero;
-            float rantra = 0.0f;
-            if (!treatBody1AsStatic)
-            {
-                kNormal += body1.inverseMass;
-
-                if (!body1IsMassPoint)
-                {
-                    // I really don't know what to do here, I think in 2D that rantra should be scalar?
-                    // JVector.Cross(ref relativePos1, ref normal, out rantra);
-                    //rantra.X = (relativePos1.Y * normal.Z) - (relativePos1.Z * normal.Y);
-                    //rantra.Y = (relativePos1.Z * normal.X) - (relativePos1.X * normal.Z);
-                    //rantra = (relativePos1.X * normal.Y) - (relativePos1.Y * normal.X);
-
-                    rantra = relativePos1 * normal;
-
-                    // JVector.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
-                    //float num0 = ((rantra.X * body1.invInertiaWorld.M11) + (rantra.Y * body1.invInertiaWorld.M21)) + (rantra.Z * body1.invInertiaWorld.M31);
-                    //float num1 = ((rantra.X * body1.invInertiaWorld.M12) + (rantra.Y * body1.invInertiaWorld.M22)) + (rantra.Z * body1.invInertiaWorld.M32);
-                    //float num2 = ((rantra.X * body1.invInertiaWorld.M13) + (rantra.Y * body1.invInertiaWorld.M23)) + (rantra.Z * body1.invInertiaWorld.M33);
-
-                    //rantra.X = num0; rantra.Y = num1; rantra.Z = num2;
-
-                    // this doesn't make sense in 2D
-                    //JVector.Cross(ref rantra, ref relativePos1, out rantra);
-                    //num0 = (rantra.Y * relativePos1.Z) - (rantra.Z * relativePos1.Y);
-                    //num1 = (rantra.Z * relativePos1.X) - (rantra.X * relativePos1.Z);
-                    //num2 = (rantra.X * relativePos1.Y) - (rantra.Y * relativePos1.X);
-
-                    //rantra.X = num0; rantra.Y = num1; rantra.Z = num2;
-                }
-            }
-
-            //JVector rbntrb = JVector.Zero;
-            float rbntrb = 0.0f;
-            if (!treatBody2AsStatic)
-            {
-                kNormal += body2.inverseMass;
-
-                if (!body2IsMassPoint)
-                {
-                    // I really don't know what to do here, I think in 2D that rbntrb should be scalar?
-                    // JVector.Cross(ref relativePos1, ref normal, out rbntrb);
-                    //rbntrb.X = (relativePos2.Y * normal.Z) - (relativePos2.Z * normal.Y);
-                    //rbntrb.Y = (relativePos2.Z * normal.X) - (relativePos2.X * normal.Z);
-                    //rbntrb = (relativePos2.X * normal.Y) - (relativePos2.Y * normal.X);
-
-                    rbntrb = relativePos2 * normal;
-
-                    // JVector.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
-                    //float num0 = ((rbntrb.X * body2.invInertiaWorld.M11) + (rbntrb.Y * body2.invInertiaWorld.M21)) + (rbntrb.Z * body2.invInertiaWorld.M31);
-                    //float num1 = ((rbntrb.X * body2.invInertiaWorld.M12) + (rbntrb.Y * body2.invInertiaWorld.M22)) + (rbntrb.Z * body2.invInertiaWorld.M32);
-                    //float num2 = ((rbntrb.X * body2.invInertiaWorld.M13) + (rbntrb.Y * body2.invInertiaWorld.M23)) + (rbntrb.Z * body2.invInertiaWorld.M33);
-
-                    //rbntrb.X = num0; rbntrb.Y = num1; rbntrb.Z = num2;
-
-                    //JVector.Cross(ref rantra, ref relativePos1, out rantra);
-                    //num0 = (rbntrb.Y * relativePos2.Z) - (rbntrb.Z * relativePos2.Y);
-                    //num1 = (rbntrb.Z * relativePos2.X) - (rbntrb.X * relativePos2.Z);
-                    //num2 = (rbntrb.X * relativePos2.Y) - (rbntrb.Y * relativePos2.X);
-
-                    //rbntrb.X = num0; rbntrb.Y = num1; rbntrb.Z = num2;
-                }
-            }
-             // this doesn't make sense
-            if (!treatBody1AsStatic) kNormal += body1.invInertia * relativePos1.LengthSquared() - rantra * rantra;
-            if (!treatBody2AsStatic) kNormal += body2.invInertia * relativePos2.LengthSquared() - rbntrb * rbntrb;
-
-            massNormal = 1.0f / kNormal;
-
-            //float num = dvx * normal.X + dvy * normal.Y;
-
-            tangent.X = -normal.Y;
-            tangent.Y = normal.X;
-
-            //num = tangent.X * tangent.X + tangent.Y * tangent.Y;
-
-            //if (num != 0.0f)
+            ////JVector rantra = JVector.Zero;
+            //float rantra = 0.0f;
+            //if (!treatBody1AsStatic)
             //{
-            //    num = (float)Math.Sqrt(num);
-            //    tangent.X /= num;
-            //    tangent.Y /= num;
+            //    kNormal += body1.inverseMass;
+
+            //    if (!body1IsMassPoint)
+            //    {
+            //        // I really don't know what to do here, I think in 2D that rantra should be scalar?
+            //        // JVector.Cross(ref relativePos1, ref normal, out rantra);
+            //        //rantra.X = (relativePos1.Y * normal.Z) - (relativePos1.Z * normal.Y);
+            //        //rantra.Y = (relativePos1.Z * normal.X) - (relativePos1.X * normal.Z);
+            //        //rantra = (relativePos1.X * normal.Y) - (relativePos1.Y * normal.X);
+
+            //        rantra = relativePos1 * normal;
+
+            //        // JVector.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
+            //        //float num0 = ((rantra.X * body1.invInertiaWorld.M11) + (rantra.Y * body1.invInertiaWorld.M21)) + (rantra.Z * body1.invInertiaWorld.M31);
+            //        //float num1 = ((rantra.X * body1.invInertiaWorld.M12) + (rantra.Y * body1.invInertiaWorld.M22)) + (rantra.Z * body1.invInertiaWorld.M32);
+            //        //float num2 = ((rantra.X * body1.invInertiaWorld.M13) + (rantra.Y * body1.invInertiaWorld.M23)) + (rantra.Z * body1.invInertiaWorld.M33);
+
+            //        //rantra.X = num0; rantra.Y = num1; rantra.Z = num2;
+
+            //        // this doesn't make sense in 2D
+            //        //JVector.Cross(ref rantra, ref relativePos1, out rantra);
+            //        //num0 = (rantra.Y * relativePos1.Z) - (rantra.Z * relativePos1.Y);
+            //        //num1 = (rantra.Z * relativePos1.X) - (rantra.X * relativePos1.Z);
+            //        //num2 = (rantra.X * relativePos1.Y) - (rantra.Y * relativePos1.X);
+
+            //        //rantra.X = num0; rantra.Y = num1; rantra.Z = num2;
+            //    }
             //}
 
-            float kTangent = 0.0f;
+            ////JVector rbntrb = JVector.Zero;
+            //float rbntrb = 0.0f;
+            //if (!treatBody2AsStatic)
+            //{
+            //    kNormal += body2.inverseMass;
 
-            if (treatBody1AsStatic) rantra = 0.0f;
-            else
-            {
-                kTangent += body1.inverseMass;
+            //    if (!body2IsMassPoint)
+            //    {
+            //        // I really don't know what to do here, I think in 2D that rbntrb should be scalar?
+            //        // JVector.Cross(ref relativePos1, ref normal, out rbntrb);
+            //        //rbntrb.X = (relativePos2.Y * normal.Z) - (relativePos2.Z * normal.Y);
+            //        //rbntrb.Y = (relativePos2.Z * normal.X) - (relativePos2.X * normal.Z);
+            //        //rbntrb = (relativePos2.X * normal.Y) - (relativePos2.Y * normal.X);
 
-                if (!body1IsMassPoint)
-                {
-                    // again i have no idea how this applies to 2D
-                    // JVector.Cross(ref relativePos1, ref normal, out rantra);
-                    //rantra.X = (relativePos1.Y * tangent.Z) - (relativePos1.Z * tangent.Y);
-                    //rantra.Y = (relativePos1.Z * tangent.X) - (relativePos1.X * tangent.Z);
+            //        rbntrb = relativePos2 * normal;
 
-                    rantra = relativePos1 * tangent;
+            //        // JVector.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
+            //        //float num0 = ((rbntrb.X * body2.invInertiaWorld.M11) + (rbntrb.Y * body2.invInertiaWorld.M21)) + (rbntrb.Z * body2.invInertiaWorld.M31);
+            //        //float num1 = ((rbntrb.X * body2.invInertiaWorld.M12) + (rbntrb.Y * body2.invInertiaWorld.M22)) + (rbntrb.Z * body2.invInertiaWorld.M32);
+            //        //float num2 = ((rbntrb.X * body2.invInertiaWorld.M13) + (rbntrb.Y * body2.invInertiaWorld.M23)) + (rbntrb.Z * body2.invInertiaWorld.M33);
 
-                    // JVector.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
-                    //float num0 = ((rantra.X * body1.invInertiaWorld.M11) + (rantra.Y * body1.invInertiaWorld.M21)) + (rantra.Z * body1.invInertiaWorld.M31);
-                    //float num1 = ((rantra.X * body1.invInertiaWorld.M12) + (rantra.Y * body1.invInertiaWorld.M22)) + (rantra.Z * body1.invInertiaWorld.M32);
-                    //float num2 = ((rantra.X * body1.invInertiaWorld.M13) + (rantra.Y * body1.invInertiaWorld.M23)) + (rantra.Z * body1.invInertiaWorld.M33);
+            //        //rbntrb.X = num0; rbntrb.Y = num1; rbntrb.Z = num2;
 
-                    //rantra.X = num0; rantra.Y = num1; rantra.Z = num2;
+            //        //JVector.Cross(ref rantra, ref relativePos1, out rantra);
+            //        //num0 = (rbntrb.Y * relativePos2.Z) - (rbntrb.Z * relativePos2.Y);
+            //        //num1 = (rbntrb.Z * relativePos2.X) - (rbntrb.X * relativePos2.Z);
+            //        //num2 = (rbntrb.X * relativePos2.Y) - (rbntrb.Y * relativePos2.X);
 
-                    //JVector.Cross(ref rantra, ref relativePos1, out rantra);
-                    //num0 = (rantra.Y * relativePos1.Z) - (rantra.Z * relativePos1.Y);
-                    //num1 = (rantra.Z * relativePos1.X) - (rantra.X * relativePos1.Z);
-                    //num2 = (rantra.X * relativePos1.Y) - (rantra.Y * relativePos1.X);
+            //        //rbntrb.X = num0; rbntrb.Y = num1; rbntrb.Z = num2;
+            //    }
+            //}
+            // // this doesn't make sense
+            //if (!treatBody1AsStatic) kNormal += body1.invInertia * relativePos1.LengthSquared() - rantra * rantra;
+            //if (!treatBody2AsStatic) kNormal += body2.invInertia * relativePos2.LengthSquared() - rbntrb * rbntrb;
 
-                    //rantra.X = num0; rantra.Y = num1; rantra.Z = num2;
-                }
+            //massNormal = 1.0f / kNormal;
 
-            }
+            ////float num = dvx * normal.X + dvy * normal.Y;
 
-            if (treatBody2AsStatic) rbntrb = 0.0f;
-            else
-            {
-                kTangent += body2.inverseMass;
+            //tangent.X = -normal.Y;
+            //tangent.Y = normal.X;
 
-                if (!body2IsMassPoint)
-                {
-                    // JVector.Cross(ref relativePos1, ref normal, out rantra);
-                    //rbntrb.X = (relativePos2.Y * tangent.Z) - (relativePos2.Z * tangent.Y);
-                    //rbntrb.Y = (relativePos2.Z * tangent.X) - (relativePos2.X * tangent.Z);
+            ////num = tangent.X * tangent.X + tangent.Y * tangent.Y;
 
-                    rantra = relativePos1 * tangent;
+            ////if (num != 0.0f)
+            ////{
+            ////    num = (float)Math.Sqrt(num);
+            ////    tangent.X /= num;
+            ////    tangent.Y /= num;
+            ////}
 
-                    // JVector.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
-                    //float num0 = ((rbntrb.X * body2.invInertiaWorld.M11) + (rbntrb.Y * body2.invInertiaWorld.M21)) + (rbntrb.Z * body2.invInertiaWorld.M31);
-                    //float num1 = ((rbntrb.X * body2.invInertiaWorld.M12) + (rbntrb.Y * body2.invInertiaWorld.M22)) + (rbntrb.Z * body2.invInertiaWorld.M32);
-                    //float num2 = ((rbntrb.X * body2.invInertiaWorld.M13) + (rbntrb.Y * body2.invInertiaWorld.M23)) + (rbntrb.Z * body2.invInertiaWorld.M33);
+            //float kTangent = 0.0f;
 
-                    //rbntrb.X = num0; rbntrb.Y = num1; rbntrb.Z = num2;
+            //if (treatBody1AsStatic) rantra = 0.0f;
+            //else
+            //{
+            //    kTangent += body1.inverseMass;
 
-                    //JVector.Cross(ref rantra, ref relativePos1, out rantra);
-                    //num0 = (rbntrb.Y * relativePos2.Z) - (rbntrb.Z * relativePos2.Y);
-                    //num1 = (rbntrb.Z * relativePos2.X) - (rbntrb.X * relativePos2.Z);
-                    //num2 = (rbntrb.X * relativePos2.Y) - (rbntrb.Y * relativePos2.X);
+            //    if (!body1IsMassPoint)
+            //    {
+            //        // again i have no idea how this applies to 2D
+            //        // JVector.Cross(ref relativePos1, ref normal, out rantra);
+            //        //rantra.X = (relativePos1.Y * tangent.Z) - (relativePos1.Z * tangent.Y);
+            //        //rantra.Y = (relativePos1.Z * tangent.X) - (relativePos1.X * tangent.Z);
 
-                    //rbntrb.X = num0; rbntrb.Y = num1; rbntrb.Z = num2;
-                }
-            }
+            //        rantra = relativePos1 * tangent;
 
-            // ?
-            //if (!treatBody1AsStatic) kTangent += JVector.Dot(ref rantra, ref tangent);
-            //if (!treatBody2AsStatic) kTangent += JVector.Dot(ref rbntrb, ref tangent);
+            //        // JVector.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
+            //        //float num0 = ((rantra.X * body1.invInertiaWorld.M11) + (rantra.Y * body1.invInertiaWorld.M21)) + (rantra.Z * body1.invInertiaWorld.M31);
+            //        //float num1 = ((rantra.X * body1.invInertiaWorld.M12) + (rantra.Y * body1.invInertiaWorld.M22)) + (rantra.Z * body1.invInertiaWorld.M32);
+            //        //float num2 = ((rantra.X * body1.invInertiaWorld.M13) + (rantra.Y * body1.invInertiaWorld.M23)) + (rantra.Z * body1.invInertiaWorld.M33);
+
+            //        //rantra.X = num0; rantra.Y = num1; rantra.Z = num2;
+
+            //        //JVector.Cross(ref rantra, ref relativePos1, out rantra);
+            //        //num0 = (rantra.Y * relativePos1.Z) - (rantra.Z * relativePos1.Y);
+            //        //num1 = (rantra.Z * relativePos1.X) - (rantra.X * relativePos1.Z);
+            //        //num2 = (rantra.X * relativePos1.Y) - (rantra.Y * relativePos1.X);
+
+            //        //rantra.X = num0; rantra.Y = num1; rantra.Z = num2;
+            //    }
+
+            //}
+
+            //if (treatBody2AsStatic) rbntrb = 0.0f;
+            //else
+            //{
+            //    kTangent += body2.inverseMass;
+
+            //    if (!body2IsMassPoint)
+            //    {
+            //        // JVector.Cross(ref relativePos1, ref normal, out rantra);
+            //        //rbntrb.X = (relativePos2.Y * tangent.Z) - (relativePos2.Z * tangent.Y);
+            //        //rbntrb.Y = (relativePos2.Z * tangent.X) - (relativePos2.X * tangent.Z);
+
+            //        rantra = relativePos1 * tangent;
+
+            //        // JVector.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
+            //        //float num0 = ((rbntrb.X * body2.invInertiaWorld.M11) + (rbntrb.Y * body2.invInertiaWorld.M21)) + (rbntrb.Z * body2.invInertiaWorld.M31);
+            //        //float num1 = ((rbntrb.X * body2.invInertiaWorld.M12) + (rbntrb.Y * body2.invInertiaWorld.M22)) + (rbntrb.Z * body2.invInertiaWorld.M32);
+            //        //float num2 = ((rbntrb.X * body2.invInertiaWorld.M13) + (rbntrb.Y * body2.invInertiaWorld.M23)) + (rbntrb.Z * body2.invInertiaWorld.M33);
+
+            //        //rbntrb.X = num0; rbntrb.Y = num1; rbntrb.Z = num2;
+
+            //        //JVector.Cross(ref rantra, ref relativePos1, out rantra);
+            //        //num0 = (rbntrb.Y * relativePos2.Z) - (rbntrb.Z * relativePos2.Y);
+            //        //num1 = (rbntrb.Z * relativePos2.X) - (rbntrb.X * relativePos2.Z);
+            //        //num2 = (rbntrb.X * relativePos2.Y) - (rbntrb.Y * relativePos2.X);
+
+            //        //rbntrb.X = num0; rbntrb.Y = num1; rbntrb.Z = num2;
+            //    }
+            //}
+
+            //// ?
+            ////if (!treatBody1AsStatic) kTangent += JVector.Dot(ref rantra, ref tangent);
+            ////if (!treatBody2AsStatic) kTangent += JVector.Dot(ref rbntrb, ref tangent);
+            //massTangent = 1.0f / kTangent;
+
+            //restitutionBias = lostSpeculativeBounce;
+
+            //speculativeVelocity = 0.0f;
+
+            //float relNormalVel = normal.X * dvx + normal.Y * dvy; //JVector.Dot(ref normal, ref dv);
+
+            //if (Penetration > settings.allowedPenetration)
+            //{
+            //    restitutionBias = settings.bias * (1.0f / timestep) * JMath.Max(0.0f, Penetration - settings.allowedPenetration);
+            //    restitutionBias = JMath.Clamp(restitutionBias, 0.0f, settings.maximumBias);
+            //    //  body1IsMassPoint = body2IsMassPoint = false;
+            //}
+
+
+            //float timeStepRatio = timestep / lastTimeStep;
+            //accumulatedNormalImpulse *= timeStepRatio;
+            //accumulatedTangentImpulse *= timeStepRatio;
+
+            //{
+            //    // Static/Dynamic friction
+            //    float relTangentVel = -(tangent.X * dvx + tangent.Y * dvy);
+            //    float tangentImpulse = massTangent * relTangentVel;
+            //    float maxTangentImpulse = -staticFriction * accumulatedNormalImpulse;
+
+            //    if (tangentImpulse < maxTangentImpulse) friction = dynamicFriction;
+            //    else friction = staticFriction;
+            //}
+
+            //JVector impulse;
+
+            //// Simultaneous solving and restitution is simply not possible
+            //// so fake it a bit by just applying restitution impulse when there
+            //// is a new contact.
+            //if (relNormalVel < -1.0f && newContact)
+            //{
+            //    restitutionBias = Math.Max(-restitution * relNormalVel, restitutionBias);
+            //}
+
+            //// Speculative Contacts!
+            //// if the penetration is negative (which means the bodies are not already in contact, but they will
+            //// be in the future) we store the current bounce bias in the variable 'lostSpeculativeBounce'
+            //// and apply it the next frame, when the speculative contact was already solved.
+            //if (penetration < -settings.allowedPenetration)
+            //{
+            //    speculativeVelocity = penetration / timestep;
+
+            //    lostSpeculativeBounce = restitutionBias;
+            //    restitutionBias = 0.0f;
+            //}
+            //else
+            //{
+            //    lostSpeculativeBounce = 0.0f;
+            //}
+
+            //impulse.X = normal.X * accumulatedNormalImpulse + tangent.X * accumulatedTangentImpulse;
+            //impulse.Y = normal.Y * accumulatedNormalImpulse + tangent.Y * accumulatedTangentImpulse;
+            ////impulse.Z = normal.Z * accumulatedNormalImpulse + tangent.Z * accumulatedTangentImpulse;
+
+            //if (!treatBody1AsStatic)
+            //{
+            //    //body1.linearVelocity.X -= (impulse.X * body1.inverseMass);
+            //    //body1.linearVelocity.Y -= (impulse.Y * body1.inverseMass);
+            //    //body1.linearVelocity.Z -= (impulse.Z * body1.inverseMass);
+
+            //    if (!body1IsMassPoint)
+            //    {
+            //        float num0, num1, num2;
+            //        //num0 = relativePos1.Y * impulse.Z - relativePos1.Z * impulse.Y;
+            //        //num1 = relativePos1.Z * impulse.X - relativePos1.X * impulse.Z;
+            //        num2 = relativePos1.X * impulse.Y - relativePos1.Y * impulse.X;
+            //        /*
+            //        float num3 =
+            //            (((num0 * body1.invInertiaWorld.M11) +
+            //            (num1 * body1.invInertiaWorld.M21)) +
+            //            (num2 * body1.invInertiaWorld.M31));
+            //        float num4 =
+            //            (((num0 * body1.invInertiaWorld.M12) +
+            //            (num1 * body1.invInertiaWorld.M22)) +
+            //            (num2 * body1.invInertiaWorld.M32));
+            //        float num5 =
+            //            (((num0 * body1.invInertiaWorld.M13) +
+            //            (num1 * body1.invInertiaWorld.M23)) +
+            //            (num2 * body1.invInertiaWorld.M33));
+
+            //        body1.angularVelocity.X -= num3;
+            //        body1.angularVelocity.Y -= num4;
+            //         * */
+            //        //body1.angularVelocity -= num2 * body1.invInertia;
+
+            //    }
+            //}
+
+            //if (!treatBody2AsStatic)
+            //{
+
+            //    //body2.linearVelocity.X += (impulse.X * body2.inverseMass);
+            //    //body2.linearVelocity.Y += (impulse.Y * body2.inverseMass);
+            //    //body2.linearVelocity.Z += (impulse.Z * body2.inverseMass);
+
+            //    if (!body2IsMassPoint)
+            //    {
+
+            //        float num0, num1, num2;
+            //        //num0 = relativePos2.Y * impulse.Z - relativePos2.Z * impulse.Y;
+            //        //num1 = relativePos2.Z * impulse.X - relativePos2.X * impulse.Z;
+            //        num2 = relativePos2.X * impulse.Y - relativePos2.Y * impulse.X;
+            //        /*
+            //        float num3 =
+            //            (((num0 * body2.invInertiaWorld.M11) +
+            //            (num1 * body2.invInertiaWorld.M21)) +
+            //            (num2 * body2.invInertiaWorld.M31));
+            //        float num4 =
+            //            (((num0 * body2.invInertiaWorld.M12) +
+            //            (num1 * body2.invInertiaWorld.M22)) +
+            //            (num2 * body2.invInertiaWorld.M32));
+            //        float num5 =
+            //            (((num0 * body2.invInertiaWorld.M13) +
+            //            (num1 * body2.invInertiaWorld.M23)) +
+            //            (num2 * body2.invInertiaWorld.M33));
+
+            //        body2.angularVelocity.X += num3;
+            //        body2.angularVelocity.Y += num4;
+            //         * */
+            //        //body2.angularVelocity += num2 * body2.invInertia;
+            //    }
+            //}
+            #endregion
+
+            float rn1 = JVector.Dot(this.relativePos1, this.normal);
+            float rn2 = JVector.Dot(this.relativePos2, this.normal);
+            float kNormal = body1.inverseMass + body2.inverseMass;
+            kNormal += body1.invInertia * (JVector.Dot(relativePos1, relativePos1) - rn1 * rn1) + body2.invInertia * (JVector.Dot(relativePos2, relativePos2) - rn2 * rn2);
+            massNormal = 1.0f / kNormal;
+
+            JVector tangent = JVector.Cross(normal, 1.0f);
+            float rt1 = JVector.Dot(relativePos1, tangent);
+            float rt2 = JVector.Dot(relativePos2, tangent);
+            float kTangent = body1.inverseMass + body2.inverseMass;
+            kTangent += body1.invInertia * (JVector.Dot(relativePos1, relativePos1) - rt1 * rt1) + body2.invInertia * (JVector.Dot(relativePos2, relativePos2) - rt2 * rt2);
             massTangent = 1.0f / kTangent;
 
-            restitutionBias = lostSpeculativeBounce;
+            float k_biasFactor = 0.2f;
+            float k_allowedPenetration = 0.01f;
 
-            speculativeVelocity = 0.0f;
+            this.restitutionBias = -k_biasFactor * (1f / timestep) * Math.Min(0.0f, penetration + k_allowedPenetration);
 
-            float relNormalVel = normal.X * dvx + normal.Y * dvy; //JVector.Dot(ref normal, ref dv);
-
-            if (Penetration > settings.allowedPenetration)
+            // Apply normal + friction impulse
+            JVector P = this.accumulatedNormalImpulse * normal + accumulatedTangentImpulse * tangent;
+            if (!body1.isStatic)
             {
-                restitutionBias = settings.bias * (1.0f / timestep) * JMath.Max(0.0f, Penetration - settings.allowedPenetration);
-                restitutionBias = JMath.Clamp(restitutionBias, 0.0f, settings.maximumBias);
-                //  body1IsMassPoint = body2IsMassPoint = false;
+                body1.linearVelocity -= body1.inverseMass * P;
+                body1.angularVelocity -= body1.invInertia * JVector.Cross(relativePos1, P);
             }
-
-
-            float timeStepRatio = timestep / lastTimeStep;
-            accumulatedNormalImpulse *= timeStepRatio;
-            accumulatedTangentImpulse *= timeStepRatio;
-
+            if (!body2.isStatic)
             {
-                // Static/Dynamic friction
-                float relTangentVel = -(tangent.X * dvx + tangent.Y * dvy);
-                float tangentImpulse = massTangent * relTangentVel;
-                float maxTangentImpulse = -staticFriction * accumulatedNormalImpulse;
-
-                if (tangentImpulse < maxTangentImpulse) friction = dynamicFriction;
-                else friction = staticFriction;
+                body2.linearVelocity += body2.inverseMass * P;
+                body2.angularVelocity += body2.invInertia * JVector.Cross(relativePos2, P);
             }
-
-            JVector impulse;
-
-            // Simultaneous solving and restitution is simply not possible
-            // so fake it a bit by just applying restitution impulse when there
-            // is a new contact.
-            if (relNormalVel < -1.0f && newContact)
-            {
-                restitutionBias = Math.Max(-restitution * relNormalVel, restitutionBias);
-            }
-
-            // Speculative Contacts!
-            // if the penetration is negative (which means the bodies are not already in contact, but they will
-            // be in the future) we store the current bounce bias in the variable 'lostSpeculativeBounce'
-            // and apply it the next frame, when the speculative contact was already solved.
-            if (penetration < -settings.allowedPenetration)
-            {
-                speculativeVelocity = penetration / timestep;
-
-                lostSpeculativeBounce = restitutionBias;
-                restitutionBias = 0.0f;
-            }
-            else
-            {
-                lostSpeculativeBounce = 0.0f;
-            }
-
-            impulse.X = normal.X * accumulatedNormalImpulse + tangent.X * accumulatedTangentImpulse;
-            impulse.Y = normal.Y * accumulatedNormalImpulse + tangent.Y * accumulatedTangentImpulse;
-            //impulse.Z = normal.Z * accumulatedNormalImpulse + tangent.Z * accumulatedTangentImpulse;
-
-            if (!treatBody1AsStatic)
-            {
-                //body1.linearVelocity.X -= (impulse.X * body1.inverseMass);
-                //body1.linearVelocity.Y -= (impulse.Y * body1.inverseMass);
-                //body1.linearVelocity.Z -= (impulse.Z * body1.inverseMass);
-
-                if (!body1IsMassPoint)
-                {
-                    float num0, num1, num2;
-                    //num0 = relativePos1.Y * impulse.Z - relativePos1.Z * impulse.Y;
-                    //num1 = relativePos1.Z * impulse.X - relativePos1.X * impulse.Z;
-                    num2 = relativePos1.X * impulse.Y - relativePos1.Y * impulse.X;
-                    /*
-                    float num3 =
-                        (((num0 * body1.invInertiaWorld.M11) +
-                        (num1 * body1.invInertiaWorld.M21)) +
-                        (num2 * body1.invInertiaWorld.M31));
-                    float num4 =
-                        (((num0 * body1.invInertiaWorld.M12) +
-                        (num1 * body1.invInertiaWorld.M22)) +
-                        (num2 * body1.invInertiaWorld.M32));
-                    float num5 =
-                        (((num0 * body1.invInertiaWorld.M13) +
-                        (num1 * body1.invInertiaWorld.M23)) +
-                        (num2 * body1.invInertiaWorld.M33));
-
-                    body1.angularVelocity.X -= num3;
-                    body1.angularVelocity.Y -= num4;
-                     * */
-                    //body1.angularVelocity -= num2 * body1.invInertia;
-
-                }
-            }
-
-            if (!treatBody2AsStatic)
-            {
-
-                //body2.linearVelocity.X += (impulse.X * body2.inverseMass);
-                //body2.linearVelocity.Y += (impulse.Y * body2.inverseMass);
-                //body2.linearVelocity.Z += (impulse.Z * body2.inverseMass);
-
-                if (!body2IsMassPoint)
-                {
-
-                    float num0, num1, num2;
-                    //num0 = relativePos2.Y * impulse.Z - relativePos2.Z * impulse.Y;
-                    //num1 = relativePos2.Z * impulse.X - relativePos2.X * impulse.Z;
-                    num2 = relativePos2.X * impulse.Y - relativePos2.Y * impulse.X;
-                    /*
-                    float num3 =
-                        (((num0 * body2.invInertiaWorld.M11) +
-                        (num1 * body2.invInertiaWorld.M21)) +
-                        (num2 * body2.invInertiaWorld.M31));
-                    float num4 =
-                        (((num0 * body2.invInertiaWorld.M12) +
-                        (num1 * body2.invInertiaWorld.M22)) +
-                        (num2 * body2.invInertiaWorld.M32));
-                    float num5 =
-                        (((num0 * body2.invInertiaWorld.M13) +
-                        (num1 * body2.invInertiaWorld.M23)) +
-                        (num2 * body2.invInertiaWorld.M33));
-
-                    body2.angularVelocity.X += num3;
-                    body2.angularVelocity.Y += num4;
-                     * */
-                    //body2.angularVelocity += num2 * body2.invInertia;
-                }
-            }
-
             lastTimeStep = timestep;
 
             newContact = false;
