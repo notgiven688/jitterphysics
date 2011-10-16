@@ -202,7 +202,7 @@ namespace JitterDemo
                 RigidBody body = new RigidBody(new CapsuleShape(2, 0.5f))
                 {
                     EnableDebugDraw = true,
-                    Position = new JVector(0, 0),
+                    Position = new JVector(-5, 10),
                     AngularVelocity = 3,
                     LinearVelocity = new JVector(-1, -1),
                     Orientation = 0,
@@ -261,25 +261,23 @@ namespace JitterDemo
                 DebugDrawer.Color = Color.Gray;//rndColors[cc % rndColors.Length];
                 body.DebugDraw(DebugDrawer);
 
-                DebugDrawer.DrawAabb(body.BoundingBox.Min, body.BoundingBox.Max, Color.Pink);
+                //DebugDrawer.DrawAabb(body.BoundingBox.Min, body.BoundingBox.Max, Color.Pink);
                 
-                foreach (Arbiter item in body.Arbiters)
-                {
-                    foreach (var contact in item.ContactList)
-                    {
-                        //DebugDrawer.Color = Color.Red;
-                        //DebugDrawer.DrawLine(contact.Position1, contact.Position2);
-                        DebugDrawer.Color = Color.Blue;
-                        DebugDrawer.DrawLine(contact.Position1, contact.Position1 + contact.Normal * 0.15f);
-                        DebugDrawer.DrawLine(contact.Position2, contact.Position2 + contact.Normal * 0.15f);
-                        DebugDrawer.DrawPoint(contact.Position1);
-                        DebugDrawer.DrawPoint(contact.Position2);
-                    }
-                }
-                cc++;
+                //foreach (Arbiter item in body.Arbiters)
+                //{
+                //    foreach (var contact in item.ContactList)
+                //    {
+                //        //DebugDrawer.Color = Color.Red;
+                //        //DebugDrawer.DrawLine(contact.Position1, contact.Position2);
+                //        DebugDrawer.Color = Color.Blue;
+                //        DebugDrawer.DrawLine(contact.Position1, contact.Position1 + contact.Normal * 0.15f);
+                //        DebugDrawer.DrawLine(contact.Position2, contact.Position2 + contact.Normal * 0.15f);
+                //        DebugDrawer.DrawPoint(contact.Position1);
+                //        DebugDrawer.DrawPoint(contact.Position2);
+                //    }
+                //}
+                //cc++;
             }
-
-            
         }
 
         /// <summary>

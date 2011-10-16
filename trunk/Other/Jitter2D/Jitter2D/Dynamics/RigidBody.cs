@@ -625,6 +625,7 @@ namespace Jitter2D.Dynamics
             if (enableDebugDraw) shape.MakeHull(ref hullPoints, 3);
         }
 
+        // this method is extremely brute force, only use for debugging!
         public void DebugDraw(IDebugDrawer drawer)
         {
             JMatrix o1 = JMatrix.CreateRotationZ(orientation);
@@ -644,7 +645,14 @@ namespace Jitter2D.Dynamics
 
                 if (i >= 0)
                 {
-                    drawer.SetColor(1, 0, 0, 1);
+                    if (isStatic)
+                        drawer.SetColor(0.25f, 0.85f, 0.25f, 1);
+                    else if (isActive)
+                        drawer.SetColor(0.85f, 0.85f, 0.85f, 1);
+                    else
+                        drawer.SetColor(0.65f, 0.65f, 0.65f, 1);
+                    drawer.DrawTriangle(a, u, this.position);
+                    drawer.SetColor(0,0,0, 1);
                     drawer.DrawLine(a, u);
                 }
                 u = a;
@@ -653,9 +661,9 @@ namespace Jitter2D.Dynamics
             JMatrix xForm = JMatrix.CreateRotationZ(orientation);
 
             drawer.SetColor(1, 0, 0, 1);
-            drawer.DrawLine(position + JVector.Transform(JVector.Left * 0.5f, xForm), position + JVector.Transform(JVector.Zero, xForm));
+            drawer.DrawLine(position + JVector.Transform(JVector.Left * 0.25f, xForm), position + JVector.Transform(JVector.Zero, xForm));
             drawer.SetColor(0, 1, 0, 1);
-            drawer.DrawLine(position + JVector.Transform(JVector.Up * 0.5f, xForm), position + JVector.Transform(JVector.Zero, xForm));
+            drawer.DrawLine(position + JVector.Transform(JVector.Up * 0.25f, xForm), position + JVector.Transform(JVector.Zero, xForm));
         }
     }
 }
