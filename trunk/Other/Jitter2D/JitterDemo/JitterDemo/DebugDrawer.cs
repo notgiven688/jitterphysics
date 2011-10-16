@@ -124,7 +124,7 @@ namespace JitterDemo
 
             foreach (var point in points)
             {
-                sb.Draw(pointTex, point, null, Color.White, 0, new Vector2(5, 5), 0.025f, SpriteEffects.None, 0);
+                sb.Draw(pointTex, point, null, Color.White, 0, new Vector2(5, 5), 0.01f, SpriteEffects.None, 0);
             }
 
             sb.End();
