@@ -102,11 +102,13 @@ namespace MPRCollisionDemo
             JVector point2;
 
             sw.Start();
-            //hit = XenoCollide.Detect(DebugDrawer, body1.Shape, body2.Shape, ref o1, ref o2, ref pos1, ref pos2, out point, out normal, out penetration, out iterations);
+            hit = XenoCollide.Detect(body1.Shape, body2.Shape, ref o1, ref o2, ref pos1, ref pos2, out point, out normal, out penetration);
             sw.Stop();
 
             ticks = sw.ElapsedTicks;
             sw.Reset();
+
+            DebugDrawer.DrawLine(point, point + normal);
 
             //DebugDrawer.DrawPoint(point2);
             DebugDrawer.DrawPoint(point);

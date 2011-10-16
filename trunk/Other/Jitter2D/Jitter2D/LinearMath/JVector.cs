@@ -421,7 +421,7 @@ namespace Jitter2D.LinearMath
         public static void Cross(ref JVector vector1, ref JVector vector2, out float result)
         {
             //  v1.x*v2.y - v1.y*v2.x;
-            float num = (vector1.X * vector2.Y) - (vector2.Y * vector1.X);
+            float num = (vector1.X * vector2.Y) - (vector1.Y * vector2.X);
             result = num;
         }
         #endregion
