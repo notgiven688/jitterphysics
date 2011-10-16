@@ -869,6 +869,17 @@ namespace Jitter2D.Dynamics
 
             this.restitutionBias = -k_biasFactor * (1f / timestep) * Math.Min(0.0f, penetration + k_allowedPenetration);
 
+            // Relative velocity at contact
+            JVector dv = body2.linearVelocity + JVector.Cross(body2.angularVelocity, relativePos2) - body1.linearVelocity - JVector.Cross(body1.angularVelocity, relativePos1);
+
+            // Static/Dynamic friction
+            float relTangentVel = -(tangent.X * dv.X + tangent.Y * dv.Y);
+            float tangentImpulse = massTangent * relTangentVel;
+            float maxTangentImpulse = -staticFriction * accumulatedNormalImpulse;
+
+            if (tangentImpulse < maxTangentImpulse) friction = dynamicFriction;
+            else friction = staticFriction;
+
             // Apply normal + friction impulse
             JVector P = this.accumulatedNormalImpulse * normal + accumulatedTangentImpulse * tangent;
             if (!body1.isStatic)

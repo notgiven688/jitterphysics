@@ -206,9 +206,9 @@ namespace JitterDemo
                 {
                     EnableDebugDraw = true,
                     Position = new JVector(0, 10),
-                    AngularVelocity = 10,
+                    AngularVelocity = 0,
                     LinearVelocity = new JVector(-1, -1),
-                    Orientation = 1,
+                    Orientation = 0,
                     Material = new Material()
                     {
                         DynamicFriction = 1f,
