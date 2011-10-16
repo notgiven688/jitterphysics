@@ -64,9 +64,6 @@ namespace JitterDemo
             collision.EnableSpeculativeContacts = false;
             World = new World(collision); World.AllowDeactivation = true;
 
-            World.Gravity = new JVector(0, -10);
-            //World.SetDampingFactors(0.95f, 0.95f);
-
             this.Window.AllowUserResizing = true;
 
             this.Window.Title = "Jitter 2D Physics Demo - Jitter 2D "
@@ -202,11 +199,11 @@ namespace JitterDemo
 
             if (keyState.IsKeyDown(Keys.Space) && !keyboardPreviousState.IsKeyDown(Keys.Space))
             {
-                RigidBody body = new RigidBody(new BoxShape(1,1))
+                RigidBody body = new RigidBody(new CapsuleShape(2, 0.5f))
                 {
                     EnableDebugDraw = true,
-                    Position = new JVector(0, 10),
-                    AngularVelocity = 0,
+                    Position = new JVector(0, 0),
+                    AngularVelocity = 3,
                     LinearVelocity = new JVector(-1, -1),
                     Orientation = 0,
                     Material = new Material()
@@ -217,6 +214,8 @@ namespace JitterDemo
                     },
                 };
                 World.AddBody(body);
+
+                body.SetMassProperties(1, 1, false);
             }
             #endregion
 
@@ -262,17 +261,17 @@ namespace JitterDemo
                 DebugDrawer.Color = Color.Gray;//rndColors[cc % rndColors.Length];
                 body.DebugDraw(DebugDrawer);
 
-                //DebugDrawer.DrawAabb(body.BoundingBox.Min, body.BoundingBox.Max, Color.Pink);
+                DebugDrawer.DrawAabb(body.BoundingBox.Min, body.BoundingBox.Max, Color.Pink);
                 
                 foreach (Arbiter item in body.Arbiters)
                 {
                     foreach (var contact in item.ContactList)
                     {
-                        DebugDrawer.Color = Color.Red;
-                        DebugDrawer.DrawLine(contact.Position1, contact.Position2);
+                        //DebugDrawer.Color = Color.Red;
+                        //DebugDrawer.DrawLine(contact.Position1, contact.Position2);
                         DebugDrawer.Color = Color.Blue;
-                        DebugDrawer.DrawLine(contact.Position1, contact.Position1 + contact.Normal * 0.5f);
-                        DebugDrawer.DrawLine(contact.Position2, contact.Position2 + contact.Normal * 0.5f);
+                        DebugDrawer.DrawLine(contact.Position1, contact.Position1 + contact.Normal * 0.15f);
+                        DebugDrawer.DrawLine(contact.Position2, contact.Position2 + contact.Normal * 0.15f);
                         DebugDrawer.DrawPoint(contact.Position1);
                         DebugDrawer.DrawPoint(contact.Position2);
                     }
