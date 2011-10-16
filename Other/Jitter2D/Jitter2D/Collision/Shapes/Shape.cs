@@ -121,10 +121,27 @@ namespace Jitter2D.Collision.Shapes
         /// </summary>
         /// <param name="orientation">The orientation of the shape.</param>
         /// <param name="box">The resulting axis aligned bounding box.</param>
-        public virtual void GetBoundingBox(ref float orientation, out JBBox box)
+        public virtual void GetBoundingBox(ref float rotation, out JBBox box)
         {
-            //throw new NotImplementedException();
-            box = new JBBox();
+            JVector vec = JVector.Zero;
+
+            JMatrix orientation = JMatrix.CreateRotationZ(rotation);
+
+            vec.Set(orientation.M11, orientation.M21);
+            SupportMapping(ref vec, out vec);
+            box.Max.X = orientation.M11 * vec.X + orientation.M21 * vec.Y + orientation.M31;
+
+            vec.Set(orientation.M12, orientation.M22);
+            SupportMapping(ref vec, out vec);
+            box.Max.Y = orientation.M12 * vec.X + orientation.M22 * vec.Y + orientation.M32;
+
+            vec.Set(-orientation.M11, -orientation.M21);
+            SupportMapping(ref vec, out vec);
+            box.Min.X = orientation.M11 * vec.X + orientation.M21 * vec.Y + orientation.M31;
+
+            vec.Set(-orientation.M12, -orientation.M22);
+            SupportMapping(ref vec, out vec);
+            box.Min.Y = orientation.M12 * vec.X + orientation.M22 * vec.Y + orientation.M32;
         }
 
         /// <summary>
