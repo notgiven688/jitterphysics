@@ -345,6 +345,7 @@ namespace Jitter2D.Dynamics
                 body2.linearVelocity += body2.inverseMass * Pn;
                 body2.angularVelocity += body2.invInertia * JVector.Cross(relativePos2, Pn);
             }
+
             // Relative velocity at contact
             dv = body2.linearVelocity + JVector.Cross(body2.angularVelocity, relativePos2) - body1.linearVelocity - JVector.Cross(body1.angularVelocity, relativePos1);
 
