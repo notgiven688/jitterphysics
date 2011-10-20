@@ -88,6 +88,11 @@ namespace Jitter.Collision.Shapes
         /// </summary>
         public JBBox BoundingBox { get { return boundingBox; } }
 
+        /// <summary>
+        /// Allows to set a user defined value to the shape.
+        /// </summary>
+        public object Tag { get; set; }
+
         private struct ClipTriangle
         {
             public JVector n1;
