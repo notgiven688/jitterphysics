@@ -93,9 +93,8 @@ namespace Jitter2D.Collision.Shapes
             JVector temp;
             JVector.Transform(ref halfSize, ref abs, out temp);
 
-            box.Max = temp + new JVector(0.5f, 0.5f);
+            box.Max = temp;
             JVector.Negate(ref temp, out box.Min);
-            box.Min -= new JVector(0.5f, 0.5f);
         }
 
         /// <summary>

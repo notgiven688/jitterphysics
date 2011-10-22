@@ -100,7 +100,7 @@ namespace CollisionDemo
 
         public override void Draw(GameTime gameTime)
         {
-            MPRCollisionDemo demo = Game as MPRCollisionDemo;
+            CollisionDemo demo = Game as CollisionDemo;
 
             basicEffect.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 

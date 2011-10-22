@@ -146,7 +146,7 @@ namespace Jitter2D
         private float linearDamping = 0.85f;
 
         private int contactIterations = 5;
-        private int smallIterations = 5;
+        private int smallIterations = 1;
         private float timestep = 0.0f;
 
         private Jitter2D.Collision.IslandManager islands = new IslandManager();

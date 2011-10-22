@@ -70,7 +70,8 @@ namespace Jitter2D.Dynamics
 
         internal JVector realRelPos1, realRelPos2;
         internal JVector relativePos1, relativePos2;
-        internal JVector p1, p2;
+        internal JVector p1, p2, m_ra, m_rb;
+        internal float m_invDenom, m_invDenomTan;
 
         internal float accumulatedNormalImpulse = 0.0f;
         internal float accumulatedTangentImpulse = 0.0f;
@@ -318,7 +319,7 @@ namespace Jitter2D.Dynamics
             //    }
             //}
             #endregion
-
+            #region Box2d Lite Version
             // Relative velocity at contact
             JVector dv = body2.linearVelocity + JVector.Cross(body2.angularVelocity, relativePos2) - body1.linearVelocity - JVector.Cross(body1.angularVelocity, relativePos1);
 
@@ -373,6 +374,75 @@ namespace Jitter2D.Dynamics
                 body2.linearVelocity += body2.inverseMass * Pt;
                 body2.angularVelocity += body2.invInertia * JVector.Cross(relativePos2, Pt);
             }
+
+            #endregion
+
+            #region Speculative Contacts Version
+
+            //// get all of relative normal velocity
+            //JVector dv = body2.linearVelocity + m_rb * body2.angularVelocity - body1.linearVelocity + m_ra * body1.angularVelocity;
+            //float relNv = JVector.Dot(dv, normal);
+
+            //// get tangential velocity
+            //tangent = normal.PerpR();
+            //float tanV = JVector.Dot(dv, tangent);
+
+            //float remove = relNv + penetration/ lastTimeStep;
+
+            ////if (remove < 0.0f)
+            //{
+            //    float mag = remove * m_invDenom;
+            //    float newImpulse = Math.Min(mag + accumulatedNormalImpulse, 0);
+            //    float change = newImpulse - accumulatedNormalImpulse;
+
+            //    JVector imp = normal * mag;
+
+            //    // apply impulse
+            //    if (!body1.isStatic)
+            //    {
+            //        body1.linearVelocity += imp * body1.inverseMass;
+            //        if (!body1.isParticle)
+            //            body1.angularVelocity += JVector.Dot(imp, m_ra) * body1.invInertia;
+            //    }
+
+            //    if (!body2.isStatic)
+            //    {
+            //        body2.linearVelocity -= imp * body2.inverseMass;
+            //        if (!body2.isParticle)
+            //            body2.angularVelocity -= JVector.Dot(imp, m_rb) * body2.invInertia;
+            //    }
+
+            //    accumulatedNormalImpulse = newImpulse;
+
+            //    float kFriction = 0;
+
+            //    float absMag = Math.Abs(mag) * kFriction;
+
+            //    // friction
+            //    mag = tanV * m_invDenomTan;
+            //    newImpulse = JMath.Clamp(mag + accumulatedTangentImpulse, -absMag, absMag);
+            //    change = newImpulse - accumulatedTangentImpulse;
+            //    imp = tangent * mag;
+
+            //    // apply impulse
+            //    if (!body1.isStatic)
+            //    {
+            //        body1.linearVelocity += imp * body1.inverseMass;
+            //        if (!body1.isParticle)
+            //            body1.angularVelocity += JVector.Dot(imp, m_ra) * body1.invInertia;
+            //    }
+
+            //    if (!body2.isStatic)
+            //    {
+            //        body2.linearVelocity -= imp * body2.inverseMass;
+            //        if (!body2.isParticle)
+            //            body2.angularVelocity -= JVector.Dot(imp, m_rb) * body2.invInertia;
+            //    }
+
+            //    accumulatedTangentImpulse = newImpulse;
+            //}
+
+            #endregion
         }
 
         public float AppliedNormalImpulse { get { return accumulatedNormalImpulse; } }
@@ -852,6 +922,8 @@ namespace Jitter2D.Dynamics
             //}
             #endregion
 
+            #region Box2d Lite Version
+
             float rn1 = JVector.Dot(this.relativePos1, this.normal);
             float rn2 = JVector.Dot(this.relativePos2, this.normal);
             float kNormal = body1.inverseMass + body2.inverseMass;
@@ -893,6 +965,35 @@ namespace Jitter2D.Dynamics
                 body2.linearVelocity += body2.inverseMass * P;
                 body2.angularVelocity += body2.invInertia * JVector.Cross(relativePos2, P);
             }
+            #endregion
+
+            #region Speculative Contacts Version
+
+            //// calculate radius arms
+            //m_ra = (p1 - body1.position).PerpR();
+            //m_rb = (p2 - body2.position).PerpR();
+
+            //// compute denominator in impulse equation
+            //float a = body1.inverseMass;
+            //float b = body2.inverseMass;
+            //float ran = JVector.Dot(m_ra, normal);
+            //float rbn = JVector.Dot(m_rb, normal);
+            //float c = ran * ran * body1.invInertia;
+            //float d = rbn * rbn * body2.invInertia;
+
+            //m_invDenom = 1 / (a + b + c + d);
+
+            //JVector tangent = normal.PerpR();
+            //ran = JVector.Dot(m_ra, tangent);
+            //rbn = JVector.Dot(m_rb, tangent);
+            //c = ran * ran * body1.invInertia;
+            //d = rbn * rbn * body2.invInertia;
+
+            //m_invDenomTan = 1 / (a + b + c + d);
+
+
+            #endregion
+
             lastTimeStep = timestep;
 
             newContact = false;

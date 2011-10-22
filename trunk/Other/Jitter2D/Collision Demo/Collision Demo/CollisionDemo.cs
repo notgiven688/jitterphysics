@@ -19,15 +19,15 @@ namespace CollisionDemo
     /// <summary>
     /// This is the main type for your game
     /// </summary>
-    public class MPRCollisionDemo : Microsoft.Xna.Framework.Game
+    public class CollisionDemo : Microsoft.Xna.Framework.Game
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         public DebugDrawer DebugDrawer;
         public Camera Camera;
 
-        RigidBody body1 = new RigidBody(new BoxShape(2, 5));
-        RigidBody body2 = new RigidBody(new BoxShape(3, 2));
+        RigidBody body1 = new RigidBody(new CircleShape(2));
+        RigidBody body2 = new RigidBody(new CapsuleShape(3, 1));
 
         JVector point, normal;
         float penetration;
@@ -38,7 +38,7 @@ namespace CollisionDemo
         Stopwatch sw = new Stopwatch();
         long ticks;
 
-        public MPRCollisionDemo()
+        public CollisionDemo()
         {
             graphics = new GraphicsDeviceManager(this);
             graphics.PreferMultiSampling = true;
@@ -94,24 +94,24 @@ namespace CollisionDemo
             body1.Orientation += 0.001f;
             body2.Orientation -= 0.001f;
 
-            JMatrix o1 = JMatrix.CreateRotationZ(body1.Orientation);
-            JMatrix o2 = JMatrix.CreateRotationZ(body2.Orientation);
-            JVector pos1 = body1.Position;
-            JVector pos2 = body2.Position;
+            var c1 = body1.Shape as CircleShape;
+            var c2 = body2.Shape as CapsuleShape;
 
-            JVector point2;
+            var o = new JVector((float)-Math.Sin(body2.Orientation), (float)Math.Cos(body2.Orientation));
+
+            JVector point1, point2;
 
             sw.Start();
-            hit = XenoCollide.Detect(body1.Shape, body2.Shape, ref o1, ref o2, ref pos1, ref pos2, out point, out normal, out penetration);
+            hit = Collision.CircleCapsuleTest(body1.Position, c1.Radius, body2.Position, o, c2.Length, c2.Radius, out point1, out point2, out normal, out penetration);
             sw.Stop();
 
             ticks = sw.ElapsedTicks;
             sw.Reset();
 
-            DebugDrawer.DrawLine(point, point + normal);
+            DebugDrawer.DrawLine(point1, point1 + normal);
 
-            //DebugDrawer.DrawPoint(point2);
-            DebugDrawer.DrawPoint(point);
+            DebugDrawer.DrawPoint(point2);
+            DebugDrawer.DrawPoint(point1);
             DebugDrawer.Color = Color.Red;
 
             DebugDrawer.Color = Color.Black;
@@ -125,7 +125,7 @@ namespace CollisionDemo
             {
                 var oldPosition = body1.Position;
 
-                body1.Position += normal;
+                body1.Position += normal * penetration;
                 body1.DebugDraw(DebugDrawer);
                 body1.Position = oldPosition;
             }

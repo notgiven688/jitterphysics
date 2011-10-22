@@ -10,7 +10,7 @@ namespace CollisionDemo
         /// </summary>
         static void Main(string[] args)
         {
-            using (MPRCollisionDemo game = new MPRCollisionDemo())
+            using (CollisionDemo game = new CollisionDemo())
             {
                 game.Run();
             }

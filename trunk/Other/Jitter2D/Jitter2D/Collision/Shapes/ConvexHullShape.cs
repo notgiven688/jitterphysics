@@ -34,7 +34,7 @@ namespace Jitter2D.Collision.Shapes
     /// </summary>
     public class ConvexHullShape : Shape
     {
-        List<JVector> vertices = null;
+        public List<JVector> vertices = null;
 
         JVector shifted;
 
