@@ -6,3 +6,6 @@
 
 - Milestone 2 -
 	Speculative contacts seem to work.
+
+- Milestone 3 -
+	Basic collision resolution seems to work. Still a few bugs near the edges of boxes.

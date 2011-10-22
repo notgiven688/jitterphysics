@@ -40,7 +40,7 @@ namespace Jitter2D.Dynamics
     public class ContactList : List<Contact>
     {
 
-        public ContactList() : base(4) { }
+        public ContactList() : base(2) { }
 
 
         #region TODO: Write an implementation which only has 4 elements.
@@ -172,7 +172,7 @@ namespace Jitter2D.Dynamics
 
             lock (contactList)
             {
-                if (this.contactList.Count == 4)
+                if (this.contactList.Count == 2)
                 {
                     index = SortCachedPoints(ref relPos1, penetration);
                     ReplaceContact(ref point1, ref point2, ref normal, penetration, index, contactSettings);
@@ -233,7 +233,7 @@ namespace Jitter2D.Dynamics
 
             int maxPenetrationIndex = -1;
             float maxPenetration = pen;
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 2; i++)
             {
                 if (contactList[i].penetration > maxPenetration)
                 {

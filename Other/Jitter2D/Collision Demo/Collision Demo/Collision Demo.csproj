@@ -1,24 +1,23 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <ProjectGuid>{F037942C-5A94-498A-91A5-89BA72C2588E}</ProjectGuid>
+    <ProjectGuid>{BF4D84F7-0143-4F76-BD10-B9EF4FB67210}</ProjectGuid>
     <ProjectTypeGuids>{6D335F3A-9D43-41b4-9D22-F6F17C4BE596};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GJKCollisionDemo</RootNamespace>
-    <AssemblyName>GJKCollisionDemo</AssemblyName>
+    <RootNamespace>Collision_Demo</RootNamespace>
+    <AssemblyName>Collision Demo</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
     <XnaPlatform>Windows</XnaPlatform>
     <XnaProfile>Reach</XnaProfile>
-    <XnaCrossPlatformGroupID>a7376ff1-ee46-43bf-aecb-476d23ae17fa</XnaCrossPlatformGroupID>
+    <XnaCrossPlatformGroupID>1444dded-0d2f-43d5-bfa0-310eb8f91e07</XnaCrossPlatformGroupID>
     <XnaOutputType>Game</XnaOutputType>
     <ApplicationIcon>Game.ico</ApplicationIcon>
     <Thumbnail>GameThumbnail.png</Thumbnail>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -31,6 +30,7 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -75,9 +75,9 @@
     <Compile Include="Camera.cs" />
     <Compile Include="Conversion.cs" />
     <Compile Include="DebugDrawer.cs" />
+    <Compile Include="CollisionDemo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="GJKCollisionDemo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Game.ico" />
@@ -90,10 +90,9 @@
       <Project>{D3B7B44F-8633-4BAE-9A53-BF14488E33B7}</Project>
       <Name>Jitter2D</Name>
     </ProjectReference>
-    <ProjectReference Include="..\GJKCollisionDemoContent\GJKCollisionDemoContent.contentproj">
-      <Name>GJKCollisionDemoContent %28Content%29</Name>
+    <ProjectReference Include="..\Collision DemoContent\Collision DemoContent.contentproj">
+      <Name>Collision_DemoContent</Name>
       <XnaReferenceType>Content</XnaReferenceType>
-      <Project>{3A7A8A16-27FF-427E-AA5A-B7C77A8B8421}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -47,6 +47,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Collision\Collision.cs" />
     <Compile Include="Collision\CollisionIsland.cs" />
     <Compile Include="Collision\CollisionSystem.cs" />
     <Compile Include="Collision\CollisionSystemBrute.cs" />

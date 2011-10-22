@@ -57,12 +57,12 @@ namespace JitterDemo
             graphics.PreferredBackBufferHeight = 600;
             graphics.PreferredBackBufferWidth = 800;
 
-            this.IsFixedTimeStep = false;
+            this.IsFixedTimeStep = true;
             this.graphics.SynchronizeWithVerticalRetrace = false;
 
             CollisionSystem collision = new CollisionSystemBrute();
             collision.EnableSpeculativeContacts = false;
-            World = new World(collision); World.AllowDeactivation = true;
+            World = new World(collision); World.AllowDeactivation = false;
 
             this.Window.AllowUserResizing = true;
 
@@ -199,13 +199,28 @@ namespace JitterDemo
 
             if (keyState.IsKeyDown(Keys.Space) && !keyboardPreviousState.IsKeyDown(Keys.Space))
             {
+                //RigidBody body = new RigidBody(new CapsuleShape(2, 0.5f))
+                var pointList = new List<JVector>();
+                //var a = 0f;
+                //for (int i = 0; i < 18; i++)
+                //{
+                //    pointList.Add(new JVector((float)Math.Sin(a) * 2f, (float)Math.Cos(a) * 2f));
+                //    a += 0.34906585f;
+                //}
+                Random rand = new Random();
+                for (int i = 0; i < rand.Next(50, 100); i++)
+                {
+                    pointList.Add(new JVector((float)rand.NextDouble() * 2f - 1f, (float)rand.NextDouble() * 2f - 1f));
+                }
+
+                //RigidBody body = new RigidBody(new ConvexHullShape(pointList))
                 RigidBody body = new RigidBody(new CapsuleShape(2, 0.5f))
                 {
                     EnableDebugDraw = true,
-                    Position = new JVector(-5, 10),
-                    AngularVelocity = 3,
-                    LinearVelocity = new JVector(-1, -1),
-                    Orientation = 0,
+                    //Position = new JVector((float)rand.NextDouble(), 0),
+                    AngularVelocity = 0,
+                    LinearVelocity = new JVector(0, -1),
+                    Orientation = 0.001f + (float)rand.NextDouble(),
                     Material = new Material()
                     {
                         DynamicFriction = 1f,
@@ -261,22 +276,34 @@ namespace JitterDemo
                 DebugDrawer.Color = Color.Gray;//rndColors[cc % rndColors.Length];
                 body.DebugDraw(DebugDrawer);
 
-                //DebugDrawer.DrawAabb(body.BoundingBox.Min, body.BoundingBox.Max, Color.Pink);
-                
-                //foreach (Arbiter item in body.Arbiters)
-                //{
-                //    foreach (var contact in item.ContactList)
-                //    {
-                //        //DebugDrawer.Color = Color.Red;
-                //        //DebugDrawer.DrawLine(contact.Position1, contact.Position2);
-                //        DebugDrawer.Color = Color.Blue;
-                //        DebugDrawer.DrawLine(contact.Position1, contact.Position1 + contact.Normal * 0.15f);
-                //        DebugDrawer.DrawLine(contact.Position2, contact.Position2 + contact.Normal * 0.15f);
-                //        DebugDrawer.DrawPoint(contact.Position1);
-                //        DebugDrawer.DrawPoint(contact.Position2);
-                //    }
-                //}
-                //cc++;
+                DebugDrawer.DrawAabb(body.BoundingBox.Min, body.BoundingBox.Max, Color.Pink);
+
+                if (body.Shape.GetType() == typeof(ConvexHullShape))
+                {
+                    var ch = body.Shape as ConvexHullShape;
+
+                    JMatrix o = JMatrix.CreateRotationZ(body.Orientation);
+                    foreach (var point in ch.vertices)
+                    {
+                        var t = JVector.Transform(point, o);
+                        DebugDrawer.DrawPoint(t + body.Position);
+                    }
+                }
+
+                foreach (Arbiter item in body.Arbiters)
+                {
+                    foreach (var contact in item.ContactList)
+                    {
+                        //DebugDrawer.Color = Color.Red;
+                        //DebugDrawer.DrawLine(contact.Position1, contact.Position2);
+                        DebugDrawer.Color = Color.Blue;
+                        DebugDrawer.DrawLine(contact.Position1, contact.Position1 + contact.Normal * 0.15f);
+                        DebugDrawer.DrawLine(contact.Position2, contact.Position2 + contact.Normal * 0.15f);
+                        DebugDrawer.DrawPoint(contact.Position1);
+                        DebugDrawer.DrawPoint(contact.Position2);
+                    }
+                }
+                cc++;
             }
         }
 

@@ -1,13 +1,10 @@
 ﻿TODO
 ======
 
- - Add collision detection...
-	- GJK for Speculative Contacts
-	- MPR for Penetration?
-	or 
-	- EPA?
- - Convert Contact to 2D
+ - Cleanup/Refactor discrete collision system, should be a single file for discrete, continuous and shape switch should not be in CollisionSystem!
+ - Fix all shapes mass/inertia calculations
  - Add a better CollisionSystem...thinking DynamicTree...
+ - MPR needs more testing...
  - Add Joint's...Pin, Slide, Pivot, Groove, Spring, Angular Spring, Angular Limit,
 		Ratchet, Gear, Motor, Friction, Pulley, Rope, Weld, Wheel...
  -

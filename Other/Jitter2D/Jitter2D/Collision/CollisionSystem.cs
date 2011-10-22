@@ -271,20 +271,57 @@ namespace Jitter2D.Collision
             bool speculative = speculativeContacts ||
                 (body1.EnableSpeculativeContacts || body2.EnableSpeculativeContacts);
 
-            JVector point, normal;
-            float penetration;
+            JVector point = JVector.Zero;
+            JVector normal = JVector.Zero;
+            float penetration = 0;
 
             if (!b1IsMulti && !b2IsMulti)
             {
-                JMatrix o1 = JMatrix.CreateRotationZ(body1.orientation);
-                JMatrix o2 = JMatrix.CreateRotationZ(body2.orientation);
+                //JMatrix o1 = JMatrix.CreateRotationZ(body1.orientation);
+                //JMatrix o2 = JMatrix.CreateRotationZ(body2.orientation);
 
-                if (XenoCollide.Detect(body1.Shape, body2.Shape, ref o1,
-                    ref o2, ref body1.position, ref body2.position,
-                    out point, out normal, out penetration))
+
+                JVector point1 = JVector.Zero; 
+                JVector point2 = JVector.Zero;
+                bool hit = false;
+
+
+                //if (XenoCollide.Detect(body1.Shape, body2.Shape, ref o1,
+                //    ref o2, ref body1.position, ref body2.position,
+                //    out point, out normal, out penetration))
+                if (body1.Shape.GetType() == typeof(CircleShape) && body2.Shape.GetType() == typeof(CircleShape))
                 {
-                    JVector point1, point2;
-                    FindSupportPoints(body1, body2, body1.Shape, body2.Shape, ref point, ref normal, out point1, out point2);
+                    var c1 = body1.Shape as CircleShape;
+                    var c2 = body2.Shape as CircleShape;
+                    hit = Collision.CircleCircleTest(body1.position, c1.Radius, body2.position, c2.Radius, out point1, out point2, out normal, out penetration);
+                }
+                else if (body1.Shape.GetType() == typeof(CapsuleShape) && body2.Shape.GetType() == typeof(CircleShape))
+                {
+                    var c1 = body1.Shape as CapsuleShape;
+                    var c2 = body2.Shape as CircleShape;
+
+                    var o = new JVector((float)-Math.Sin(body1.orientation), (float)Math.Cos(body1.orientation));
+
+                    // CircleCapsuleTest(JVector centerA, float radiusA, JVector centerB, JVector axis, float length, float radiusB, out JVector pointA, out JVector pointB, out JVector normal, out float distance)
+                    hit = Collision.CircleCapsuleTest(body2.position, c2.Radius, body1.position, o, c1.Length, c1.Radius, out point1, out point2, out normal, out penetration);
+                    
+                }
+                else if (body2.Shape.GetType() == typeof(CapsuleShape) && body1.Shape.GetType() == typeof(CircleShape))
+                {
+                    var c1 = body2.Shape as CapsuleShape;
+                    var c2 = body1.Shape as CircleShape;
+
+                    var o = new JVector((float)-Math.Sin(body2.orientation), (float)Math.Cos(body2.orientation));
+
+                    // CircleCapsuleTest(JVector centerA, float radiusA, JVector centerB, JVector axis, float length, float radiusB, out JVector pointA, out JVector pointB, out JVector normal, out float distance)
+                    hit = Collision.CircleCapsuleTest(body1.position, c2.Radius, body2.position, o, c1.Length, c1.Radius, out point1, out point2, out normal, out penetration);
+                    normal.Negate();
+                }
+
+                if (hit)
+                {
+                    
+                    //FindSupportPoints(body1, body2, body1.Shape, body2.Shape, ref point, ref normal, out point1, out point2);
                     RaiseCollisionDetected(body1, body2, ref point1, ref point2, ref normal, penetration);
                 }
                 else if (speculative)
@@ -304,10 +341,8 @@ namespace Jitter2D.Collision
                     //        {
                     //            RaiseCollisionDetected(body1, body2, ref hit1, ref hit2, ref normal, penetration);
                     //        }
-
                     //    }
                     //}
-
                 }
             }
 
