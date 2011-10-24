@@ -47,6 +47,7 @@ namespace Jitter.Collision.Shapes
             internal JVector position;
             internal JMatrix orientation;
             internal JMatrix invOrientation;
+            internal JBBox boundingBox;
 
             /// <summary>
             /// The 'sub' shape.
@@ -58,6 +59,7 @@ namespace Jitter.Collision.Shapes
             /// </summary>
             public JVector Position { get { return position; } set { position = value; } }
 
+            public JBBox BoundingBox { get { return boundingBox; } }
 
             /// <summary>
             /// The inverse orientation of the 'sub' shape.
@@ -76,6 +78,14 @@ namespace Jitter.Collision.Shapes
                 set { orientation = value; JMatrix.Transpose(ref orientation, out invOrientation); }
             }
 
+            public void UpdateBoundingBox()
+            {
+                Shape.GetBoundingBox(ref orientation, out boundingBox);
+
+                boundingBox.Min += position;
+                boundingBox.Max += position;
+            }
+
             /// <summary>
             /// Creates a new instance of the TransformedShape struct.
             /// </summary>
@@ -88,6 +98,8 @@ namespace Jitter.Collision.Shapes
                 this.orientation = orientation;
                 JMatrix.Transpose(ref orientation, out invOrientation);
                 this.shape = shape;
+                this.boundingBox = new JBBox();
+                UpdateBoundingBox();
             }
         }
         #endregion
@@ -212,17 +224,6 @@ namespace Jitter.Collision.Shapes
             return clone;
         }
 
-        /// <summary>
-        /// Passes a axis aligned bounding box to the shape where collision
-        /// could occour.
-        /// </summary>
-        /// <param name="box">The bounding box where collision could occur.</param>
-        /// <returns>The upper index with which <see cref="SetCurrentShape"/> can be 
-        /// called.</returns>
-        public override int Prepare(ref JBBox box)
-        {
-            return shapes.Length;
-        }
 
         /// <summary>
         /// SupportMapping. Finds the point in the shape furthest away from the given direction.
@@ -265,6 +266,7 @@ namespace Jitter.Collision.Shapes
         }
 
         int currentShape = 0;
+        List<int> currentSubShapes = new List<int>();
 
         /// <summary>
         /// Sets the current shape. First <see cref="CompoundShape.Prepare"/> has to be called.
@@ -273,9 +275,29 @@ namespace Jitter.Collision.Shapes
         /// <param name="index"></param>
         public override void SetCurrentShape(int index)
         {
-            currentShape = index;
+            currentShape = currentSubShapes[index];
             shapes[currentShape].Shape.SupportCenter(out geomCen);
             geomCen += shapes[currentShape].Position;
+        }
+
+        /// <summary>
+        /// Passes a axis aligned bounding box to the shape where collision
+        /// could occour.
+        /// </summary>
+        /// <param name="box">The bounding box where collision could occur.</param>
+        /// <returns>The upper index with which <see cref="SetCurrentShape"/> can be 
+        /// called.</returns>
+        public override int Prepare(ref JBBox box)
+        {
+            currentSubShapes.Clear();
+
+            for (int i = 0; i < shapes.Length; i++)
+            {
+                if (shapes[i].boundingBox.Contains(ref box) != JBBox.ContainmentType.Disjoint)
+                    currentSubShapes.Add(i);
+            }
+
+            return currentSubShapes.Count;
         }
 
         /// <summary>
@@ -286,7 +308,12 @@ namespace Jitter.Collision.Shapes
         /// <returns></returns>
         public override int Prepare(ref JVector rayOrigin, ref JVector rayEnd)
         {
-            return shapes.Length;
+            JBBox box = JBBox.SmallBox;
+
+            box.AddPoint(ref rayOrigin);
+            box.AddPoint(ref rayEnd);
+
+            return this.Prepare(ref box);
         }
 
 
@@ -302,16 +329,11 @@ namespace Jitter.Collision.Shapes
             mInternalBBox.Min = new JVector(float.MaxValue);
             mInternalBBox.Max = new JVector(float.MinValue);
 
-            JBBox addBox;
             for (int i = 0; i < shapes.Length; i++)
             {
-                JMatrix shapeOrientation = shapes[i].Orientation;
-                shapes[i].Shape.GetBoundingBox(ref shapeOrientation, out addBox);
+                shapes[i].UpdateBoundingBox();
 
-                addBox.Min += shapes[i].Position;
-                addBox.Max += shapes[i].Position;
-
-                JBBox.CreateMerged(ref mInternalBBox, ref addBox, out mInternalBBox);
+                JBBox.CreateMerged(ref mInternalBBox, ref shapes[i].boundingBox, out mInternalBBox);
             }
         }
     }

@@ -44,11 +44,13 @@ namespace JitterDemo.Scenes
             // Create one compound shape
             CompoundShape cs = new CompoundShape(transformedShapes);
 
-
-            RigidBody compoundBody = new RigidBody(cs);
-            compoundBody.EnableDebugDraw = true;
-            compoundBody.Position = new JVector(0, 5, 0) - cs.Shift;
-            Demo.World.AddBody(compoundBody);
+            for (int i = 0; i < 1; i++)
+            {
+                RigidBody compoundBody = new RigidBody(cs);
+                compoundBody.EnableDebugDraw = true;
+                compoundBody.Position = new JVector(0, 5+ i*10, 0) - cs.Shift;
+                Demo.World.AddBody(compoundBody);
+            }
 
 
             // Create several single bodies.
