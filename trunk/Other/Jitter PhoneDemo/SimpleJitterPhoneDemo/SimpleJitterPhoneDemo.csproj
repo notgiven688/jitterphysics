@@ -51,7 +51,9 @@
     <XnaCompressContent>false</XnaCompressContent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="JitterPhone, Version=0.1.6.0, Culture=neutral, processorArchitecture=MSIL" />
+    <Reference Include="JitterPhone">
+      <HintPath>..\Binary\JitterPhone.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Xna.Framework">
       <Private>False</Private>
     </Reference>
