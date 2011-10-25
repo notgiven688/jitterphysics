@@ -68,7 +68,7 @@ namespace SimpleJitterPhoneDemo
             groundBody.IsStatic = true; // making the ground immovable
             world.AddBody(groundBody);  // finally add it to the world
 
-            for (int i = 0; i < 7; i++)
+            for (int i = 0; i < 17; i++)
             {
                 RigidBody boxBody = new RigidBody(boxShape);         // create a new box
                 boxBody.Position = new JVector(0, 0.5f + i * 2.2f, i*0.1f);  // move it
