@@ -9,8 +9,8 @@ namespace Jitter2D.Collision
 
     public sealed class XenoCollide
     {
-        private const float CollideEpsilon = 1e-4f;
-        private const int MaximumIterations = 10;
+        private const float CollideEpsilon = 0.0001f;
+        private const int MaximumIterations = 20;
 
         #region private static void SupportMapTransformed(ISupportMappable support, ref JMatrix orientation, ref JVector position, ref JVector direction, out JVector result)
         public static void SupportMapTransformed(ISupportMappable support,
@@ -48,7 +48,6 @@ namespace Jitter2D.Collision
              out JVector point, out JVector normal, out float penetration)
         {
             // Used variables
-            JVector temp1;
             JVector v01, v02, v0;
             JVector v11, v12, v1;
             JVector v21, v22, v2;
@@ -93,6 +92,9 @@ namespace Jitter2D.Collision
             SupportMapTransformed(support2, ref orientation2, ref position2, ref normal, out v22);
             JVector.Subtract(ref v22, ref v21, out v2);
 
+            //LD.Draw(Conversion.ToXNAVector2(v1), Conversion.ToXNAVector2(v0), Color.Blue);
+            //LD.Draw(Conversion.ToXNAVector2(v2), Conversion.ToXNAVector2(v0), Color.Blue);
+
             if (JVector.Dot(ref v2, ref normal) <= 0.0f) return false;
 
             // phase two: portal refinement
@@ -107,11 +109,14 @@ namespace Jitter2D.Collision
                     // origin ray crosses the portal
                     normal = OutsidePortal(v2, v1);
 
+
                 // obtain the next support point
                 JVector.Negate(ref normal, out mn);
                 SupportMapTransformed(support1, ref orientation1, ref position1, ref mn, out v31);
                 SupportMapTransformed(support2, ref orientation2, ref position2, ref normal, out v32);
                 JVector.Subtract(ref v32, ref v31, out v3);
+
+                //LD.Draw(Conversion.ToXNAVector2(v3), Conversion.ToXNAVector2(v0), Color.Green);
 
                 if (JVector.Dot(v3, normal) <= 0)
                 {
@@ -149,12 +154,12 @@ namespace Jitter2D.Collision
 
                     float s = 1 - t;
 
-                    point = s * v12 + t * v22;
-                    var point2 = s * v11 + t * v21;
-
+                    point = s * v11 + t * v21;
+                    var point2 = s * v12 + t * v22;
+               
                     // this  causes a sq root = bad!
-                    penetration = -JVector.Dot(normal, v1);
-
+                    penetration = normal.Length();
+                    normal.Normalize();
                     return true;
                 }
 

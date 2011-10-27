@@ -27,16 +27,13 @@ namespace JitterDemo.Scenes
 
         public void AddGround()
         {
-            for (int i = 0; i < 20; i++)
-            {
-                ground = new RigidBody(new CircleShape(2));
-                ground.SetMassProperties(float.MaxValue, float.MaxValue, false);
-                ground.Position = new JVector(i * 4f - 20f, -10);
-                //ground.Tag = BodyTag.DontDrawMe;
-                ground.IsStatic = true; Demo.World.AddBody(ground);
-                //ground.Restitution = 1.0f;
-                ground.Material.DynamicFriction = 1.0f;
-            }
+            ground = new RigidBody(new BoxShape(40, 1));
+            ground.SetMassProperties(float.MaxValue, float.MaxValue, false);
+            ground.Position = new JVector(0, -10);
+            //ground.Tag = BodyTag.DontDrawMe;
+            ground.IsStatic = true; Demo.World.AddBody(ground);
+            //ground.Restitution = 1.0f;
+            ground.Material.DynamicFriction = 1.0f;
 
             //quadDrawer = new QuadDrawer(Demo, 100);
             //Demo.Components.Add(quadDrawer);

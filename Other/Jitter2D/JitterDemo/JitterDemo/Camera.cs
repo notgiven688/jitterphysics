@@ -74,7 +74,7 @@ namespace JitterDemo
             {
                 double elapsedTime = (double)gameTime.ElapsedGameTime.Ticks / (double)TimeSpan.TicksPerSecond;
                 ProcessInput((float)elapsedTime);
-                aspectRatio = Game.GraphicsDevice.Viewport.Width / Game.GraphicsDevice.Viewport.Height;
+                aspectRatio = Game.GraphicsDevice.Viewport.AspectRatio;
                 UpdateView();
                 UpdateProjection();
 
