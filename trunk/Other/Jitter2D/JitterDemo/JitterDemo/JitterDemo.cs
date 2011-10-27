@@ -54,10 +54,10 @@ namespace JitterDemo
 
             Content.RootDirectory = "Content";
 
-            graphics.PreferredBackBufferHeight = 600;
-            graphics.PreferredBackBufferWidth = 800;
+            graphics.PreferredBackBufferHeight = 720;// 600;
+            graphics.PreferredBackBufferWidth = 1280;// 800;
 
-            this.IsFixedTimeStep = true;
+            this.IsFixedTimeStep = false;
             this.graphics.SynchronizeWithVerticalRetrace = false;
 
             CollisionSystem collision = new CollisionSystemBrute();
@@ -214,12 +214,12 @@ namespace JitterDemo
                 }
 
                 //RigidBody body = new RigidBody(new ConvexHullShape(pointList))
-                RigidBody body = new RigidBody(new CapsuleShape(2, 0.5f))
+                RigidBody body = new RigidBody(new BoxShape(2, 2))
                 {
                     EnableDebugDraw = true,
                     //Position = new JVector((float)rand.NextDouble(), 0),
                     AngularVelocity = 0,
-                    LinearVelocity = new JVector(0, -1),
+                    LinearVelocity = new JVector(0, -100),
                     Orientation = 0.001f + (float)rand.NextDouble(),
                     Material = new Material()
                     {
@@ -227,10 +227,11 @@ namespace JitterDemo
                         StaticFriction = 1f,
                         Restitution = 0f,
                     },
+                    Position = new JVector(0, 15),
                 };
                 World.AddBody(body);
 
-                body.SetMassProperties(1, 1, false);
+                //body.SetMassProperties(1, 1, false);
             }
             #endregion
 
@@ -276,19 +277,19 @@ namespace JitterDemo
                 DebugDrawer.Color = Color.Gray;//rndColors[cc % rndColors.Length];
                 body.DebugDraw(DebugDrawer);
 
-                DebugDrawer.DrawAabb(body.BoundingBox.Min, body.BoundingBox.Max, Color.Pink);
+                //DebugDrawer.DrawAabb(body.BoundingBox.Min, body.BoundingBox.Max, Color.Pink);
 
-                if (body.Shape.GetType() == typeof(ConvexHullShape))
-                {
-                    var ch = body.Shape as ConvexHullShape;
+                //if (body.Shape.GetType() == typeof(ConvexHullShape))
+                //{
+                //    var ch = body.Shape as ConvexHullShape;
 
-                    JMatrix o = JMatrix.CreateRotationZ(body.Orientation);
-                    foreach (var point in ch.vertices)
-                    {
-                        var t = JVector.Transform(point, o);
-                        DebugDrawer.DrawPoint(t + body.Position);
-                    }
-                }
+                //    JMatrix o = JMatrix.CreateRotationZ(body.Orientation);
+                //    foreach (var point in ch.vertices)
+                //    {
+                //        var t = JVector.Transform(point, o);
+                //        DebugDrawer.DrawPoint(t + body.Position);
+                //    }
+                //}
 
                 foreach (Arbiter item in body.Arbiters)
                 {
@@ -298,9 +299,9 @@ namespace JitterDemo
                         //DebugDrawer.DrawLine(contact.Position1, contact.Position2);
                         DebugDrawer.Color = Color.Blue;
                         DebugDrawer.DrawLine(contact.Position1, contact.Position1 + contact.Normal * 0.15f);
-                        DebugDrawer.DrawLine(contact.Position2, contact.Position2 + contact.Normal * 0.15f);
+                        //DebugDrawer.DrawLine(contact.Position2, contact.Position2 + contact.Normal * 0.15f);
                         DebugDrawer.DrawPoint(contact.Position1);
-                        DebugDrawer.DrawPoint(contact.Position2);
+                        //DebugDrawer.DrawPoint(contact.Position2);
                     }
                 }
                 cc++;

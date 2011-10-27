@@ -26,8 +26,8 @@ namespace CollisionDemo
         public DebugDrawer DebugDrawer;
         public Camera Camera;
 
-        RigidBody body1 = new RigidBody(new CircleShape(2));
-        RigidBody body2 = new RigidBody(new CapsuleShape(3, 1));
+        RigidBody body1 = new RigidBody(new ConvexHullShape(new List<JVector> { new JVector(0, -1), new JVector(-1, 1), new JVector(1, 1), }));
+        RigidBody body2 = new RigidBody(new ConvexHullShape(new List<JVector> { new JVector(0, -1), new JVector(-1, 1), new JVector(1, 1), }));
 
         JVector point, normal;
         float penetration;
@@ -91,8 +91,8 @@ namespace CollisionDemo
 
             body1.Position += moveVector;
 
-            body1.Orientation += 0.001f;
-            body2.Orientation -= 0.001f;
+            //body1.Orientation += 0.001f;
+            //body2.Orientation -= 0.001f;
 
             var c1 = body1.Shape as CircleShape;
             var c2 = body2.Shape as CapsuleShape;
@@ -102,16 +102,17 @@ namespace CollisionDemo
             JVector point1, point2;
 
             sw.Start();
-            hit = Collision.CircleCapsuleTest(body1.Position, c1.Radius, body2.Position, o, c2.Length, c2.Radius, out point1, out point2, out normal, out penetration);
+            //hit = Collision.CircleCapsuleTest(body1.Position, c1.Radius, body2.Position, o, c2.Length, c2.Radius, out point1, out point2, out normal, out penetration);
+            //hit = SAT.PolyToPoly(body1.Shape, body1.Orientation, body1.Position, body2.Shape, body2.Orientation, body2.Position);
             sw.Stop();
 
             ticks = sw.ElapsedTicks;
             sw.Reset();
 
-            DebugDrawer.DrawLine(point1, point1 + normal);
+            //DebugDrawer.DrawLine(point1, point1 + normal);
 
-            DebugDrawer.DrawPoint(point2);
-            DebugDrawer.DrawPoint(point1);
+            //DebugDrawer.DrawPoint(point2);
+           // DebugDrawer.DrawPoint(point1);
             DebugDrawer.Color = Color.Red;
 
             DebugDrawer.Color = Color.Black;

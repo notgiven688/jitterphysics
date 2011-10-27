@@ -56,6 +56,7 @@
     <Compile Include="Collision\GJKCollide.cs" />
     <Compile Include="Collision\IslandManager.cs" />
     <Compile Include="Collision\ISupportMappable.cs" />
+    <Compile Include="Collision\PolygonShape.cs" />
     <Compile Include="Collision\Shapes\BoxShape.cs" />
     <Compile Include="Collision\Shapes\CapsuleShape.cs" />
     <Compile Include="Collision\Shapes\CircleShape.cs" />
