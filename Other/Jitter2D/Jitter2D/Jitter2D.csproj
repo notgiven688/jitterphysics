@@ -52,6 +52,7 @@
     <Compile Include="Collision\CollisionSystem.cs" />
     <Compile Include="Collision\CollisionSystemBrute.cs" />
     <Compile Include="Collision\CollisionSystemDynamicTree.cs" />
+    <Compile Include="Collision\CollisionSystemPersistentSAP.cs" />
     <Compile Include="Collision\DynamicTree.cs" />
     <Compile Include="Collision\GJKCollide.cs" />
     <Compile Include="Collision\IslandManager.cs" />
