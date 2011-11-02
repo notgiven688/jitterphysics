@@ -57,7 +57,7 @@ namespace Jitter.Collision.Shapes
             /// <summary>
             /// The position of a 'sub' shape
             /// </summary>
-            public JVector Position { get { return position; } set { position = value; } }
+            public JVector Position { get { return position; } set { position = value; UpdateBoundingBox(); } }
 
             public JBBox BoundingBox { get { return boundingBox; } }
 
@@ -75,7 +75,7 @@ namespace Jitter.Collision.Shapes
             public JMatrix Orientation
             {
                 get { return orientation; }
-                set { orientation = value; JMatrix.Transpose(ref orientation, out invOrientation); }
+                set { orientation = value; JMatrix.Transpose(ref orientation, out invOrientation); UpdateBoundingBox(); }
             }
 
             public void UpdateBoundingBox()
