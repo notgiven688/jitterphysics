@@ -323,7 +323,7 @@ namespace Jitter.Dynamics
         /// <summary>
         /// Returns the force which acts this timestep on the body.
         /// </summary>
-        public JVector Force { get { return force; } }
+        public JVector Force { get { return force; } set { force = value; } }
 
         /// <summary>
         /// Adds torque to the body. The torque gets applied
