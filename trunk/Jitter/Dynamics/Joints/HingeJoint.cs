@@ -38,6 +38,9 @@ namespace Jitter.Dynamics.Joints
 
         private PointOnPoint[] worldPointConstraint;
 
+        public PointOnPoint PointConstraint1 { get { return worldPointConstraint[0]; } }
+        public PointOnPoint PointConstraint2 { get { return worldPointConstraint[1]; } }
+
         /// <summary>
         /// Initializes a new instance of the HingeJoint class.
         /// </summary>
