@@ -27,6 +27,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Diagnostics;
 
 namespace System.Collections.Generic
 {
@@ -291,17 +292,15 @@ namespace System.Collections.Generic
 
 #region Implementation of IEnumerable
 
-        /// <summary>
-        /// Returns an enumerator that iterates through the collection.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate through the collection.
-        /// </returns>
-        /// <filterpriority>1</filterpriority>
-        public IEnumerator<T> GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator()
         {
             return dict.Keys.GetEnumerator();
         }
+
+        public Dictionary<T,object>.KeyCollection.Enumerator GetEnumerator()
+        {
+            return dict.Keys.GetEnumerator();
+        }
 
         /// <summary>
         /// Returns an enumerator that iterates through a collection.
@@ -310,12 +309,18 @@ namespace System.Collections.Generic
         /// An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
         /// </returns>
         /// <filterpriority>2</filterpriority>
-        IEnumerator IEnumerable.GetEnumerator()
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
-            return GetEnumerator();
+            // note: this causes boxing - it is just here because the
+            // IEnumerable<T> contract demands it.
+            Debug.Assert(false);
+            return dict.Keys.GetEnumerator();
         }
 
+ 
+
 #endregion
+
     }
 
 }
