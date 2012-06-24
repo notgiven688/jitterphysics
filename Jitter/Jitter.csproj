@@ -67,7 +67,6 @@
     <Compile Include="Dynamics\ArbiterMap.cs" />
     <Compile Include="Dynamics\Constraints\FixedAngle.cs" />
     <Compile Include="Dynamics\Constraint.cs" />
-    <Compile Include="Dynamics\Constraints\LimitAngle.cs" />
     <Compile Include="Dynamics\Constraints\SingleBody\FixedAngle.cs" />
     <Compile Include="Dynamics\Constraints\PointOnPoint.cs" />
     <Compile Include="Dynamics\Constraints\SingleBody\PointOnLine.cs" />
