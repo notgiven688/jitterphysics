@@ -139,7 +139,7 @@ namespace JitterDemo
             {
                 if (type.Namespace == "JitterDemo.Scenes" && !type.IsAbstract)
                 {
-                    if (type.Name == "SoftBodyJenga") currentScene = PhysicScenes.Count;
+                    if (type.Name == "EmptyScene") currentScene = PhysicScenes.Count;
                     Scenes.Scene scene = (Scenes.Scene)Activator.CreateInstance(type, this);
                     this.PhysicScenes.Add(scene);
                 }
@@ -228,8 +228,12 @@ namespace JitterDemo
             if (PressedOnce(Keys.P,Buttons.A))
             {
                 var e = World.RigidBodies.GetEnumerator();
-                e.MoveNext(); e.MoveNext();
-                World.RemoveBody(e.Current as RigidBody);
+                e.MoveNext(); e.MoveNext(); e.MoveNext();
+                e.MoveNext(); e.MoveNext(); e.MoveNext();
+                e.MoveNext(); e.MoveNext(); e.MoveNext();
+                (e.Current as RigidBody).IsStatic = true;
+                e.MoveNext();
+                (e.Current as RigidBody).IsStatic = true;
             }
 
             #region drag and drop physical objects with the mouse
@@ -629,7 +633,7 @@ namespace JitterDemo
             PhysicScenes[currentScene].Draw();
 
             // Draw the debug data provided by Jitter
-            // DrawIslands();
+             DrawIslands();
             DrawJitterDebugInfo();
 
             #region Debug Draw All Contacts
