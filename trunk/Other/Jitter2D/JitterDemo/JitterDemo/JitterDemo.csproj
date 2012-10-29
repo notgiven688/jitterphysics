@@ -80,6 +80,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="JitterDemo.cs" />
     <Compile Include="Scenes\EmptyScene.cs" />
+    <Compile Include="Scenes\Pyramid.cs" />
     <Compile Include="Scenes\Scene.cs" />
   </ItemGroup>
   <ItemGroup>

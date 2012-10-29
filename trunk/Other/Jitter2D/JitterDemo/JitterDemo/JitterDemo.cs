@@ -65,6 +65,7 @@ namespace JitterDemo
 
             Content.RootDirectory = "Content";
 
+            // 720p
             graphics.PreferredBackBufferHeight =  720;
             graphics.PreferredBackBufferWidth =  1280;
 
@@ -91,7 +92,7 @@ namespace JitterDemo
         protected override void Initialize()
         {
             Camera = new Camera(this);
-            Camera.Position = new Vector2(0, 0);
+            Camera.Position = new Vector2(0, 10);
             this.Components.Add(Camera);
 
             DebugDrawer = new DebugDrawer(this);
@@ -107,7 +108,7 @@ namespace JitterDemo
             {
                 if (type.Namespace == "JitterDemo.Scenes" && !type.IsAbstract)
                 {
-                    if (type.Name == "EmptyScene") currentScene = PhysicScenes.Count;
+                    if (type.Name == "Pyramid") currentScene = PhysicScenes.Count;
                     Scenes.Scene scene = (Scenes.Scene)Activator.CreateInstance(type, this);
                     this.PhysicScenes.Add(scene);
                 }
@@ -183,13 +184,13 @@ namespace JitterDemo
                 mousePreviousState.LeftButton == ButtonState.Released)
             {
                 JBBox mouseBox = new JBBox(mouseLocation - new JVector(0.01f), mouseLocation + new JVector(0.01f));
-                
-                //World.CollisionSystem.Query((foundItem) =>
-                //{
-                //    grabBody = foundItem as RigidBody;
-                //    // don't continue
-                //    return false;
-                //}, ref mouseBox);
+
+                World.CollisionSystem.Query((foundItem) =>
+                {
+                    grabBody = foundItem as RigidBody;
+                    // don't continue
+                    return false;
+                }, ref mouseBox);
 
                 if (grabBody != null)
                 {
@@ -200,6 +201,7 @@ namespace JitterDemo
                     grabBody.IsActive = true;
                     grabSpring = new FixedLinearSpring(grabBody, localMouseLocation, mouseLocation, 50 * grabBody.Mass, 15 * grabBody.Mass);
                     grabSpring.IsOnlyPull = true;
+                    grabSpring.Length = 1;
                     World.AddSpring(grabSpring);
                 }
             }
@@ -209,7 +211,7 @@ namespace JitterDemo
             {
                 if (grabBody != null)
                 {
-                    //grabSpring._worldAttachPoint = mouseLocation;
+                    grabSpring.WorldAnchor = mouseLocation;
                 }
             }
             // MouseUp
@@ -303,17 +305,17 @@ namespace JitterDemo
                 //    }
                 //}
 
-                //DebugDrawer.Color = Color.Red;
-                //foreach (Arbiter item in body.Arbiters)
-                //{
-                //    foreach (var contact in item.ContactList)
-                //    {
-                //        DebugDrawer.DrawLine(contact.Position1, contact.Position1 + contact.Axis * 0.15f);
-                //        DebugDrawer.DrawLine(contact.Position2, contact.Position2 + contact.Axis * 0.15f);
-                //        DebugDrawer.DrawPoint(contact.Position1);
-                //        DebugDrawer.DrawPoint(contact.Position2);
-                //    }
-                //}
+                DebugDrawer.Color = Color.Red;
+                foreach (Arbiter item in body.Arbiters)
+                {
+                    foreach (var contact in item.ContactList)
+                    {
+                        DebugDrawer.DrawLine(contact.Position1, contact.Position1 + contact.Normal * 0.15f);
+                        DebugDrawer.DrawLine(contact.Position2, contact.Position2 + contact.Normal * 0.15f);
+                        DebugDrawer.DrawPoint(contact.Position1);
+                        DebugDrawer.DrawPoint(contact.Position2);
+                    }
+                }
             }
 
             DebugDrawer.Color = Color.Blue;
