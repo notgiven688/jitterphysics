@@ -341,70 +341,8 @@ namespace Jitter2D.Collision
             W = A + t * AB;
         }
 
-        // TODO - try hill climbing method
-        internal static float ProjectPolyOnAxis(ref PolygonShape poly, JVector axis, float d)
-        {
-            float min = JVector.Dot(axis, poly.Vertices[0]);
-
-            for (int i = 1; i < poly.Vertices.Count; i++)
-                min = JMath.Min(min, JVector.Dot(axis, poly.Vertices[i]));
-
-            return min - d;
-        }
-
         #endregion
 
-        
-
-        
-
-        // NOT DONE YET
-
-        internal static bool Poly2PolyTest(ref PolygonShape A, ref JVector PA, ref JMatrix OA,
-            ref PolygonShape B, ref JVector PB, ref JMatrix OB)
-        {
-            //float minA, minB;
-
-            //int minIndexA = FindMSA(ref B, ref A.Axes, out minA);
-            //if (minIndexA == -1) return false;
-
-            //int minIndexB = FindMSA(ref A, ref B.Axes, out minB);
-            //if (minIndexB == -1) return false;
-
-            // overlap, find verts
-            // NOTE: this is the slow way to do this. We should be taking the found
-            // edges and clipping them.
-            //if (minA > minB)
-                //return FindVerts(arr, poly1, poly2, poly1->tAxes[mini1].n, min1);
-            //else
-            throw new NotImplementedException();
-        }
-
-
-        // Find the minimum separating axis for the give poly and axis list.
-        internal static int FindMSA(ref PolygonShape poly, ref List<PolygonShape.PolyShapeAxis> Axes, out float min)
-        {
-            //int minIndex = 0;
-
-            //min = ProjectPolyOnAxis(ref poly, Axes[0].Axis, Axes[0].Distance);
-            //if (min > 0.0f) return -1;
-
-            //for (int i = 1; i < poly.Axes.Count; i++)
-            //{
-            //    float dist = ProjectPolyOnAxis(ref poly, Axes[i].Axis, Axes[i].Distance);
-            //    if (dist > 0.0f)
-            //        return -1;
-            //    else if (dist > min)
-            //    {
-            //        min = dist;
-            //        minIndex = i;
-            //    }
-            //}
-            throw new NotImplementedException();
-            //return minIndex;
-        }
-
-        
 
         internal static bool CircleBoxTest(ref CircleShape A, ref JVector PA, ref BoxShape B, ref JVector PB, ref JMatrix OB)
         {

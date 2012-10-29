@@ -50,37 +50,23 @@
     <Compile Include="Collision\Collision.cs" />
     <Compile Include="Collision\CollisionIsland.cs" />
     <Compile Include="Collision\CollisionSystem.cs" />
-    <Compile Include="Collision\Broadphase\CollisionSystemBrute.cs" />
-    <Compile Include="Collision\Broadphase\CollisionSystemDynamicTree.cs" />
-    <Compile Include="Collision\Broadphase\CollisionSystemPersistentSAP.cs" />
-    <Compile Include="Collision\Broadphase\DynamicTree.cs" />
-    <Compile Include="Collision\Narrowphase\GJKCollide.cs" />
+    <Compile Include="Collision\CollisionSystemPersistentSAP.cs" />
+    <Compile Include="Dynamics\Constraints\Constraint.cs" />
     <Compile Include="Collision\IslandManager.cs" />
     <Compile Include="Collision\ISupportMappable.cs" />
-    <Compile Include="Collision\Narrowphase\INarrowphaseDetector.cs" />
-    <Compile Include="Collision\Narrowphase\MPR.cs" />
-    <Compile Include="Collision\Narrowphase\SAT.cs" />
-    <Compile Include="Collision\Narrowphase\XenoCollide.cs" />
     <Compile Include="Collision\Shapes\BoxShape.cs" />
     <Compile Include="Collision\Shapes\CircleShape.cs" />
-    <Compile Include="Collision\Shapes\PolygonShape.cs" />
     <Compile Include="Collision\Shapes\Shape.cs" />
     <Compile Include="DataStructures\Hashset.cs" />
     <Compile Include="DataStructures\ReadOnlyHashset.cs" />
     <Compile Include="Dynamics\Arbiter.cs" />
     <Compile Include="Dynamics\ArbiterMap.cs" />
-    <Compile Include="Dynamics\Constraints\Angle.cs" />
-    <Compile Include="Dynamics\Constraints\Constraint.cs" />
-    <Compile Include="Dynamics\Constraints\Distance.cs" />
-    <Compile Include="Dynamics\Constraints\Line.cs" />
-    <Compile Include="Dynamics\Constraints\Revolute.cs" />
-    <Compile Include="Dynamics\Joints\Weld.cs" />
-    <Compile Include="Dynamics\Springs\FixedLinearSpring.cs" />
     <Compile Include="Dynamics\Contact.cs" />
     <Compile Include="Dynamics\Joints\Joint.cs" />
     <Compile Include="Dynamics\Material.cs" />
     <Compile Include="Dynamics\RigidBody.cs" />
     <Compile Include="Dynamics\SoftBody.cs" />
+    <Compile Include="Dynamics\Springs\FixedLinearSpring.cs" />
     <Compile Include="Dynamics\Springs\Spring.cs" />
     <Compile Include="IDebugDraw.cs" />
     <Compile Include="LinearMath\JMatrix.cs" />
@@ -116,6 +102,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

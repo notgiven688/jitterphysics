@@ -184,12 +184,12 @@ namespace JitterDemo
             {
                 JBBox mouseBox = new JBBox(mouseLocation - new JVector(0.01f), mouseLocation + new JVector(0.01f));
                 
-                World.CollisionSystem.Query((foundItem) =>
-                {
-                    grabBody = foundItem as RigidBody;
-                    // don't continue
-                    return false;
-                }, ref mouseBox);
+                //World.CollisionSystem.Query((foundItem) =>
+                //{
+                //    grabBody = foundItem as RigidBody;
+                //    // don't continue
+                //    return false;
+                //}, ref mouseBox);
 
                 if (grabBody != null)
                 {
@@ -209,7 +209,7 @@ namespace JitterDemo
             {
                 if (grabBody != null)
                 {
-                    grabSpring._worldAttachPoint = mouseLocation;
+                    //grabSpring._worldAttachPoint = mouseLocation;
                 }
             }
             // MouseUp

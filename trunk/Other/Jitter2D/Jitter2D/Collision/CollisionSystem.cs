@@ -25,7 +25,6 @@ using Jitter2D.Dynamics;
 using Jitter2D.LinearMath;
 using Jitter2D.Collision.Shapes;
 using System.Diagnostics;
-using Jitter2D.Collision.Narrowphase;
 #endregion
 
 namespace Jitter2D.Collision
@@ -95,22 +94,27 @@ namespace Jitter2D.Collision
         /// for multithreaded detection. (Passing this as
         /// the object parameter to ThreadManager.Instance.AddTask)
         /// </summary>
-        #region protected class Pair
-        protected class Pair
+        /// <summary>
+        /// Helper class which holds two bodies. Mostly used
+        /// for multithreaded detection. (Passing this as
+        /// the object parameter to ThreadManager.Instance.AddTask)
+        /// </summary>
+        #region protected class BroadphasePair
+        protected class BroadphasePair
         {
             /// <summary>
             /// The first body.
             /// </summary>
-            public IBroadphaseEntity entity1;
+            public IBroadphaseEntity Entity1;
             /// <summary>
             /// The second body.
             /// </summary>
-            public IBroadphaseEntity entity2;
+            public IBroadphaseEntity Entity2;
 
             /// <summary>
             /// A resource pool of Pairs.
             /// </summary>
-            public static ResourcePool<Pair> Pool = new ResourcePool<Pair>();
+            public static ResourcePool<BroadphasePair> Pool = new ResourcePool<BroadphasePair>();
         }
         #endregion
 
@@ -303,24 +307,24 @@ namespace Jitter2D.Collision
                 // all shapes (GJK)
                 else if (speculative)
                 {
-                    JVector hit1, hit2;
+                    //JVector hit1, hit2;
 
-                    if (GJKCollide.ClosestPoints(body1.Shape, body2.Shape, ref OA, ref OB,
-                        ref body1.position, ref body2.position, out hit1, out hit2, out normal))
-                    {
-                        JVector delta = hit2 - hit1;
+                    //if (GJKCollide.ClosestPoints(body1.Shape, body2.Shape, ref OA, ref OB,
+                    //    ref body1.position, ref body2.position, out hit1, out hit2, out normal))
+                    //{
+                    //    JVector delta = hit2 - hit1;
 
-                        if (delta.LengthSquared() < (body1.sweptDirection - body2.sweptDirection).LengthSquared())
-                        {
-                            //normal.Negate();
-                            penetration = delta * normal;
+                    //    if (delta.LengthSquared() < (body1.sweptDirection - body2.sweptDirection).LengthSquared())
+                    //    {
+                    //        //normal.Negate();
+                    //        penetration = delta * normal;
 
-                            if (penetration < 0.0f)
-                            {
-                                RaiseCollisionDetected(body1, body2, ref hit1, ref hit2, ref normal, penetration);
-                            }
-                        }
-                    }
+                    //        if (penetration < 0.0f)
+                    //        {
+                    //            RaiseCollisionDetected(body1, body2, ref hit1, ref hit2, ref normal, penetration);
+                    //        }
+                    //    }
+                    //}
                 }
             }
 
@@ -689,6 +693,6 @@ namespace Jitter2D.Collision
         /// </summary>
         /// <param name="callback"></param>
         /// <param name="box"></param>
-        public abstract void Query(Func<IBroadphaseEntity, bool> callback, ref JBBox box);
+        //public abstract void Query(Func<IBroadphaseEntity, bool> callback, ref JBBox box);
     }
 }
