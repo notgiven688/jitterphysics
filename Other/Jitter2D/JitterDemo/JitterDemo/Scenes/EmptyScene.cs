@@ -48,8 +48,8 @@ namespace JitterDemo.Scenes
             //rev.Behavior = Distance.DistanceBehavior.LimitMaximumDistance;
             //Demo.World.AddConstraint(rev);
 
-            WeldJoint wj = new WeldJoint(Demo.World, body, body2);
-            wj.Activate();
+            //WeldJoint wj = new WeldJoint(Demo.World, body, body2);
+            //wj.Activate();
         }
     }
 

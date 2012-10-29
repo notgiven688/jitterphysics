@@ -42,7 +42,7 @@ namespace JitterDemo.Scenes
             {
                 List<JVector> groundLine = new List<JVector> { new JVector(-40f, 0f), new JVector(40f, 0f) };
 
-                ground = new RigidBody(new PolygonShape(groundLine));//new BoxShape(new JVector(1.0f, 1.0f)));
+                ground = new RigidBody(new BoxShape(new JVector(1.0f, 1.0f)));
                 ground.Position = new JVector(0, -10);
                 ground.Orientation = 0;
                 ground.IsStatic = true;
