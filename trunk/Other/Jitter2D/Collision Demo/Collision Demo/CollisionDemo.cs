@@ -13,6 +13,7 @@ using Jitter2D.Collision.Shapes;
 using Jitter2D.LinearMath;
 using Jitter2D.Dynamics;
 using System.Diagnostics;
+using Jitter2D.Collision.Narrowphase;
 
 namespace CollisionDemo
 {
@@ -26,18 +27,29 @@ namespace CollisionDemo
         public DebugDrawer DebugDrawer;
         public Camera Camera;
 
-        RigidBody body1 = new RigidBody(new ConvexHullShape(new List<JVector> { new JVector(0, -1), new JVector(-1, 1), new JVector(1, 1), }));
-        RigidBody body2 = new RigidBody(new ConvexHullShape(new List<JVector> { new JVector(0, -1), new JVector(-1, 1), new JVector(1, 1), }));
-
         JVector point, normal;
         float penetration;
-        bool hit;
+        bool hit, collide;
         int iterations;
 
         SpriteFont font;
         Stopwatch sw = new Stopwatch();
         long ticks;
 
+        // A
+        private BoxShape A;
+        private JVector PA;
+        private JVector VA;
+        private float OA;
+        private List<JVector> AV;
+        
+        // B
+        private BoxShape B;
+        private JVector PB;
+        private JVector VB;
+        private float OB;
+        private List<JVector> BV;
+        
         public CollisionDemo()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -45,8 +57,11 @@ namespace CollisionDemo
 
             Content.RootDirectory = "Content";
 
-            graphics.PreferredBackBufferHeight = 720;
-            graphics.PreferredBackBufferWidth = 1280;
+            IsFixedTimeStep = false;
+            graphics.SynchronizeWithVerticalRetrace = false;
+
+            graphics.PreferredBackBufferHeight = 550;
+            graphics.PreferredBackBufferWidth = 600;
         }
 
         protected override void Initialize()
@@ -57,7 +72,15 @@ namespace CollisionDemo
             Camera = new Camera(this);
             this.Components.Add(Camera);
 
-            body2.Position = new JVector(4, 2);
+            A = new BoxShape(4, 1);
+            PA = new JVector(-1, 2);
+            VA = new JVector(0, 0);
+            OA = MathHelper.ToRadians(0);
+
+            B = new BoxShape(1, 4);
+            PB = new JVector(-3, 0);
+            VB = new JVector(0, 0);
+            OB = 0;
 
             base.Initialize();
         }
@@ -89,48 +112,68 @@ namespace CollisionDemo
             if (keys.IsKeyDown(Keys.Up))
                 moveVector.Y += amountOfMovement;
 
-            body1.Position += moveVector;
+            PB += moveVector;
+            OA = (float)gameTime.TotalGameTime.TotalSeconds * 0.1f;
+            OB = (float)gameTime.TotalGameTime.TotalSeconds * -0.1f;
 
-            //body1.Orientation += 0.001f;
-            //body2.Orientation -= 0.001f;
+            DrawBox(A, PA, OA, Color.Blue * 0.25f);
+            DrawBox(B, PB, OB, Color.Green * 0.25f);
 
-            var c1 = body1.Shape as CircleShape;
-            var c2 = body2.Shape as CapsuleShape;
+            float t = 0.0f;
+            JVector[] CA = new JVector[2], CB = new JVector[2];
+            int NumContacts = 0;
 
-            var o = new JVector((float)-Math.Sin(body2.Orientation), (float)Math.Cos(body2.Orientation));
-
-            JVector point1, point2;
 
             sw.Start();
-            //hit = Collision.CircleCapsuleTest(body1.Position, c1.Radius, body2.Position, o, c2.Length, c2.Radius, out point1, out point2, out normal, out penetration);
-            //hit = SAT.PolyToPoly(body1.Shape, body1.Orientation, body1.Position, body2.Shape, body2.Orientation, body2.Position);
-            sw.Stop();
 
-            ticks = sw.ElapsedTicks;
+            JMatrix OAM = JMatrix.CreateRotationZ(OA);
+            JMatrix OBM = JMatrix.CreateRotationZ(OB);
+           
+            for (int i = 0; i < 1; i++)
+            {
+                A.UpdateAxes(OA);
+                B.UpdateAxes(OB);
+
+                //hit = Collision.BoxBoxTest(ref A, ref PA, ref B, ref PB);
+                //AV = new List<JVector> { A.GetCorner(0), A.GetCorner(1), A.GetCorner(2), A.GetCorner(3) };
+                //BV = new List<JVector> { B.GetCorner(0), B.GetCorner(1), B.GetCorner(2), B.GetCorner(3) };
+
+                //hit = SAT.Collide(ref AV, ref PA, ref VA, ref OAM,
+                //    ref BV, ref PB, ref VB, ref OBM,
+                //    ref normal, ref t);
+
+                //if (hit)
+                //{
+                //    SAT.FindContacts(ref AV, ref PA, ref VA, ref OAM,
+                //        ref BV, ref PB, ref VB, ref OBM,
+                //        ref normal, t, out CA, out CB, out NumContacts);
+
+                //    normal.Normalize();
+                //}
+
+                hit = Collision.BoxBoxTestContact(ref A, ref PA, ref OAM, ref B, ref PB, ref OBM,
+                    out normal, out t, out CA, out CB, out NumContacts);
+
+                penetration = t;
+                iterations = NumContacts;
+            }
+
+            sw.Stop();
+            ticks = sw.ElapsedTicks / 1;
             sw.Reset();
 
-            //DebugDrawer.DrawLine(point1, point1 + normal);
-
-            //DebugDrawer.DrawPoint(point2);
-           // DebugDrawer.DrawPoint(point1);
-            DebugDrawer.Color = Color.Red;
-
-            DebugDrawer.Color = Color.Black;
-            DebugDrawer.DrawLine(JVector.Up, JVector.Down);
-            DebugDrawer.DrawLine(JVector.Left, JVector.Right);
-
-            body1.DebugDraw(DebugDrawer);
-            body2.DebugDraw(DebugDrawer);
-            
             if (hit)
             {
-                var oldPosition = body1.Position;
+                //DrawBox(A, PA + normal * (t * 0.5f), OA, Color.Blue);
+                //DrawBox(B, PB - normal * (t * 0.5f), OB, Color.Green);
 
-                body1.Position += normal * penetration;
-                body1.DebugDraw(DebugDrawer);
-                body1.Position = oldPosition;
+                for (int i = 0; i < NumContacts; i++)
+                {
+                    DebugDrawer.DrawPoint(CA[i]);// + normal * (t * 0.5f));
+                    DebugDrawer.DrawPoint(CB[i]);// - normal * (t * 0.5f));
+                }
             }
-            
+
             base.Update(gameTime);
         }
 
@@ -144,12 +187,54 @@ namespace CollisionDemo
 
             spriteBatch.DrawString(font, "Collided: " + hit.ToString(), new Vector2(10, line++ * 20), Color.Black);
             spriteBatch.DrawString(font, "Penetration: " + penetration.ToString(), new Vector2(10, line++ * 20), Color.Black);
-            spriteBatch.DrawString(font, "MPR Iterations: " + iterations.ToString(), new Vector2(10, line++ * 20), Color.Black);
-            spriteBatch.DrawString(font, "MPR Ticks: " + ticks.ToString(), new Vector2(10, line++ * 20), Color.Black);
+            spriteBatch.DrawString(font, "Contacts: " + iterations.ToString(), new Vector2(10, line++ * 20), Color.Black);
+            spriteBatch.DrawString(font, "Ticks: " + ticks.ToString(), new Vector2(10, line++ * 20), Color.Black);
 
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        void DrawBox(BoxShape box, JVector pos, float orientation, Color color)
+        {
+            List<JVector> poly = new List<JVector> 
+            { 
+                new JVector(-box.Size.X * 0.5f, -box.Size.Y * 0.5f), 
+                new JVector(box.Size.X * 0.5f, -box.Size.Y * 0.5f), 
+                new JVector(box.Size.X * 0.5f, box.Size.Y * 0.5f), 
+                new JVector(-box.Size.X * 0.5f,box.Size.Y * 0.5f) 
+            };
+
+            DrawPoly(poly, pos, JMatrix.CreateRotationZ(orientation), color);
+        }
+
+        void DrawPoly(List<JVector> poly, JVector pos, JMatrix o, Color color)
+        {
+            for (int i = 0; i < poly.Count - 1; i++)
+            {
+                JVector a = JVector.Transform(poly[i], o * JMatrix.CreateTranslation(pos));
+                JVector b = JVector.Transform(poly[i + 1], o * JMatrix.CreateTranslation(pos));
+                DebugDrawer.DrawLine(a, b, color);
+            }
+            JVector c = JVector.Transform(poly[0], o * JMatrix.CreateTranslation(pos));
+            JVector d = JVector.Transform(poly[poly.Count - 1], o * JMatrix.CreateTranslation(pos));
+            DebugDrawer.DrawLine(c, d, color);
+        }
+
+        List<JVector> BuildBlob(int iNumVertices, float radius)
+        {
+            List<JVector> axVertices = new List<JVector>(iNumVertices);
+
+            float a = (float)Math.PI / iNumVertices;
+            float da = (float)(Math.PI * 2.0f) / iNumVertices;
+
+            for (int i = 0; i < iNumVertices; i++)
+            {
+                a += da;
+
+                axVertices.Add(new JVector((float)Math.Cos(a) * radius, (float)Math.Sin(a) * radius));
+            }
+            return axVertices;
         }
     }
 }

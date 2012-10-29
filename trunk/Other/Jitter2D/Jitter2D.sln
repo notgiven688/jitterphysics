@@ -9,29 +9,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JitterDemo", "JitterDemo\Ji
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JitterDemoContent", "JitterDemo\JitterDemoContent\JitterDemoContent.contentproj", "{A8C2D99B-05AB-4BF8-87E8-3B7FF779A22E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MPR Collision Demo", "MPR Collision Demo", "{DDFAD3F4-C202-4F52-8E1E-CCC9D3862B88}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CollisionDemo", "CollisionDemo", "{3644A86D-752F-43E9-B020-E11796F2FDEB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MPRCollisionDemo", "MPRCollisionDemo\MPRCollisionDemo\MPRCollisionDemo.csproj", "{34DF8FFB-2A01-43A8-9641-34E32767EB7F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CollisionDemo", "CollisionDemo\CollisionDemo\CollisionDemo.csproj", "{D8B513AF-C28D-4595-A205-09D9D52272F7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MPRCollisionDemoContent", "MPRCollisionDemo\MPRCollisionDemoContent\MPRCollisionDemoContent.contentproj", "{54D407F3-3A3C-41AE-9C7B-CF80055A67DF}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GJK Collision Demo", "GJK Collision Demo", "{E85A1704-7430-427A-89CE-40EDB0B8620F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GJKCollisionDemo", "GJKCollisionDemo\GJKCollisionDemo\GJKCollisionDemo.csproj", "{F037942C-5A94-498A-91A5-89BA72C2588E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GJKCollisionDemoContent", "GJKCollisionDemo\GJKCollisionDemoContent\GJKCollisionDemoContent.contentproj", "{3A7A8A16-27FF-427E-AA5A-B7C77A8B8421}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Collision Demo", "Collision Demo", "{32DC3354-7888-45AD-B218-BEEAC9D5B41A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Collision Demo", "Collision Demo\Collision Demo\Collision Demo.csproj", "{BF4D84F7-0143-4F76-BD10-B9EF4FB67210}"
-EndProject
-Project("{96E2B04D-8817-42C6-938A-82C39BA4D311}") = "Collision DemoContent", "Collision Demo\Collision DemoContent\Collision DemoContent.contentproj", "{D729A9F9-AA28-4D3B-9105-4ED6E1354F48}"
+Project("{96E2B04D-8817-42C6-938A-82C39BA4D311}") = "CollisionDemoContent", "CollisionDemo\CollisionDemoContent\CollisionDemoContent.contentproj", "{A63E08EB-2C7E-47D3-8988-08D8D1B9BD4E}"
 EndProject
 Global
-	GlobalSection(SubversionScc) = preSolution
-		Svn-Managed = True
-		Manager = AnkhSVN - Subversion Support for Visual Studio
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -69,54 +53,22 @@ Global
 		{A8C2D99B-05AB-4BF8-87E8-3B7FF779A22E}.Release|Any CPU.ActiveCfg = Release|x86
 		{A8C2D99B-05AB-4BF8-87E8-3B7FF779A22E}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{A8C2D99B-05AB-4BF8-87E8-3B7FF779A22E}.Release|x86.ActiveCfg = Release|x86
-		{34DF8FFB-2A01-43A8-9641-34E32767EB7F}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{34DF8FFB-2A01-43A8-9641-34E32767EB7F}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{34DF8FFB-2A01-43A8-9641-34E32767EB7F}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{34DF8FFB-2A01-43A8-9641-34E32767EB7F}.Debug|x86.ActiveCfg = Debug|x86
-		{34DF8FFB-2A01-43A8-9641-34E32767EB7F}.Debug|x86.Build.0 = Debug|x86
-		{34DF8FFB-2A01-43A8-9641-34E32767EB7F}.Release|Any CPU.ActiveCfg = Release|x86
-		{34DF8FFB-2A01-43A8-9641-34E32767EB7F}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{34DF8FFB-2A01-43A8-9641-34E32767EB7F}.Release|Mixed Platforms.Build.0 = Release|x86
-		{34DF8FFB-2A01-43A8-9641-34E32767EB7F}.Release|x86.ActiveCfg = Release|x86
-		{34DF8FFB-2A01-43A8-9641-34E32767EB7F}.Release|x86.Build.0 = Release|x86
-		{54D407F3-3A3C-41AE-9C7B-CF80055A67DF}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{54D407F3-3A3C-41AE-9C7B-CF80055A67DF}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{54D407F3-3A3C-41AE-9C7B-CF80055A67DF}.Debug|x86.ActiveCfg = Debug|x86
-		{54D407F3-3A3C-41AE-9C7B-CF80055A67DF}.Release|Any CPU.ActiveCfg = Release|x86
-		{54D407F3-3A3C-41AE-9C7B-CF80055A67DF}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{54D407F3-3A3C-41AE-9C7B-CF80055A67DF}.Release|x86.ActiveCfg = Release|x86
-		{F037942C-5A94-498A-91A5-89BA72C2588E}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{F037942C-5A94-498A-91A5-89BA72C2588E}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{F037942C-5A94-498A-91A5-89BA72C2588E}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{F037942C-5A94-498A-91A5-89BA72C2588E}.Debug|x86.ActiveCfg = Debug|x86
-		{F037942C-5A94-498A-91A5-89BA72C2588E}.Debug|x86.Build.0 = Debug|x86
-		{F037942C-5A94-498A-91A5-89BA72C2588E}.Release|Any CPU.ActiveCfg = Release|x86
-		{F037942C-5A94-498A-91A5-89BA72C2588E}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{F037942C-5A94-498A-91A5-89BA72C2588E}.Release|Mixed Platforms.Build.0 = Release|x86
-		{F037942C-5A94-498A-91A5-89BA72C2588E}.Release|x86.ActiveCfg = Release|x86
-		{F037942C-5A94-498A-91A5-89BA72C2588E}.Release|x86.Build.0 = Release|x86
-		{3A7A8A16-27FF-427E-AA5A-B7C77A8B8421}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{3A7A8A16-27FF-427E-AA5A-B7C77A8B8421}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{3A7A8A16-27FF-427E-AA5A-B7C77A8B8421}.Debug|x86.ActiveCfg = Debug|x86
-		{3A7A8A16-27FF-427E-AA5A-B7C77A8B8421}.Release|Any CPU.ActiveCfg = Release|x86
-		{3A7A8A16-27FF-427E-AA5A-B7C77A8B8421}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{3A7A8A16-27FF-427E-AA5A-B7C77A8B8421}.Release|x86.ActiveCfg = Release|x86
-		{BF4D84F7-0143-4F76-BD10-B9EF4FB67210}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{BF4D84F7-0143-4F76-BD10-B9EF4FB67210}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{BF4D84F7-0143-4F76-BD10-B9EF4FB67210}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{BF4D84F7-0143-4F76-BD10-B9EF4FB67210}.Debug|x86.ActiveCfg = Debug|x86
-		{BF4D84F7-0143-4F76-BD10-B9EF4FB67210}.Debug|x86.Build.0 = Debug|x86
-		{BF4D84F7-0143-4F76-BD10-B9EF4FB67210}.Release|Any CPU.ActiveCfg = Release|x86
-		{BF4D84F7-0143-4F76-BD10-B9EF4FB67210}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{BF4D84F7-0143-4F76-BD10-B9EF4FB67210}.Release|Mixed Platforms.Build.0 = Release|x86
-		{BF4D84F7-0143-4F76-BD10-B9EF4FB67210}.Release|x86.ActiveCfg = Release|x86
-		{BF4D84F7-0143-4F76-BD10-B9EF4FB67210}.Release|x86.Build.0 = Release|x86
-		{D729A9F9-AA28-4D3B-9105-4ED6E1354F48}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{D729A9F9-AA28-4D3B-9105-4ED6E1354F48}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{D729A9F9-AA28-4D3B-9105-4ED6E1354F48}.Debug|x86.ActiveCfg = Debug|x86
-		{D729A9F9-AA28-4D3B-9105-4ED6E1354F48}.Release|Any CPU.ActiveCfg = Release|x86
-		{D729A9F9-AA28-4D3B-9105-4ED6E1354F48}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{D729A9F9-AA28-4D3B-9105-4ED6E1354F48}.Release|x86.ActiveCfg = Release|x86
+		{D8B513AF-C28D-4595-A205-09D9D52272F7}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{D8B513AF-C28D-4595-A205-09D9D52272F7}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{D8B513AF-C28D-4595-A205-09D9D52272F7}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{D8B513AF-C28D-4595-A205-09D9D52272F7}.Debug|x86.ActiveCfg = Debug|x86
+		{D8B513AF-C28D-4595-A205-09D9D52272F7}.Debug|x86.Build.0 = Debug|x86
+		{D8B513AF-C28D-4595-A205-09D9D52272F7}.Release|Any CPU.ActiveCfg = Release|x86
+		{D8B513AF-C28D-4595-A205-09D9D52272F7}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{D8B513AF-C28D-4595-A205-09D9D52272F7}.Release|Mixed Platforms.Build.0 = Release|x86
+		{D8B513AF-C28D-4595-A205-09D9D52272F7}.Release|x86.ActiveCfg = Release|x86
+		{D8B513AF-C28D-4595-A205-09D9D52272F7}.Release|x86.Build.0 = Release|x86
+		{A63E08EB-2C7E-47D3-8988-08D8D1B9BD4E}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{A63E08EB-2C7E-47D3-8988-08D8D1B9BD4E}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{A63E08EB-2C7E-47D3-8988-08D8D1B9BD4E}.Debug|x86.ActiveCfg = Debug|x86
+		{A63E08EB-2C7E-47D3-8988-08D8D1B9BD4E}.Release|Any CPU.ActiveCfg = Release|x86
+		{A63E08EB-2C7E-47D3-8988-08D8D1B9BD4E}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{A63E08EB-2C7E-47D3-8988-08D8D1B9BD4E}.Release|x86.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -124,11 +76,11 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{75374A2E-27DE-4FF7-A1ED-C995D013EE7C} = {40035013-6972-4444-8CF9-C0BD5A37A635}
 		{A8C2D99B-05AB-4BF8-87E8-3B7FF779A22E} = {40035013-6972-4444-8CF9-C0BD5A37A635}
-		{34DF8FFB-2A01-43A8-9641-34E32767EB7F} = {DDFAD3F4-C202-4F52-8E1E-CCC9D3862B88}
-		{54D407F3-3A3C-41AE-9C7B-CF80055A67DF} = {DDFAD3F4-C202-4F52-8E1E-CCC9D3862B88}
-		{F037942C-5A94-498A-91A5-89BA72C2588E} = {E85A1704-7430-427A-89CE-40EDB0B8620F}
-		{3A7A8A16-27FF-427E-AA5A-B7C77A8B8421} = {E85A1704-7430-427A-89CE-40EDB0B8620F}
-		{BF4D84F7-0143-4F76-BD10-B9EF4FB67210} = {32DC3354-7888-45AD-B218-BEEAC9D5B41A}
-		{D729A9F9-AA28-4D3B-9105-4ED6E1354F48} = {32DC3354-7888-45AD-B218-BEEAC9D5B41A}
+		{D8B513AF-C28D-4595-A205-09D9D52272F7} = {3644A86D-752F-43E9-B020-E11796F2FDEB}
+		{A63E08EB-2C7E-47D3-8988-08D8D1B9BD4E} = {3644A86D-752F-43E9-B020-E11796F2FDEB}
+	EndGlobalSection
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
 	EndGlobalSection
 EndGlobal

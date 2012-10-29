@@ -45,8 +45,8 @@ namespace Jitter2D.Dynamics
         [Flags]
         public enum DampingType { None = 0x00, Angular = 0x01, Linear = 0x02 }
 
-        internal float inertia;
-        internal float invInertia;
+        public float inertia;
+        public float invInertia;
 
         internal float orientation;
         internal float invOrientation;
@@ -369,7 +369,6 @@ namespace Jitter2D.Dynamics
         {
             if (useShapeMassProperties) SetMassProperties();
             Update();
-            UpdateHullData();
         }
 
         /// <summary>
@@ -612,58 +611,118 @@ namespace Jitter2D.Dynamics
             set
             {
                 enableDebugDraw = value;
-                UpdateHullData();
             }
-        }
-
-        private List<JVector> hullPoints = new List<JVector>();
-
-        private void UpdateHullData()
-        {
-            hullPoints.Clear();
-
-            if (enableDebugDraw) shape.MakeHull(ref hullPoints, 3);
         }
 
         // this method is extremely brute force, only use for debugging!
         public void DebugDraw(IDebugDrawer drawer)
         {
-            JMatrix o1 = JMatrix.CreateRotationZ(orientation);
-            JVector dir = JVector.Up;
-            JVector u = JVector.Zero;
-            JVector a;
-
-            for (int i = -1; i <= 36; i++)
+            if (this.shape.type == ShapeType.Box)
             {
-                JVector.TransposedTransform(ref dir, ref o1, out a);
-                // get the support in the given direction
-                JVector s; this.shape.SupportMapping(ref a, out s);
-                // transform the support into world space
-                a = JVector.Transform(s, o1) + position;
+                BoxShape box = this.shape as BoxShape;
+                // get corners
+                JVector a = box.GetCorner(0);
+                JVector b = box.GetCorner(1);
+                JVector c = box.GetCorner(2);
+                JVector d = box.GetCorner(3);
+                
+                // transform points
+                JMatrix xform = JMatrix.CreateRotationZ(this.orientation);
+                JVector.Transform(ref a, ref xform, out a);
+                JVector.Transform(ref b, ref xform, out b);
+                JVector.Transform(ref c, ref xform, out c);
+                JVector.Transform(ref d, ref xform, out d);
 
-                dir = JVector.Transform(dir, JMatrix.CreateRotationZ(0.0174532925f * 10f));
+                a += this.position;
+                b += this.position;
+                c += this.position;
+                d += this.position;
 
-                if (i >= 0)
+                if (isStatic)
+                    drawer.SetColor(0.25f, 0.85f, 0.25f, 1);
+                else if (isActive)
+                    drawer.SetColor(0.95f, 0.95f, 0.95f, 1);
+                else
+                    drawer.SetColor(0.65f, 0.65f, 0.65f, 1);
+
+                drawer.DrawTriangle(a, c, b);
+                drawer.DrawTriangle(c, a, d);
+                // draw outline
+                drawer.SetColor(0, 0, 0, 1);
+                drawer.DrawLine(a, b);
+                drawer.DrawLine(b, c);
+                drawer.DrawLine(c, d);
+                drawer.DrawLine(d, a);
+            }
+            else if (this.shape.type == ShapeType.Circle)
+            {
+                JMatrix o1 = JMatrix.CreateRotationZ(orientation);
+                JVector dir = JVector.Up;
+                JVector u = JVector.Zero;
+                JVector a;
+
+                for (int i = -1; i <= 36; i++)
                 {
-                    if (isStatic)
-                        drawer.SetColor(0.25f, 0.85f, 0.25f, 1);
-                    else if (isActive)
-                        drawer.SetColor(0.85f, 0.85f, 0.85f, 1);
-                    else
-                        drawer.SetColor(0.65f, 0.65f, 0.65f, 1);
-                    drawer.DrawTriangle(a, u, this.position);
-                    drawer.SetColor(0,0,0, 1);
-                    drawer.DrawLine(a, u);
+                    JVector.TransposedTransform(ref dir, ref o1, out a);
+                    // get the support in the given direction
+                    JVector s; this.shape.SupportMapping(ref a, out s);
+                    // transform the support into world space
+                    a = JVector.Transform(s, o1) + position;
+
+                    dir = JVector.Transform(dir, JMatrix.CreateRotationZ(0.0174532925f * 10f));
+
+                    if (i >= 0)
+                    {
+                        if (isStatic)
+                            drawer.SetColor(0.25f, 0.85f, 0.25f, 1);
+                        else if (isActive)
+                            drawer.SetColor(0.95f, 0.95f, 0.95f, 1);
+                        else
+                            drawer.SetColor(0.65f, 0.65f, 0.65f, 1);
+                        drawer.DrawTriangle(a, u, this.position);
+                        drawer.SetColor(0, 0, 0, 1);
+                        drawer.DrawLine(a, u);
+                    }
+                    u = a;
                 }
-                u = a;
             }
 
-            JMatrix xForm = JMatrix.CreateRotationZ(orientation);
+            //JMatrix o1 = JMatrix.CreateRotationZ(orientation);
+            //JVector dir = JVector.Up;
+            //JVector u = JVector.Zero;
+            //JVector a;
 
-            drawer.SetColor(1, 0, 0, 1);
-            drawer.DrawLine(position + JVector.Transform(JVector.Left * 0.25f, xForm), position + JVector.Transform(JVector.Zero, xForm));
-            drawer.SetColor(0, 1, 0, 1);
-            drawer.DrawLine(position + JVector.Transform(JVector.Up * 0.25f, xForm), position + JVector.Transform(JVector.Zero, xForm));
+            //for (int i = -1; i <= 36; i++)
+            //{
+            //    JVector.TransposedTransform(ref dir, ref o1, out a);
+            //    // get the support in the given direction
+            //    JVector s; this.shape.SupportMapping(ref a, out s);
+            //    // transform the support into world space
+            //    a = JVector.Transform(s, o1) + position;
+
+            //    dir = JVector.Transform(dir, JMatrix.CreateRotationZ(0.0174532925f * 10f));
+
+            //    if (i >= 0)
+            //    {
+            //        if (isStatic)
+            //            drawer.SetColor(0.25f, 0.85f, 0.25f, 1);
+            //        else if (isActive)
+            //            drawer.SetColor(0.95f, 0.95f, 0.95f, 1);
+            //        else
+            //            drawer.SetColor(0.65f, 0.65f, 0.65f, 1);
+            //        drawer.DrawTriangle(a, u, this.position);
+            //        drawer.SetColor(0,0,0, 1);
+            //        drawer.DrawLine(a, u);
+            //    }
+            //    u = a;
+            //}
+
+            //JMatrix xForm = JMatrix.CreateRotationZ(orientation);
+
+            //drawer.SetColor(1, 0, 0, 1);
+            //drawer.DrawLine(position + JVector.Transform(JVector.Left * 0.25f, xForm), position + JVector.Transform(JVector.Zero, xForm));
+            //drawer.SetColor(0, 1, 0, 1);
+            //drawer.DrawLine(position + JVector.Transform(JVector.Up * 0.25f, xForm), position + JVector.Transform(JVector.Zero, xForm));
         }
     }
 }

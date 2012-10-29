@@ -15,6 +15,7 @@ using System.Reflection;
 using Jitter2D.Collision;
 using Jitter2D.Collision.Shapes;
 using Jitter2D.Dynamics.Constraints;
+using Jitter2D.Dynamics.Springs;
 
 namespace JitterDemo
 {
@@ -34,36 +35,47 @@ namespace JitterDemo
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        #region update - global variables
+
+        // Hold previous input states.
+        KeyboardState keyboardPreviousState = new KeyboardState();
+        GamePadState gamePadPreviousState = new GamePadState();
+        MouseState mousePreviousState = new MouseState();
+
         private GamePadState padState;
         private KeyboardState keyState;
         private MouseState mouseState;
 
+        #endregion
+
         private Color backgroundColor = new Color(63, 66, 73);
         private bool multithread = true;
         private int activeBodies = 0;
+        private FixedLinearSpring grabSpring = null;
+        private RigidBody grabBody = null;
 
-        private bool debugDraw = false;
+        //private bool debugDraw = false;
 
         public JitterDemo()
         {
             this.IsMouseVisible = true;
             graphics = new GraphicsDeviceManager(this);
 
-            //graphics.GraphicsProfile = GraphicsProfile.HiDef;
             graphics.PreferMultiSampling = true;
 
             Content.RootDirectory = "Content";
 
-            graphics.PreferredBackBufferHeight = 720;// 600;
-            graphics.PreferredBackBufferWidth = 1280;// 800;
+            graphics.PreferredBackBufferHeight =  720;
+            graphics.PreferredBackBufferWidth =  1280;
 
             this.IsFixedTimeStep = false;
+            this.TargetElapsedTime = TimeSpan.FromSeconds(1.0 / 100.0);
             this.graphics.SynchronizeWithVerticalRetrace = false;
 
-            CollisionSystem collision = new CollisionSystemBrute();
+            CollisionSystem collision = new CollisionSystemPersistentSAP();
             collision.EnableSpeculativeContacts = false;
             World = new World(collision); World.AllowDeactivation = false;
-
+            
             this.Window.AllowUserResizing = true;
 
             this.Window.Title = "Jitter 2D Physics Demo - Jitter 2D "
@@ -95,7 +107,7 @@ namespace JitterDemo
             {
                 if (type.Namespace == "JitterDemo.Scenes" && !type.IsAbstract)
                 {
-                    if (type.Name == "SoftBodyJenga") currentScene = PhysicScenes.Count;
+                    if (type.Name == "EmptyScene") currentScene = PhysicScenes.Count;
                     Scenes.Scene scene = (Scenes.Scene)Activator.CreateInstance(type, this);
                     this.PhysicScenes.Add(scene);
                 }
@@ -115,9 +127,6 @@ namespace JitterDemo
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            //graphics.GraphicsDevice.PresentationParameters.MultiSampleCount = 4;
-            //graphics.ApplyChanges();
         }
 
         private void DestroyCurrentScene()
@@ -151,25 +160,13 @@ namespace JitterDemo
             return keyboard || gamePad;
         }
 
-        #region update - global variables
-        // Hold previous input states.
-        KeyboardState keyboardPreviousState = new KeyboardState();
-        GamePadState gamePadPreviousState = new GamePadState();
-        MouseState mousePreviousState = new MouseState();
-
-        // Store information for drag and drop
-        JVector hitPoint, hitNormal;
-        //SingleBodyConstraints.PointOnPoint grabConstraint;
-        RigidBody grabBody;
-        float hitDistance = 0.0f;
-        int scrollWheel = 0;
-        #endregion
+        
 
         protected override void Update(GameTime gameTime)
         {
-            GamePadState padState = GamePad.GetState(PlayerIndex.One);
-            KeyboardState keyState = Keyboard.GetState();
-            MouseState mouseState = Mouse.GetState();
+            padState = GamePad.GetState(PlayerIndex.One);
+            keyState = Keyboard.GetState();
+            mouseState = Mouse.GetState();
 
             // let the user escape the demo
             if (PressedOnce(Keys.Escape, Buttons.Back)) this.Exit();
@@ -178,49 +175,66 @@ namespace JitterDemo
             if (PressedOnce(Keys.M, Buttons.A)) multithread = !multithread;
 
             #region drag and drop physical objects with the mouse
+
+            JVector mouseLocation = Camera.ScreenToWorldSpace(new JVector(mouseState.X, mouseState.Y));
+
+            // MouseDown
             if (mouseState.LeftButton == ButtonState.Pressed &&
                 mousePreviousState.LeftButton == ButtonState.Released)
             {
+                JBBox mouseBox = new JBBox(mouseLocation - new JVector(0.01f), mouseLocation + new JVector(0.01f));
                 
+                World.CollisionSystem.Query((foundItem) =>
+                {
+                    grabBody = foundItem as RigidBody;
+                    // don't continue
+                    return false;
+                }, ref mouseBox);
+
+                if (grabBody != null)
+                {
+                    if (grabSpring != null) World.RemoveSpring(grabSpring);
+
+                    // convert mouse coordinates to foundBody's local space
+                    var localMouseLocation = JVector.Transform(mouseLocation - grabBody.Position, JMatrix.CreateRotationZ(-grabBody.Orientation));
+                    grabBody.IsActive = true;
+                    grabSpring = new FixedLinearSpring(grabBody, localMouseLocation, mouseLocation, 50 * grabBody.Mass, 15 * grabBody.Mass);
+                    grabSpring.IsOnlyPull = true;
+                    World.AddSpring(grabSpring);
+                }
             }
 
+            // MouseMove
             if (mouseState.LeftButton == ButtonState.Pressed)
             {
-                
+                if (grabBody != null)
+                {
+                    grabSpring._worldAttachPoint = mouseLocation;
+                }
             }
-            else
+            // MouseUp
+            else if (mouseState.LeftButton == ButtonState.Released && mousePreviousState.LeftButton == ButtonState.Pressed)
             {
-                
+                if (grabSpring != null) World.RemoveSpring(grabSpring);
+                grabSpring = null;
+                grabBody = null;
             }
             #endregion
 
             #region create random primitives
             Random r = new Random();
 
-            if (keyState.IsKeyDown(Keys.Space) && !keyboardPreviousState.IsKeyDown(Keys.Space))
+            if (PressedOnce(Keys.Space, Buttons.B))
             {
-                //RigidBody body = new RigidBody(new CapsuleShape(2, 0.5f))
-                var pointList = new List<JVector>();
-                //var a = 0f;
-                //for (int i = 0; i < 18; i++)
-                //{
-                //    pointList.Add(new JVector((float)Math.Sin(a) * 2f, (float)Math.Cos(a) * 2f));
-                //    a += 0.34906585f;
-                //}
                 Random rand = new Random();
-                for (int i = 0; i < rand.Next(50, 100); i++)
-                {
-                    pointList.Add(new JVector((float)rand.NextDouble() * 2f - 1f, (float)rand.NextDouble() * 2f - 1f));
-                }
 
-                //RigidBody body = new RigidBody(new ConvexHullShape(pointList))
-                RigidBody body = new RigidBody(new BoxShape(2, 2))
+                RigidBody body = new RigidBody(new BoxShape(5.5f, 5.5f))
                 {
                     EnableDebugDraw = true,
                     //Position = new JVector((float)rand.NextDouble(), 0),
                     AngularVelocity = 0,
-                    LinearVelocity = new JVector(0, -100),
-                    Orientation = 0.001f + (float)rand.NextDouble(),
+                    LinearVelocity = new JVector(0, -10),
+                    Orientation = 0.0f,//0.001f + (float)rand.NextDouble(),
                     Material = new Material()
                     {
                         DynamicFriction = 1f,
@@ -230,8 +244,6 @@ namespace JitterDemo
                     Position = new JVector(0, 15),
                 };
                 World.AddBody(body);
-
-                //body.SetMassProperties(1, 1, false);
             }
             #endregion
 
@@ -253,13 +265,15 @@ namespace JitterDemo
             }
             #endregion
 
-
             UpdateDisplayText(gameTime);
 
             float step = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            if (step > 1.0f / 100.0f) step = 1.0f / 100.0f;
-            World.Step(step, false);
+            if (step > 1.0f / 60.0f) step = 1.0f / 60.0f;
+            World.Step(step, multithread);
+
+            // TODO - add options for variable timestep vs fixed
+            //World.Step((float)gameTime.ElapsedGameTime.TotalSeconds, multithread, 1f/ 100f, 1);
 
             gamePadPreviousState = padState;
             keyboardPreviousState = keyState;
@@ -270,8 +284,6 @@ namespace JitterDemo
 
         private void DrawJitterDebugInfo()
         {
-            int cc = 0;
-
             foreach (RigidBody body in World.RigidBodies)
             {
                 DebugDrawer.Color = Color.Gray;//rndColors[cc % rndColors.Length];
@@ -279,9 +291,9 @@ namespace JitterDemo
 
                 //DebugDrawer.DrawAabb(body.BoundingBox.Min, body.BoundingBox.Max, Color.Pink);
 
-                //if (body.Shape.GetType() == typeof(ConvexHullShape))
+                //if (body.Shape.GetType() == typeof(PolygonShape))
                 //{
-                //    var ch = body.Shape as ConvexHullShape;
+                //    var ch = body.Shape as PolygonShape;
 
                 //    JMatrix o = JMatrix.CreateRotationZ(body.Orientation);
                 //    foreach (var point in ch.vertices)
@@ -291,20 +303,29 @@ namespace JitterDemo
                 //    }
                 //}
 
-                foreach (Arbiter item in body.Arbiters)
-                {
-                    foreach (var contact in item.ContactList)
-                    {
-                        //DebugDrawer.Color = Color.Red;
-                        //DebugDrawer.DrawLine(contact.Position1, contact.Position2);
-                        DebugDrawer.Color = Color.Blue;
-                        DebugDrawer.DrawLine(contact.Position1, contact.Position1 + contact.Normal * 0.15f);
-                        //DebugDrawer.DrawLine(contact.Position2, contact.Position2 + contact.Normal * 0.15f);
-                        DebugDrawer.DrawPoint(contact.Position1);
-                        //DebugDrawer.DrawPoint(contact.Position2);
-                    }
-                }
-                cc++;
+                //DebugDrawer.Color = Color.Red;
+                //foreach (Arbiter item in body.Arbiters)
+                //{
+                //    foreach (var contact in item.ContactList)
+                //    {
+                //        DebugDrawer.DrawLine(contact.Position1, contact.Position1 + contact.Axis * 0.15f);
+                //        DebugDrawer.DrawLine(contact.Position2, contact.Position2 + contact.Axis * 0.15f);
+                //        DebugDrawer.DrawPoint(contact.Position1);
+                //        DebugDrawer.DrawPoint(contact.Position2);
+                //    }
+                //}
+            }
+
+            DebugDrawer.Color = Color.Blue;
+            foreach (Spring spring in World.Springs)
+            {
+                spring.DebugDraw(DebugDrawer);
+            }
+
+            DebugDrawer.Color = Color.Red;
+            foreach (Constraint c in World.Constraints)
+            {
+                c.DebugDraw(DebugDrawer);
             }
         }
 
