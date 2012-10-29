@@ -632,6 +632,12 @@ namespace Jitter2D.Collision
                 ((box1.Max.X >= box2.Min.X) && (box1.Min.X <= box2.Max.X));
         }
 
+        public bool CheckBoundingBoxes(JBBox box1, JBBox box2)
+        {
+            return ((box1.Max.Y >= box2.Min.Y) && (box1.Min.Y <= box2.Max.Y)) &&
+                ((box1.Max.X >= box2.Min.X) && (box1.Min.X <= box2.Max.X));
+        }
+
         /// <summary>
         /// Raises the PassedBroadphase event.
         /// </summary>
@@ -693,6 +699,6 @@ namespace Jitter2D.Collision
         /// </summary>
         /// <param name="callback"></param>
         /// <param name="box"></param>
-        //public abstract void Query(Func<IBroadphaseEntity, bool> callback, ref JBBox box);
+        public abstract void Query(Func<IBroadphaseEntity, bool> callback, ref JBBox box);
     }
 }

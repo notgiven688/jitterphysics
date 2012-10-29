@@ -31,7 +31,7 @@ namespace JitterDemo.Scenes
             {
                 ground = new RigidBody(new BoxShape(3600, 1f));
                 //ground.SetMassProperties(float.MaxValue, float.MaxValue, false);
-                ground.Position = new JVector(0, -10);
+                ground.Position = new JVector(0, 0);
                 ground.IsStatic = true; 
                 Demo.World.AddBody(ground);
                 ground.Material.DynamicFriction = 1.0f;

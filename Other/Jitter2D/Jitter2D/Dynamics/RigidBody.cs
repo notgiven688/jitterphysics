@@ -604,6 +604,11 @@ namespace Jitter2D.Dynamics
             get { return (!this.isActive || this.isStatic); }
         }
 
+        public JVector LocalToWorld(JVector localPosition)
+        {
+            return JVector.Transform(localPosition, JMatrix.CreateRotationZ(Orientation)) + Position;
+        }
+
         private bool enableDebugDraw = false;
         public bool EnableDebugDraw
         {

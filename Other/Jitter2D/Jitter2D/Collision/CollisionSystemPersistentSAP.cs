@@ -323,6 +323,21 @@ namespace Jitter2D.Collision
             BroadphasePair.Pool.GiveBack(pair);
         }
 
+        // NOTE- this is brute force for now!!!
+        public override void Query(Func<IBroadphaseEntity, bool> callback, ref JBBox box)
+        {
+            for (int i = 0; i < this.bodyList.Count; i++)
+            {
+                if (CheckBoundingBoxes(this.bodyList[i].BoundingBox, box))
+                {
+                    if (callback(this.bodyList[i]))
+                    {
+                        continue;
+                    }
+                }
+            }
+        }
+
         // okay, people often say raycasting can be made faster using the sweep
         // and prune data. (sorted axis lists). That's only partly correct,
         // the method commented out below uses the non-uniform voxelgrid
