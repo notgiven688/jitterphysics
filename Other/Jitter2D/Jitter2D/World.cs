@@ -29,6 +29,7 @@ using Jitter2D.Collision.Shapes;
 using Jitter2D.Collision;
 using Jitter2D.Dynamics.Constraints;
 using Jitter2D.DataStructures;
+using Jitter2D.Dynamics.Springs;
 #endregion
 
 namespace Jitter2D
@@ -145,8 +146,8 @@ namespace Jitter2D
         private float angularDamping = 0.85f;
         private float linearDamping = 0.85f;
 
-        private int contactIterations = 5;
-        private int smallIterations = 1;
+        private int contactIterations = 15;
+        private int smallIterations = 10;
         private float timestep = 0.0f;
 
         private Jitter2D.Collision.IslandManager islands = new IslandManager();
@@ -154,10 +155,12 @@ namespace Jitter2D
         private HashSet<RigidBody> rigidBodies = new HashSet<RigidBody>();
         private HashSet<Constraint> constraints = new HashSet<Constraint>();
         //private HashSet<SoftBody> softbodies = new HashSet<SoftBody>();
+        private HashSet<Spring> springs = new HashSet<Spring>();
 
         public ReadOnlyHashset<RigidBody> RigidBodies { get; private set; }
         public ReadOnlyHashset<Constraint> Constraints { get; private set; }
         //public ReadOnlyHashset<SoftBody> SoftBodies { get; private set; }
+        public ReadOnlyHashset<Spring> Springs { get; private set; }
 
         private WorldEvents events = new WorldEvents();
         public WorldEvents Events { get { return events; } }
@@ -208,6 +211,7 @@ namespace Jitter2D
             this.RigidBodies = new ReadOnlyHashset<RigidBody>(rigidBodies);
             this.Constraints = new ReadOnlyHashset<Constraint>(constraints);
             //this.SoftBodies = new ReadOnlyHashset<SoftBody>(softbodies);
+            this.Springs = new ReadOnlyHashset<Spring>(springs);
 
             this.CollisionSystem = collision;
 
@@ -316,6 +320,7 @@ namespace Jitter2D
             }
             constraints.Clear();
 
+            springs.Clear();
             //softbodies.Clear();
 
             // remove all islands
@@ -329,7 +334,7 @@ namespace Jitter2D
 
         /// <summary>
         /// Gets or sets the gravity in this <see cref="World"/>. The default gravity
-        /// is (0,-9.81,0)
+        /// is (0,-9.81)
         /// </summary>
         public JVector Gravity { get { return gravity; } set { gravity = value; } }
 
@@ -468,6 +473,33 @@ namespace Jitter2D
             this.CollisionSystem.AddEntity(body);
 
             rigidBodies.Add(body);
+        }
+
+        /// <summary>
+        /// Adds a <see cref="RigidBody"/> to the world.
+        /// </summary>
+        /// <param name="body">The body which should be added.</param>
+        public void AddSpring(Spring spring)
+        {
+            if (spring == null) throw new ArgumentNullException("body", "body can't be null.");
+            if (springs.Contains(spring)) throw new ArgumentException("The body was already added to the world.", "body");
+
+            //events.RaiseAddedRigidBody(body);
+
+            //this.CollisionSystem.AddEntity(body);
+
+            springs.Add(spring);
+        }
+
+        /// <summary>
+        /// Removes a <see cref="RigidBody"/> from the world.
+        /// </summary>
+        /// <param name="body">The body which should be removed.</param>
+        /// <returns>Returns false if the body could not be removed from the world.</returns>
+        public bool RemoveSpring(Spring spring)
+        {
+            // remove the body from the world list
+            return springs.Remove(spring);
         }
 
         /// <summary>
@@ -610,6 +642,12 @@ namespace Jitter2D
             sw.Reset(); sw.Start();
             CheckDeactivation();
             sw.Stop(); debugTimes[(int)DebugType.DeactivateBodies] = sw.Elapsed.TotalMilliseconds;
+
+            // added
+            foreach (var spring in springs)
+            {
+                spring.Update(timestep);
+            }
 
             sw.Reset(); sw.Start();
             IntegrateForces();

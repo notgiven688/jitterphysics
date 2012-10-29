@@ -120,7 +120,7 @@ namespace CollisionDemo
 
         private void UpdateProjection()
         {
-            projection = Matrix.CreateOrthographic(40 * zoom * aspectRatio, 40 * zoom, 0, 1);
+            projection = Matrix.CreateOrthographic(20 * zoom * aspectRatio, 20 * zoom, 0, 1);
         }
 
         private void UpdateView()

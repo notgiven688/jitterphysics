@@ -38,6 +38,7 @@ namespace Jitter2D
         void SetColor(float r, float g, float b, float a);
         void DrawLine(JVector start, JVector end);
         void DrawPoint(JVector pos);
+        void DrawString(string text, JVector position);
         //void DrawPoint(JVector pos, float r, float g, float b, float a);
         void DrawTriangle(JVector pos1, JVector pos2, JVector pos3);
     }

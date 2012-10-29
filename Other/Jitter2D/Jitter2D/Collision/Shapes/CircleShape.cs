@@ -48,7 +48,30 @@ namespace Jitter2D.Collision.Shapes
         public CircleShape(float radius)
         {
             this.radius = radius;
+            this.type = ShapeType.Circle;
             this.UpdateShape();
+        }
+
+        /// <summary>
+        /// Returns true if the point is inside the circle.
+        /// </summary>
+        /// <param name="point">The point.</param>
+        /// <returns>True if the point is inside the circle.</returns>
+        public override bool PointInsideLocal(JVector point)
+        {
+            return (point.LengthSquared() <= (radius * radius));
+        }
+
+        /// <summary>
+        /// Should return true if the point is inside the circles world space.
+        /// </summary>
+        /// <param name="point">The point.</param>
+        /// <param name="position">World position of circle.</param>
+        /// <param name="orientation">World orientation of circle.</param>
+        /// <returns>True if the point is inside the shape.</returns>
+        public override bool PointInsideWorld(JVector point, JVector position, JMatrix orientation)
+        {
+            return ((point - position).LengthSquared() <= (radius * radius));
         }
 
         /// <summary>
@@ -90,7 +113,10 @@ namespace Jitter2D.Collision.Shapes
             inertia = mass * Radius * Radius / 4f;
         }
 
-
+        public override void UpdateAxes(float orientation)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 }

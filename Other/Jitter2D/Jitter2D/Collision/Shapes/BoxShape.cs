@@ -37,7 +37,7 @@ namespace Jitter2D.Collision.Shapes
         private JVector size = JVector.Zero;
 
         /// <summary>
-        /// The sidelength of the box.
+        /// The side length of the box.
         /// </summary>
         public JVector Size
         {
@@ -52,6 +52,7 @@ namespace Jitter2D.Collision.Shapes
         public BoxShape(JVector size)
         {
             this.size = size;
+            this.type = ShapeType.Box;
             this.UpdateShape();
         }
 
@@ -64,10 +65,41 @@ namespace Jitter2D.Collision.Shapes
         {
             this.size.X = width;
             this.size.Y = height;
+            this.type = ShapeType.Box;
             this.UpdateShape();
         }
 
-        private JVector halfSize = JVector.Zero;
+        internal JVector halfSize = JVector.Zero;
+
+        // local axes for SAT
+        internal JVector xAxis = JVector.Left;
+        internal JVector yAxis = JVector.Up;
+
+        /// <summary>
+        /// Returns true if the point is inside the box's local space.
+        /// </summary>
+        /// <param name="point">The point.</param>
+        /// <returns>True if the point is inside the box.</returns>
+        public override bool PointInsideLocal(JVector point)
+        {
+            if (point.X > -halfSize.X && point.X < halfSize.X)
+                if (point.Y > -halfSize.Y && point.Y < halfSize.Y)
+                    return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Should return true if the point is inside the box's world space.
+        /// </summary>
+        /// <param name="point">The point.</param>
+        /// <param name="position">World position of box.</param>
+        /// <param name="orientation">World orientation of box.</param>
+        /// <returns>True if the point is inside the shape.</returns>
+        public override bool PointInsideWorld(JVector point, JVector position, JMatrix orientation)
+        {
+            // move point into local space
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// This method uses the <see cref="ISupportMappable"/> implementation
@@ -79,6 +111,13 @@ namespace Jitter2D.Collision.Shapes
         {
             this.halfSize = size * 0.5f;
             base.UpdateShape();
+        }
+
+        // this should only be called if this shape is colliding
+        public override void UpdateAxes(float orientation)
+        {
+            this.xAxis = JVector.Transform(JVector.Left, JMatrix.CreateRotationZ(orientation));
+            this.yAxis = JVector.Transform(JVector.Up, JMatrix.CreateRotationZ(orientation));
         }
 
         /// <summary>
@@ -105,9 +144,8 @@ namespace Jitter2D.Collision.Shapes
         /// </summary>
         public override void CalculateMassInertia()
         {
-            mass = 10;
-
-            inertia = 1;
+            mass = size.X * size.Y;
+            inertia = mass * (this.Size.X * this.Size.X + this.Size.Y * this.Size.Y) / 12.0f;
 
             this.geomCen = JVector.Zero;
         }
@@ -124,5 +162,137 @@ namespace Jitter2D.Collision.Shapes
             result.X = (float)Math.Sign(direction.X) * halfSize.X;
             result.Y = (float)Math.Sign(direction.Y) * halfSize.Y;
         }
+
+        public JVector GetCorner(int i)
+        {
+            switch (i)
+            {
+                case 0:
+                    return new JVector(-halfSize.X, -halfSize.Y);
+                case 1:
+                    return new JVector(halfSize.X, -halfSize.Y);
+                case 2:
+                    return new JVector(halfSize.X, halfSize.Y);
+                case 3:
+                    return new JVector(-halfSize.X, halfSize.Y);
+                default:
+                    throw new IndexOutOfRangeException();
+            }
+        }
+
+        /// <summary>
+        /// Gets up to two supports points if the given direction is within a tolerance of being parallel to the normal of the edge formed by the supports. Otherwise it just returns a single support.
+        /// </summary>
+        internal int FindSupportPoints(ref JVector direction, ref JVector PA, ref JMatrix OA, out JVector[] S)
+        {
+            // init S
+            S = new JVector[2];
+            // transform the normal into object space
+            JVector N = JVector.TransposedTransform(direction, OA);
+            // find dots
+            float a = this.GetCorner(0) * N;
+            float b = this.GetCorner(1) * N;
+            float c = this.GetCorner(2) * N;
+            float d = this.GetCorner(3) * N;
+            // find min
+            float min = JMath.Min(a, b);
+            min = JMath.Min(c, min);
+            min = JMath.Min(d, min);
+
+            // now min should be right
+            int Snum = 0;
+            const float threshold = 1.0E-3f;
+
+            if (a < min + threshold)
+                S[Snum++] = JVector.Transform(this.GetCorner(0), OA) + PA;
+
+            if (b < min + threshold)
+                S[Snum++] = JVector.Transform(this.GetCorner(1), OA) + PA;
+
+            if (c < min + threshold)
+                S[Snum++] = JVector.Transform(this.GetCorner(2), OA) + PA;
+
+            if (d < min + threshold)
+                S[Snum++] = JVector.Transform(this.GetCorner(3), OA) + PA;
+                
+            return Snum;
+        }
+
+
+        // TODO - this is just ridiculous, for a box we should only be doing 2 dot products here!
+        //        one for xAxis and one for yAxis then if ...
+        //----------------------------------------------------------------------------------------------- 
+        // find the support points of a convex shape along a direction
+        //----------------------------------------------------------------------------------------------- 
+        //internal int FindSupportPointsOLD(ref JVector N, ref JVector PA, ref JMatrix OA, out JVector[] S)
+        //{
+        //    S = new JVector[2];
+
+        //    JVector Norm = JVector.TransposedTransform(N, OA);
+
+        //    float[] d = new float[4];      // 32 points max?
+        //    float dmin;
+        //    dmin = d[0] = this.GetCorner(0) * Norm;
+
+        //    for (int i = 1; i < 4; i++)
+        //    {
+        //        d[i] = this.GetCorner(i) * Norm;
+
+        //        if (d[i] < dmin)
+        //        {
+        //            dmin = d[i];
+        //        }
+        //    }
+
+        //    // we will limit the number of support points to only 2. 
+        //    // if we have more than 2 support points, we take the extremums.
+        //    int Snum = 0;
+        //    const float threshold = 1.0E-3f;
+        //    float[] s = new float[2];
+        //    bool sign = false;
+
+        //    JVector Perp = new JVector(-Norm.Y, Norm.X);
+
+        //    for (int i = 0; i < 4; i++)
+        //    {
+        //        if (d[i] < dmin + threshold)
+        //        {
+        //            JVector Contact = JVector.Transform(this.GetCorner(i), OA) + PA;//Transform(A[i], PA, VA, OA, t);
+
+        //            float c = Contact * Perp;
+
+        //            if (Snum < 2)
+        //            {
+        //                s[Snum] = c;
+        //                S[Snum] = Contact;
+        //                Snum++;
+
+        //                if (Snum > 1)
+        //                {
+        //                    sign = (s[1] > s[0]);
+        //                }
+        //            }
+        //            else
+        //            {
+        //                float min = (sign) ? s[0] : s[1];
+        //                float max = (sign) ? s[1] : s[0];
+        //                JVector Min = (sign) ? S[0] : S[1];
+        //                JVector Max = (sign) ? S[1] : S[0];
+
+        //                if (c < min)
+        //                {
+        //                    min = c;
+        //                    Min = Contact;
+        //                }
+        //                else if (c > max)
+        //                {
+        //                    max = c;
+        //                    Max = Contact;
+        //                }
+        //            }
+        //        }
+        //    }
+        //    return Snum;
+        //}
     }
 }

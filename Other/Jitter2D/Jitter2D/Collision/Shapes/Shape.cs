@@ -28,6 +28,7 @@ using Jitter2D.Collision.Shapes;
 
 namespace Jitter2D.Collision.Shapes
 {
+    public enum ShapeType { Unknown, Segment, Box, Circle, Polygon }
 
     /// <summary>
     /// Gets called when a shape changes one of the parameters.
@@ -49,9 +50,11 @@ namespace Jitter2D.Collision.Shapes
         internal float inertia = 0.0f;
         internal float density = 1.0f;
         internal float mass = 1.0f;
+        internal ShapeType type = ShapeType.Unknown;
 
         internal JBBox boundingBox = JBBox.LargeBox;
         internal JVector geomCen = JVector.Zero;
+        internal bool axesDirty = true;
 
         /// <summary>
         /// Gets called when the shape changes one of the parameters.
@@ -89,6 +92,24 @@ namespace Jitter2D.Collision.Shapes
         /// </summary>
         public float Mass { get { return mass; } protected set { mass = value; } }
 
+        public ShapeType Type { get { return type; } protected set { type = value; } }
+
+        /// <summary>
+        /// Should return true if the point is inside the shapes local space.
+        /// </summary>
+        /// <param name="point">The point.</param>
+        /// <returns>True if the point is inside the shape.</returns>
+        public abstract bool PointInsideLocal(JVector point);
+
+        /// <summary>
+        /// Should return true if the point is inside the shapes world space.
+        /// </summary>
+        /// <param name="point">The point.</param>
+        /// <param name="position">World position of shape.</param>
+        /// <param name="orientation">World orientation of shape.</param>
+        /// <returns>True if the point is inside the shape.</returns>
+        public abstract bool PointInsideWorld(JVector point, JVector position, JMatrix orientation);
+
         /// <summary>
         /// Informs all listener that the shape changed.
         /// </summary>
@@ -101,19 +122,6 @@ namespace Jitter2D.Collision.Shapes
         /// The untransformed axis aligned bounding box of the shape.
         /// </summary>
         public JBBox BoundingBox { get { return boundingBox; } }
-
-        /// <summary>
-        /// Hull making.
-        /// </summary>
-        /// <remarks>Based/Completely from http://www.xbdev.net/physics/MinkowskiDifference/index.php
-        /// I don't (100%) see why this should always work.
-        /// </remarks>
-        /// <param name="triangleList"></param>
-        /// <param name="generationThreshold"></param>
-        public virtual void MakeHull(ref List<JVector> triangleList, int generationThreshold)
-        {
-           
-        }
 
         /// <summary>
         /// Uses the supportMapping to calculate the bounding box. Should be overidden
@@ -129,19 +137,19 @@ namespace Jitter2D.Collision.Shapes
 
             vec.Set(orientation.M11, orientation.M21);
             SupportMapping(ref vec, out vec);
-            box.Max.X = orientation.M11 * vec.X + orientation.M21 * vec.Y + orientation.M31;
+            box.Max.X = orientation.M11 * vec.X + orientation.M21 * vec.Y;
 
             vec.Set(orientation.M12, orientation.M22);
             SupportMapping(ref vec, out vec);
-            box.Max.Y = orientation.M12 * vec.X + orientation.M22 * vec.Y + orientation.M32;
+            box.Max.Y = orientation.M12 * vec.X + orientation.M22 * vec.Y;
 
             vec.Set(-orientation.M11, -orientation.M21);
             SupportMapping(ref vec, out vec);
-            box.Min.X = orientation.M11 * vec.X + orientation.M21 * vec.Y + orientation.M31;
+            box.Min.X = orientation.M11 * vec.X + orientation.M21 * vec.Y;
 
             vec.Set(-orientation.M12, -orientation.M22);
             SupportMapping(ref vec, out vec);
-            box.Min.Y = orientation.M12 * vec.X + orientation.M22 * vec.Y + orientation.M32;
+            box.Min.Y = orientation.M12 * vec.X + orientation.M22 * vec.Y;
         }
 
         /// <summary>
@@ -152,38 +160,18 @@ namespace Jitter2D.Collision.Shapes
         /// </summary>
         public virtual void UpdateShape()
         {
-            //GetBoundingBox(ref 0.0f, out boundingBox);
-
             CalculateMassInertia();
             RaiseShapeUpdated();
         }
 
-        /// <summary>
-        /// Calculates the inertia of the shape relative to the center of mass.
-        /// </summary>
-        /// <param name="shape"></param>
-        /// <param name="centerOfMass"></param>
-        /// <param name="inertia">Returns the inertia relative to the center of mass, not to the origin</param>
-        /// <returns></returns>
-        #region  public static float CalculateMassInertia(Shape shape, out JVector centerOfMass, out JMatrix inertia)
-        public static float CalculateMassInertia(Shape shape, out JVector centerOfMass,
-            out JMatrix inertia)
-        {
-            throw new NotImplementedException();
-        }
-        #endregion
+        public abstract void UpdateAxes(float orientation);
 
         /// <summary>
         /// Numerically calculates the inertia, mass and geometric center of the shape.
         /// This gets a good value for "normal" shapes. The algorithm isn't very accurate
         /// for very flat shapes. 
         /// </summary>
-        public virtual void CalculateMassInertia()
-        {
-            //this.mass = Shape.CalculateMassInertia(this, out geomCen, out inertia);
-            mass = 5;
-            inertia = 10;
-        }
+        public abstract void CalculateMassInertia();
 
         /// <summary>
         /// SupportMapping. Finds the point in the shape furthest away from the given direction.
@@ -202,6 +190,5 @@ namespace Jitter2D.Collision.Shapes
         {
             geomCenter = this.geomCen;
         }
-
     }
 }

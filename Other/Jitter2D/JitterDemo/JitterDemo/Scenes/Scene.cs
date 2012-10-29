@@ -25,42 +25,38 @@ namespace JitterDemo.Scenes
         protected RigidBody ground = null;
         //protected CarObject car = null;
 
-        public void AddGround()
+        public void AddGround(bool solid)
         {
-            ground = new RigidBody(new BoxShape(40, 1));
-            ground.SetMassProperties(float.MaxValue, float.MaxValue, false);
-            ground.Position = new JVector(0, -10);
-            //ground.Tag = BodyTag.DontDrawMe;
-            ground.IsStatic = true; Demo.World.AddBody(ground);
-            //ground.Restitution = 1.0f;
-            ground.Material.DynamicFriction = 1.0f;
+            if (solid)
+            {
+                ground = new RigidBody(new BoxShape(3600, 1f));
+                //ground.SetMassProperties(float.MaxValue, float.MaxValue, false);
+                ground.Position = new JVector(0, -10);
+                ground.IsStatic = true; 
+                Demo.World.AddBody(ground);
+                ground.Material.DynamicFriction = 1.0f;
+                ground.Material.StaticFriction = 1.0f;
+                ground.Material.Restitution = 0.0f;
+            }
+            else
+            {
+                List<JVector> groundLine = new List<JVector> { new JVector(-40f, 0f), new JVector(40f, 0f) };
 
-            //quadDrawer = new QuadDrawer(Demo, 100);
-            //Demo.Components.Add(quadDrawer);
+                ground = new RigidBody(new PolygonShape(groundLine));//new BoxShape(new JVector(1.0f, 1.0f)));
+                ground.Position = new JVector(0, -10);
+                ground.Orientation = 0;
+                ground.IsStatic = true;
+                ground.SetMassProperties(float.MaxValue, float.MaxValue, false);
+                Demo.World.AddBody(ground);
+                ground.Material.DynamicFriction = 1.0f;
+                ground.Material.Restitution = 0.0f;
+            }
         }
 
         public void RemoveGround()
         {
             Demo.World.RemoveBody(ground);
-            //Demo.Components.Remove(quadDrawer);
-           // quadDrawer.Dispose();
         }
-
-        public void AddCar(JVector position)
-        {
-            //car = new CarObject(Demo);
-            //this.Demo.Components.Add(car);
-
-            //car.carBody.Position = position;
-        }
-
-        public void RemoveCar()
-        {
-            //Demo.World.RemoveBody(car.carBody);
-            //Demo.Components.Remove(quadDrawer);
-            //Demo.Components.Remove(car);
-        }
-
 
         public virtual void Draw() { }
 

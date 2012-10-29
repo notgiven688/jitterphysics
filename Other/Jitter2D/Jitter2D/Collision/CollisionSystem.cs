@@ -25,6 +25,7 @@ using Jitter2D.Dynamics;
 using Jitter2D.LinearMath;
 using Jitter2D.Collision.Shapes;
 using System.Diagnostics;
+using Jitter2D.Collision.Narrowphase;
 #endregion
 
 namespace Jitter2D.Collision
@@ -160,23 +161,6 @@ namespace Jitter2D.Collision
         {
         }
 
-        internal bool useTerrainNormal = true;
-        internal bool useTriangleMeshNormal = true;
-
-        /// <summary>
-        /// If set to true the collision system uses the normal of
-        /// the current colliding triangle as collision normal. This
-        /// fixes unwanted behavior on triangle transitions.
-        /// </summary>
-        public bool UseTriangleMeshNormal { get { return useTriangleMeshNormal; } set { useTriangleMeshNormal = value; } }
-
-        /// <summary>
-        /// If set to true the collision system uses the normal of
-        /// the current colliding triangle as collision normal. This
-        /// fixes unwanted behavior on triangle transitions.
-        /// </summary>
-        public bool UseTerrainNormal { get { return useTerrainNormal; } set { useTerrainNormal = value; } }
-
         /// <summary>
         /// Checks two bodies for collisions using narrowphase.
         /// </summary>
@@ -277,30 +261,58 @@ namespace Jitter2D.Collision
 
             if (!b1IsMulti && !b2IsMulti)
             {
-                JMatrix o1 = JMatrix.CreateRotationZ(body1.orientation);
-                JMatrix o2 = JMatrix.CreateRotationZ(body2.orientation);
-
                 JVector point1 = JVector.Zero; 
                 JVector point2 = JVector.Zero;
 
-                if (XenoCollide.Detect(body1.Shape, body2.Shape, ref o1,
-                    ref o2, ref body1.position, ref body2.position,
-                    out point, out normal, out penetration))
+                JMatrix OA = JMatrix.CreateRotationZ(body1.orientation);
+                JMatrix OB = JMatrix.CreateRotationZ(body2.orientation);
+                JVector zero = JVector.Zero;
+                float t = 0.0f;
+
+                if (body1.Shape.type == ShapeType.Box && body2.Shape.type == ShapeType.Box)
                 {
-                    FindSupportPoints(body1, body2, body1.Shape, body2.Shape, ref point, ref normal, out point1, out point2);
-                    RaiseCollisionDetected(body1, body2, ref point1, ref point2, ref normal, penetration);
+                    var A = body1.Shape as BoxShape;
+                    var B = body2.Shape as BoxShape;
+
+                    A.UpdateAxes(body1.orientation);
+                    B.UpdateAxes(body2.orientation);
+
+                    JVector[] CA = new JVector[2], CB = new JVector[2];
+                    int Cnum = 0;
+
+                    if (Collision.BoxBoxTestContact(ref A, ref body1.position, ref OA,
+                        ref B, ref body2.position, ref OB,
+                        out normal, out t, out CA, out CB, out Cnum))
+                    {
+                        normal.Negate();
+                        RaiseCollisionDetected(body1, body2, ref CA[0], ref CB[0], ref normal, -t);
+                    }
                 }
+                else if (body1.Shape.type == ShapeType.Circle && body2.Shape.type == ShapeType.Circle)
+                {
+                    var A = body1.Shape as CircleShape;
+                    var B = body2.Shape as CircleShape;
+
+                    Collision.CircleCircleTest(body1.position, A.Radius, body2.position, B.Radius, out point1, out point2, out normal, out penetration);
+
+                    if (penetration < 0)
+                    {
+                        RaiseCollisionDetected(body1, body2, ref point1, ref point2, ref normal, -penetration);
+                    }
+                }
+                // all shapes (GJK)
                 else if (speculative)
                 {
                     JVector hit1, hit2;
 
-                    if (GJKCollide.ClosestPoints(body1.Shape, body2.Shape, ref o1, ref o2,
+                    if (GJKCollide.ClosestPoints(body1.Shape, body2.Shape, ref OA, ref OB,
                         ref body1.position, ref body2.position, out hit1, out hit2, out normal))
                     {
                         JVector delta = hit2 - hit1;
 
                         if (delta.LengthSquared() < (body1.sweptDirection - body2.sweptDirection).LengthSquared())
                         {
+                            //normal.Negate();
                             penetration = delta * normal;
 
                             if (penetration < 0.0f)
@@ -671,5 +683,12 @@ namespace Jitter2D.Collision
         /// </summary>
         /// <param name="multiThreaded">If true internal multithreading is used.</param>
         public abstract void Detect(bool multiThreaded);
+
+        /// <summary>
+        /// Query a bounding box for overlapping shapes.
+        /// </summary>
+        /// <param name="callback"></param>
+        /// <param name="box"></param>
+        public abstract void Query(Func<IBroadphaseEntity, bool> callback, ref JBBox box);
     }
 }

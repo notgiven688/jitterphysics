@@ -33,7 +33,7 @@ namespace Jitter2D
     public class ThreadManager
     {
 
-        public const int ThreadsPerProcessor = 1;
+        public const int ThreadsPerProcessor = 2;
 
         private readonly int[] xBoxMap = new int[] { 1, 3, 4, 5 };
 

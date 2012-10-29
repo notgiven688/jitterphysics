@@ -123,14 +123,30 @@ namespace Jitter2D.LinearMath
         {
             result.M11 = Math.Abs(matrix.M11);
             result.M12 = Math.Abs(matrix.M12);
-            result.M13 = Math.Abs(matrix.M13);
             result.M21 = Math.Abs(matrix.M21);
             result.M22 = Math.Abs(matrix.M22);
-            result.M23 = Math.Abs(matrix.M23);
-            result.M31 = Math.Abs(matrix.M31);
-            result.M32 = Math.Abs(matrix.M32);
-            result.M33 = Math.Abs(matrix.M33);
         }
         #endregion
+
+        public static void Swapf(ref float a, ref float b)
+        {
+            float t = a;
+            a = b;
+            b = t;
+        }
+
+        public static bool IsNearlyOne(float value)
+        {
+            if (value > (1f - Epsilon) && value < (1f + Epsilon))
+                return true;
+            return false;
+        }
+
+        public static bool IsNearlyZero(float value)
+        {
+            if (value > -Epsilon && value < Epsilon)
+                return true;
+            return false;
+        }
     }
 }

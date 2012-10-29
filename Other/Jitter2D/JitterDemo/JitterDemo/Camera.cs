@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Jitter2D.LinearMath;
 
 namespace JitterDemo
 {
@@ -16,7 +17,7 @@ namespace JitterDemo
 
         private Vector2 position = new Vector2(0, 0);
         private Vector2 moveVector;
-        private float angle = 0.0f;
+        //private float angle = 0.0f;
         private float zoom = 1.0f;
         private float zoomForce = 0.0f;
 
@@ -80,6 +81,12 @@ namespace JitterDemo
 
                 base.Update(gameTime);
             }
+        }
+
+        public JVector ScreenToWorldSpace(JVector position)
+        {
+            var t = this.Game.GraphicsDevice.Viewport.Unproject(new Vector3(position.X, position.Y, 0), Projection, View, Matrix.Identity);
+            return new JVector(t.X, t.Y);
         }
 
         private void ProcessInput(float amountOfMovement)

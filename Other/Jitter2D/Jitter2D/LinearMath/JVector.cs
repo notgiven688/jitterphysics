@@ -55,11 +55,11 @@ namespace Jitter2D.LinearMath
         /// </summary>
         public static readonly JVector Right;
         /// <summary>
-        /// A vector with components (0,1,0);
+        /// A vector with components (0,1);
         /// </summary>
         public static readonly JVector Up;
         /// <summary>
-        /// A vector with components (0,-1,0);
+        /// A vector with components (0,-1);
         /// </summary>
         public static readonly JVector Down;
         /// <summary>
@@ -290,8 +290,8 @@ namespace Jitter2D.LinearMath
         /// <param name="result">The transformed vector.</param>
         public static void Transform(ref JVector position, ref JMatrix matrix, out JVector result)
         {
-            float num0 = ((position.X * matrix.M11) + (position.Y * matrix.M21)) + matrix.M31;
-            float num1 = ((position.X * matrix.M12) + (position.Y * matrix.M22)) + matrix.M32;
+            float num0 = ((position.X * matrix.M11) + (position.Y * matrix.M21));
+            float num1 = ((position.X * matrix.M12) + (position.Y * matrix.M22));
 
             result.X = num0;
             result.Y = num1;
@@ -303,10 +303,27 @@ namespace Jitter2D.LinearMath
         /// <param name="position">The vector to transform.</param>
         /// <param name="matrix">The transform matrix.</param>
         /// <param name="result">The transformed vector.</param>
+        public static JVector TransposedTransform(JVector position, JMatrix matrix)
+        {
+            JVector result;
+            float num0 = ((position.X * matrix.M11) + (position.Y * matrix.M12));
+            float num1 = ((position.X * matrix.M21) + (position.Y * matrix.M22));
+
+            result.X = num0;
+            result.Y = num1;
+            return result;
+        }
+
+        /// <summary>
+        /// Transforms a vector by the transposed of the given Matrix.
+        /// </summary>
+        /// <param name="position">The vector to transform.</param>
+        /// <param name="matrix">The transform matrix.</param>
+        /// <param name="result">The transformed vector.</param>
         public static void TransposedTransform(ref JVector position, ref JMatrix matrix, out JVector result)
         {
-            float num0 = ((position.X * matrix.M11) + (position.Y * matrix.M12)) + matrix.M31;
-            float num1 = ((position.X * matrix.M21) + (position.Y * matrix.M22)) + matrix.M23;
+            float num0 = ((position.X * matrix.M11) + (position.Y * matrix.M12));
+            float num1 = ((position.X * matrix.M21) + (position.Y * matrix.M22));
 
             result.X = num0;
             result.Y = num1;
@@ -686,6 +703,14 @@ namespace Jitter2D.LinearMath
             return (float)Math.Sqrt((double)num3);
         }
 
+        public static float DistanceSquared(JVector value1, JVector value2)
+        {
+            float num2 = value1.X - value2.X;
+            float num = value1.Y - value2.Y;
+            float num3 = (num2 * num2) + (num * num);
+            return num3;
+        }
+
         public static JVector operator /(JVector value1, float divider)
         {
             JVector vector;
@@ -695,14 +720,25 @@ namespace Jitter2D.LinearMath
             return vector;
         }
 
-        public JVector PerpR()
+        // negate operator
+        public static JVector operator -(JVector v)
         {
-            return new JVector(-Y, X);
+            return new JVector(-v.X, -v.Y);
         }
 
         public JVector PerpL()
         {
+            return new JVector(-Y, X);
+        }
+
+        public JVector PerpR()
+        {
             return new JVector(Y, -X);
+        }
+
+        internal static JVector Clamp(JVector v, float len)
+        {
+            return (JVector.Dot(v, v) > len * len) ? JVector.Multiply(JVector.Normalize(v), len) : v;
         }
     }
 }

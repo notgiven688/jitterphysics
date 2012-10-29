@@ -13,11 +13,39 @@ namespace JitterDemo
     /// </summary>
     public class DebugDrawer : DrawableGameComponent, Jitter2D.IDebugDrawer
     {
+        private class PointDef
+        {
+            public Vector2 point;
+            public Color color;
+
+            public PointDef(Vector2 vector2, Color color_2)
+            {
+                this.point = vector2;
+                this.color = color_2;
+            }
+        }
+
+        private class StringDef
+        {
+            public string text;
+            public Vector2 point;
+            public Color color;
+
+            public StringDef(string text, Vector2 vector2, Color color_2)
+            {
+                this.text = text;
+                this.point = vector2;
+                this.color = color_2;
+            }
+        }
+
         BasicEffect basicEffect;
         SpriteBatch sb;
 
         Texture2D pointTex;
-        List<Vector2> points = new List<Vector2>();
+        SpriteFont font;
+        List<PointDef> points = new List<PointDef>();
+        List<StringDef> strings = new List<StringDef>();
 
         public DebugDrawer(Game game)
             : base(game)
@@ -92,6 +120,16 @@ namespace JitterDemo
             DrawLine(new JVector(from.X, from.Y), new JVector(from.X, to.Y), color);
         }
 
+        public void DrawString(string text, JVector position)
+        {
+            strings.Add(new StringDef(text, Conversion.ToXNAVector2(position), Color.Black));
+        }
+
+        public void DrawString(string text, JVector position, Color color)
+        {
+            strings.Add(new StringDef(text, Conversion.ToXNAVector2(position), color));
+        }
+
         public VertexPositionColor[] TriangleList = new VertexPositionColor[99];
         public VertexPositionColor[] LineList = new VertexPositionColor[50];
 
@@ -110,12 +148,43 @@ namespace JitterDemo
             {
                 pass.Apply();
                 if (triangleIndex > 0)
+                {
+                    int triangles = triangleIndex / 3;
+                    int loop = 0;
+
+                    while (triangles > 20000)
+                    {
+                        int numToDraw = 20000;
+                        triangles -= numToDraw;
+
+                        GraphicsDevice.DrawUserPrimitives<VertexPositionColor>(
+                        PrimitiveType.TriangleList, TriangleList, loop * 3 * 20000, numToDraw);
+
+                        loop++;
+                    }
+
                     GraphicsDevice.DrawUserPrimitives<VertexPositionColor>(
-                        PrimitiveType.TriangleList, TriangleList, 0, triangleIndex / 3);
+                        PrimitiveType.TriangleList, TriangleList, loop * 3 * 20000, triangles);
+                }
 
                 if (lineIndex > 0)
+                {
+                    int lines = lineIndex / 2;
+                    int loop = 0;
+
+                    while (lines > 20000)
+                    {
+                        int numToDraw = 20000;
+                        lines -= numToDraw;
+
+                        GraphicsDevice.DrawUserPrimitives<VertexPositionColor>(
+                            PrimitiveType.LineList, LineList, loop * 2 * 20000, numToDraw);
+
+                        loop++;
+                    }
                     GraphicsDevice.DrawUserPrimitives<VertexPositionColor>(
-                        PrimitiveType.LineList, LineList, 0, lineIndex / 2);
+                           PrimitiveType.LineList, LineList, loop * 2 * 20000, lines);
+                }
             }
 
             basicEffect.TextureEnabled = true;
@@ -124,12 +193,18 @@ namespace JitterDemo
 
             foreach (var point in points)
             {
-                sb.Draw(pointTex, point, null, Color.White, 0, new Vector2(5, 5), 0.01f, SpriteEffects.None, 0);
+                sb.Draw(pointTex, point.point, null, point.color, 0, new Vector2(5, 5), 0.01f, SpriteEffects.None, 0);
+            }
+
+            foreach (var s in strings)
+            {
+                sb.DrawString(font, s.text, s.point, s.color);
             }
 
             sb.End();
 
             points.Clear();
+            strings.Clear();
 
             lineIndex = 0;
             triangleIndex = 0;
@@ -145,7 +220,7 @@ namespace JitterDemo
 
         public void DrawPoint(JVector pos)
         {
-            points.Add(Conversion.ToXNAVector2(pos));
+            points.Add(new PointDef(Conversion.ToXNAVector2(pos), Color));
         }
 
         public Color Color { get; set; }
