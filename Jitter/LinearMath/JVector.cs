@@ -331,7 +331,7 @@ namespace Jitter.LinearMath
         /// <param name="result">The transformed vector.</param>
         public static void TransposedTransform(ref JVector position, ref JMatrix matrix, out JVector result)
         {
-            float num0 = ((position.X * matrix.M11) + (position.Y * matrix.M12)) + (position.Z * matrix.M31);
+            float num0 = ((position.X * matrix.M11) + (position.Y * matrix.M12)) + (position.Z * matrix.M13);
             float num1 = ((position.X * matrix.M21) + (position.Y * matrix.M22)) + (position.Z * matrix.M23);
             float num2 = ((position.X * matrix.M31) + (position.Y * matrix.M32)) + (position.Z * matrix.M33);
 
