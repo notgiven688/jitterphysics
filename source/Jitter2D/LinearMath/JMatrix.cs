@@ -91,6 +91,22 @@ namespace Jitter2D.LinearMath
             result.M21 = -num;
             result.M22 = num2;
         }
+        
+        public static void CreateTranslation(ref JVector position, out JMatrix result)
+        {
+            result = new JMatrix();
+            result.M11 = position.X;
+            result.M12 = 0f;
+            result.M21 = 0f;
+            result.M22 = position.Y;
+        }
+
+        public static JMatrix CreateTranslation(JVector position)
+        {
+            JMatrix matrix;
+            JMatrix.CreateTranslation(ref position, out matrix);
+            return matrix;
+        }
 
         /// <summary>
         /// Initializes a new instance of the matrix structure.

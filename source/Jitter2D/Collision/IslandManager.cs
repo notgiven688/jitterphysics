@@ -122,16 +122,14 @@ namespace Jitter2D.Collision
             if (body.island != null)
             {
                 System.Diagnostics.Debug.Assert(body.island.islandManager == this,
-                    "IslandManager Inconsistency.",
-                    "IslandManager doesn't own the Island.");
+                    "IslandManager Inconsistency: IslandManager doesn't own the Island.");
 
 
                 // the body should now form an island on his own.
                 // thats okay, but since static bodies dont have islands
                 // remove this island.
                 System.Diagnostics.Debug.Assert(body.island.bodies.Count == 1,
-                "IslandManager Inconsistency.",
-                "Removed all connections of a body - body is still in a non single Island.");
+                    "IslandManager Inconsistency: Removed all connections of a body - body is still in a non single Island.");
 
                 body.island.ClearLists();
                 Pool.GiveBack(body.island);
@@ -163,8 +161,7 @@ namespace Jitter2D.Collision
         private void AddConnection(RigidBody body1, RigidBody body2)
         {
             System.Diagnostics.Debug.Assert(!(body1.isStatic && body2.isStatic),
-                "IslandManager Inconsistency.",
-                "Arbiter detected between two static objects.");
+                "IslandManager Inconsistency: Arbiter detected between two static objects.");
 
             if (body1.isStatic) // <- only body1 is static
             {
@@ -202,8 +199,7 @@ namespace Jitter2D.Collision
         private void RemoveConnection(RigidBody body1, RigidBody body2)
         {
             System.Diagnostics.Debug.Assert(!(body1.isStatic && body2.isStatic),
-                "IslandManager Inconsistency.",
-                "Arbiter detected between two static objects.");
+                "IslandManager Inconsistency: Arbiter detected between two static objects.");
 
             if (body1.isStatic) // <- only body1 is static
             {
@@ -225,8 +221,7 @@ namespace Jitter2D.Collision
             else // <- both are !static
             {
                 System.Diagnostics.Debug.Assert(body1.island == body2.island,
-                    "IslandManager Inconsistency.",
-                    "Removing arbiter with different islands.");
+                    "IslandManager Inconsistency: Removing arbiter with different islands.");
 
                 body1.connections.Remove(body2);
                 body2.connections.Remove(body1);

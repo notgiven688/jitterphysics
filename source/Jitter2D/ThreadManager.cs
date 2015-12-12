@@ -21,6 +21,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
+#if PORTABLE
+using System.Threading.Tasks;
+using Thread = System.Threading.Tasks.Task;
+#endif
 #endregion
 
 namespace Jitter2D
@@ -94,7 +99,7 @@ namespace Jitter2D
 
             for (int i = 1; i < threads.Length; i++)
             {
-                threads[i] = new Thread(() =>
+                threads[i] = NewThread(() =>
                 {
 #if XBOX
 					Thread.CurrentThread.SetProcessorAffinity(xBoxMap[i]);
@@ -103,7 +108,6 @@ namespace Jitter2D
                     ThreadProc();
                 });
 
-                threads[i].IsBackground = true;
                 threads[i].Start();
                 initWaitHandle.WaitOne();
             }
@@ -124,7 +128,7 @@ namespace Jitter2D
             currentWaitHandle.Set();
             PumpTasks();
 
-            while (waitingThreadCount < threads.Length - 1) Thread.Sleep(0);
+            while (waitingThreadCount < threads.Length - 1) ThreadSleep(0);
 
             currentWaitHandle.Reset();
             currentWaitHandle = (currentWaitHandle == waitHandleA) ? waitHandleB : waitHandleA;
@@ -174,6 +178,28 @@ namespace Jitter2D
                     tasks[taskIndex](parameters[taskIndex]);
                 }
             }
+        }
+
+        private static void ThreadSleep(int dueTime)
+        {
+#if PORTABLE
+            Task.Delay(dueTime).Wait();
+#else
+            Thread.Sleep(dueTime);
+#endif
+        }
+
+#if PORTABLE
+        private delegate void ThreadStart();
+#endif
+
+        private static Thread NewThread(ThreadStart action)
+        {
+#if PORTABLE
+            return new Thread(action.Invoke, TaskCreationOptions.LongRunning);
+#else
+            return new Thread(action) { IsBackground = true };
+#endif
         }
 
     }
