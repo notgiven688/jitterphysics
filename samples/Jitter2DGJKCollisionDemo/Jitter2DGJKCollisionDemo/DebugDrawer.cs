@@ -17,7 +17,23 @@ namespace GJKCollisionDemo
         SpriteBatch sb;
 
         Texture2D pointTex;
+        SpriteFont font;
         List<Vector2> points = new List<Vector2>();
+        List<StringDef> strings = new List<StringDef>();
+        
+        private class StringDef
+        {
+            public string text;
+            public Vector2 point;
+            public Color color;
+
+            public StringDef(string text, Vector2 vector2, Color color_2)
+            {
+                this.text = text;
+                this.point = vector2;
+                this.color = color_2;
+            }
+        }
 
         public DebugDrawer(Game game)
             : base(game)
@@ -91,6 +107,11 @@ namespace GJKCollisionDemo
             DrawLine(new JVector(to.X, from.Y), new JVector(to.X, to.Y), color);
             DrawLine(new JVector(from.X, from.Y), new JVector(from.X, to.Y), color);
         }
+        
+        public void DrawString(string text, JVector position)
+        {
+            strings.Add(new StringDef(text, Conversion.ToXNAVector2(position), Color.Black));
+        }
 
         public VertexPositionColor[] TriangleList = new VertexPositionColor[99];
         public VertexPositionColor[] LineList = new VertexPositionColor[50];
@@ -128,10 +149,16 @@ namespace GJKCollisionDemo
             {
                 sb.Draw(pointTex, point, null, Color.White, 0, new Vector2(5, 5), 0.025f, SpriteEffects.None, 0);
             }
+            
+            foreach (var s in strings)
+            {
+                sb.DrawString(font, s.text, s.point, s.color);
+            }
 
             sb.End();
 
             points.Clear();
+            strings.Clear();
 
             lineIndex = 0;
             triangleIndex = 0;
