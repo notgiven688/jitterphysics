@@ -137,7 +137,7 @@ namespace JitterDemo
 
             foreach (Type type in Assembly.GetExecutingAssembly().GetTypes())
             {
-                if (type.Namespace == "JitterDemo.Scenes" && !type.IsAbstract)
+                if (type.Namespace == "JitterDemo.Scenes" && !type.IsAbstract && type.DeclaringType == null)
                 {
                     if (type.Name == "SoftBodyJenga") currentScene = PhysicScenes.Count;
                     Scenes.Scene scene = (Scenes.Scene)Activator.CreateInstance(type, this);
