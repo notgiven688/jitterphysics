@@ -40,7 +40,7 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using Jitter.LinearMath;
 
-namespace Jitter_OpenGL
+namespace JitterOpenGLDemo
 {
     public sealed class Conversion
     {
@@ -289,11 +289,11 @@ namespace Jitter_OpenGL
                 Assembly a = Assembly.GetExecutingAssembly();
                 // Para ver los nombres de los recursos incrustados
                 String[] nombres = a.GetManifestResourceNames(); 
-                stmChecker = a.GetManifestResourceStream("Jitter_OpenGL.Resources.checkered.png");
-                stmGround = a.GetManifestResourceStream("Jitter_OpenGL.Resources.ground.png");
-                stmSky = a.GetManifestResourceStream("Jitter_OpenGL.Resources.sky.png");
-                stmWood = a.GetManifestResourceStream("Jitter_OpenGL.Resources.wood.png");
-                stmGrass = a.GetManifestResourceStream("Jitter_OpenGL.Resources.grass.jpeg");
+                stmChecker = a.GetManifestResourceStream("JitterOpenGLDemo.Resources.checkered.png");
+                stmGround = a.GetManifestResourceStream("JitterOpenGLDemo.Resources.ground.png");
+                stmSky = a.GetManifestResourceStream("JitterOpenGLDemo.Resources.sky.png");
+                stmWood = a.GetManifestResourceStream("JitterOpenGLDemo.Resources.wood.png");
+                stmGrass = a.GetManifestResourceStream("JitterOpenGLDemo.Resources.grass.jpeg");
             }
             catch
             {

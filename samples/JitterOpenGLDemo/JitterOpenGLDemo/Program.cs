@@ -10,7 +10,7 @@ using Jitter.Dynamics;
 using Jitter.Collision.Shapes;
 #endregion
 
-namespace Jitter_OpenGL
+namespace JitterOpenGLDemo
 {
     public class Program : DrawStuffOtk, IDisposable
     {
