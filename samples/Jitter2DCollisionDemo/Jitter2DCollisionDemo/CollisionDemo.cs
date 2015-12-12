@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
@@ -13,7 +12,6 @@ using Jitter2D.Collision.Shapes;
 using Jitter2D.LinearMath;
 using Jitter2D.Dynamics;
 using System.Diagnostics;
-using Jitter2D.Collision.Narrowphase;
 
 namespace CollisionDemo
 {
