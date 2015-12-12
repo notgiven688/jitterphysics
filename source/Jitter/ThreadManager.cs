@@ -25,6 +25,10 @@ using Jitter.Dynamics;
 using Jitter.LinearMath;
 using Jitter.Collision.Shapes;
 using System.Threading;
+#if PORTABLE
+using System.Threading.Tasks;
+using Thread = System.Threading.Tasks.Task;
+#endif
 #endregion
 
 namespace Jitter
@@ -80,13 +84,7 @@ namespace Jitter
         {
 
 
-#if XBOX 
-            ThreadCount = xBoxMap.Length;
-#elif WINDOWS_PHONE
-            ThreadCount = 2;
-#else
             threadCount = System.Environment.ProcessorCount * ThreadsPerProcessor;
-#endif
 
             threads = new Thread[threadCount];
             waitHandleA = new ManualResetEvent(false);
@@ -98,16 +96,12 @@ namespace Jitter
 
             for (int i = 1; i < threads.Length; i++)
             {
-                threads[i] = new Thread(() =>
+                threads[i] = NewThread(() =>
                 {
-#if XBOX
-					Thread.CurrentThread.SetProcessorAffinity(xBoxMap[i]);
-#endif
                     initWaitHandle.Set();
                     ThreadProc();
                 });
 
-                threads[i].IsBackground = true;
                 threads[i].Start();
                 initWaitHandle.WaitOne();
             }
@@ -128,7 +122,7 @@ namespace Jitter
             currentWaitHandle.Set();
             PumpTasks();
 
-            while (waitingThreadCount < threads.Length - 1) Thread.Sleep(0);
+            while (waitingThreadCount < threads.Length - 1) ThreadSleep(0);
 
             currentWaitHandle.Reset();
             currentWaitHandle = (currentWaitHandle == waitHandleA) ? waitHandleB : waitHandleA;
@@ -178,6 +172,28 @@ namespace Jitter
                     tasks[taskIndex](parameters[taskIndex]);
                 }
             }
+        }
+
+        private static void ThreadSleep(int dueTime)
+        {
+#if PORTABLE
+            Task.Delay(dueTime).Wait();
+#else
+            Thread.Sleep(dueTime);
+#endif
+        }
+
+#if PORTABLE
+        private delegate void ThreadStart();
+#endif
+
+        private static Thread NewThread(ThreadStart action)
+        {
+#if PORTABLE
+            return new Thread(action.Invoke, TaskCreationOptions.LongRunning);
+#else
+            return new Thread(action) { IsBackground = true };
+#endif
         }
 
     }
