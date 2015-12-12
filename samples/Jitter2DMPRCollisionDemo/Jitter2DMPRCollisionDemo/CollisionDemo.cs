@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
@@ -14,7 +13,7 @@ using Jitter2D.LinearMath;
 using Jitter2D.Dynamics;
 using System.Diagnostics;
 
-namespace MPRCollisionDemo
+namespace CollisionDemo
 {
     /// <summary>
     /// This is the main type for your game
@@ -26,8 +25,8 @@ namespace MPRCollisionDemo
         public DebugDrawer DebugDrawer;
         public Camera Camera;
 
-        RigidBody body1 = new RigidBody(new BoxShape(2, 3));
-        RigidBody body2 = new RigidBody(new BoxShape(3, 1));
+        RigidBody body1 = new RigidBody(new BoxShape(2, 5));
+        RigidBody body2 = new RigidBody(new BoxShape(3, 2));
 
         JVector point, normal;
         float penetration;
@@ -94,21 +93,25 @@ namespace MPRCollisionDemo
             body1.Orientation += 0.001f;
             body2.Orientation -= 0.001f;
 
-            float o1 = body1.Orientation;
-            float o2 = body2.Orientation;
+            JMatrix o1 = JMatrix.CreateRotationZ(body1.Orientation);
+            JMatrix o2 = JMatrix.CreateRotationZ(body2.Orientation);
             JVector pos1 = body1.Position;
             JVector pos2 = body2.Position;
 
+            JVector point2;
+
             sw.Start();
-            hit = Collision.Detect(DebugDrawer, body1.Shape, body2.Shape, ref o1, ref o2, ref pos1, ref pos2, out point, out normal, out penetration, out iterations);
+            hit = XenoCollide.Detect(body1.Shape, body2.Shape, ref o1, ref o2, ref pos1, ref pos2, out point, out normal, out penetration);
             sw.Stop();
 
             ticks = sw.ElapsedTicks;
             sw.Reset();
 
+            DebugDrawer.DrawLine(point, point + normal);
+
+            //DebugDrawer.DrawPoint(point2);
             DebugDrawer.DrawPoint(point);
             DebugDrawer.Color = Color.Red;
-            DebugDrawer.DrawLine(point, point + JVector.Normalize(normal) * penetration);
 
             DebugDrawer.Color = Color.Black;
             DebugDrawer.DrawLine(JVector.Up, JVector.Down);
@@ -116,16 +119,16 @@ namespace MPRCollisionDemo
 
             body1.DebugDraw(DebugDrawer);
             body2.DebugDraw(DebugDrawer);
-
+            
             if (hit)
             {
                 var oldPosition = body1.Position;
 
-                body1.Position -= normal * penetration;
+                body1.Position += normal;
                 body1.DebugDraw(DebugDrawer);
                 body1.Position = oldPosition;
             }
-
+            
             base.Update(gameTime);
         }
 
