@@ -1,25 +1,32 @@
-Jitter Physics is a fast and lightweight physics engine written in C#.
+## Jitter Physics
 
-| Jitter Physics Cloth                 | Speculative Contacts Jitter Physics  |
-| ------------------------------------ | ------------------------------------ |
-| [![IMAGE ALT TEXT HERE][img1]][vid1] | [![IMAGE ALT TEXT HERE][img2]][vid2] |
+Jitter Physics is a fast and lightweight 3D physics engine written in C#.
+
+| Jitter Physics Cloth                  | Speculative Contacts Jitter Physics                  |
+| :-----------------------------------: | :--------------------------------------------------: |
+| [![Jitter Physics Cloth][img1]][vid1] | [![Speculative Contacts Jitter Physics][img2]][vid2] |
 
 
-Platforms and Frameworks 
+**Platforms & Frameworks**
  - Every platform which supports .NET/Mono 
  - Works with the Mono framework on Linux/Mac without any recompilation 
- - Also supports the XBox360 and the WindowsPhone 
+ - Also supports the XBox360 and the WindowsPhone _(up to v0.1.7)_
  - No dependencies. Every 3D engine/framework is supported: OpenTK, SlimDX, 
    SharpDX, XNA, IrrlichtEngine 
 
-Overall Design 
+**Overall Design** 
  - Written in pure C# with a clean and object orientated API 
  - Optimized for low to no garbage collections and maximum speed 
  - Supported Shapes: TriangleMesh, Terrain, Compound, MinkowskiSum, Box, Sphere, 
    Cylinder, Cone, Capsule, ConvexHull 
  - Take advantage of multi-core CPUs by using the internal multithreading of 
    the engine 
-   
+
+## Jitter Physics (2D)
+
+The ["Jitter-2D" branch][jitter2d] is still in development an is not complete.
+At this time, it is probably better to make use of [Farseer Physics][farseer].
+
 ## Quick Start
 
 ### Initialize the Physics System
@@ -44,11 +51,11 @@ The next step is to add the `Body` to the world:
 Now you can call the `Step` method to integrate the world one timestep further. 
 This should be done in you main game loop:
  
-    while(gameRunning)
+    while (gameRunning)
     {
         world.Step(1.0f / 100.0f, true);
         
-        // do other stuff like drawing
+        // do other stuff, like drawing
     }
  
 The first parameter is the timestep. This value should be as small as possible 
@@ -62,3 +69,5 @@ of the body should be different.
 [vid1]: http://www.youtube.com/watch?v=
 [img2]: http://img.youtube.com/vi/bKP2GZLlPWA/0.jpg
 [vid2]: http://www.youtube.com/watch?v=bKP2GZLlPWA
+[jitter2d]: https://github.com/mattleibow/jitterphysics/tree/Jitter-2D
+[farseer]: https://farseerphysics.codeplex.com/
