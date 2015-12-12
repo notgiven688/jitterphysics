@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>JitterPhysics</id>
+        <version>0.2.0.0</version>
+        <title>Jitter Physics</title>
+        <authors>Thorben Linneweber, Matthew Leibowitz</authors>
+        <licenseUrl>https://github.com/mattleibow/jitterphysics/blob/master/LICENSE.md</licenseUrl>
+        <projectUrl>https://github.com/mattleibow/jitterphysics</projectUrl>
+        <iconUrl>http://benjaminnitschke.com/Jitter128x128.png</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Jitter Physics is a fast and lightweight physics engine written in C#.</description>
+        <releaseNotes>https://github.com/mattleibow/jitterphysics/releases/tag/v0.2.0.0</releaseNotes>
+        <copyright>Copyright (c) 2015 Thorben Linneweber, Matthew Leibowitz</copyright>
+        <tags>Jitter, Physics, 3D</tags>
+    </metadata>
+    <files>
+        <file src="..\output\net4\Jitter.dll" target="lib\net4\Jitter.dll" />
+        <file src="..\output\net4\Jitter.pdb" target="lib\net4\Jitter.pdb" />
+        <file src="..\output\net4\Jitter.xml" target="lib\net4\Jitter.xml" />
+        
+        <file src="..\output\Portable\Jitter.dll" target="lib\portable-net45+netcore45+wpa81+wp8\Jitter.dll" />
+        <file src="..\output\Portable\Jitter.pdb" target="lib\portable-net45+netcore45+wpa81+wp8\Jitter.pdb" />
+        <file src="..\output\Portable\Jitter.xml" target="lib\portable-net45+netcore45+wpa81+wp8\Jitter.xml" />
+    </files>
+</package>
