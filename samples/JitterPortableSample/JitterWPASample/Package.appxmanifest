@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/2010/manifest" xmlns:m2="http://schemas.microsoft.com/appx/2013/manifest" xmlns:m3="http://schemas.microsoft.com/appx/2014/manifest" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest">
+  <Identity Name="8e73176a-e3c2-4426-9ee3-a30b2c88879e" Publisher="CN=Matthew" Version="1.0.0.0" />
+  <mp:PhoneIdentity PhoneProductId="8e73176a-e3c2-4426-9ee3-a30b2c88879e" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+  <Properties>
+    <DisplayName>JitterWPASample</DisplayName>
+    <PublisherDisplayName>Matthew</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+  <Prerequisites>
+    <OSMinVersion>6.3.1</OSMinVersion>
+    <OSMaxVersionTested>6.3.1</OSMaxVersionTested>
+  </Prerequisites>
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+  <Applications>
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="JitterWPASample.App">
+      <m3:VisualElements DisplayName="Jitter Physics" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\SmallLogo.png" Description="Jitter Physics" ForegroundText="light" BackgroundColor="transparent">
+        <m3:LockScreen Notification="badge" BadgeLogo="Assets\BadgeLogo.png" />
+        <m3:DefaultTile Wide310x150Logo="Assets\WideLogo.png" Square71x71Logo="Assets\Square71x71Logo.png">
+        </m3:DefaultTile>
+        <m3:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#3498DB" />
+        <m3:InitialRotationPreference>
+          <m3:Rotation Preference="portrait" />
+        </m3:InitialRotationPreference>
+      </m3:VisualElements>
+    </Application>
+  </Applications>
+</Package>
