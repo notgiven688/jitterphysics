@@ -35,7 +35,7 @@ install:
       Write-Host "Extracting MonoGame to $installerExtracted..."
       7z x -y $installerFile -o"$installerExtracted"
       Write-Host "Copying the MonoGame content pipeline to $programFiles..."
-      Copy-Item "$installerExtracted\`$PROGRAMFILES\MSBuild" "$programFiles" -Recurse 
+      Copy-Item "$installerExtracted\`$PROGRAMFILES\MSBuild\MonoGame" "$programFiles\MSBuild" -Recurse 
 
 # build
 branches:
