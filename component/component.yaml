@@ -4,8 +4,8 @@ name: Jitter Physics
 id: JitterPhysics
 publisher: Xamarin Inc
 publisher-url: http://dotnetdevaddict.co.za
-summary: Jitter Physics is a fast and lightweight physics engine written in C#.
-version: $version$
+summary: Jitter Physics is a fast and lightweight physics engine for all managed languages.
+version: 0.2.0.12
 src-url: https://github.com/mattleibow/jitterphysics
 
 details: Details.md
@@ -14,21 +14,22 @@ getting-started: GettingStarted.md
 
 is_shell: true
 no_build: true
+skip_docs: true
 packages:
-  android: JitterPhysics, Version=$version$
-  ios: JitterPhysics, Version=$version$
-  ios-unified: JitterPhysics, Version=$version$
-  winphone-8.0: JitterPhysics, Version=$version$
-  winphone-8.1: JitterPhysics, Version=$version$
-  mac-unified: JitterPhysics, Version=$version$
+  android: JitterPhysics, Version=0.2.0.12
+  ios: JitterPhysics, Version=0.2.0.12
+  ios-unified: JitterPhysics, Version=0.2.0.12
+  winphone-8.0: JitterPhysics, Version=0.2.0.12
+  winphone-8.1: JitterPhysics, Version=0.2.0.12
+  mac-unified: JitterPhysics, Version=0.2.0.12
 libraries: 
-  - android: output/Portable/JitterPhysics.dll  
-  - ios: output/Portable/JitterPhysics.dll  
-  - ios-unified: output/Portable/JitterPhysics.dll  
-  - winphone-8.0: output/Portable/JitterPhysics.dll  
-  - winphone-8.1: output/Portable/JitterPhysics.dll  
-  - winrt: output/Portable/JitterPhysics.dll  
-  - mac-unified: output/Portable/JitterPhysics.dll  
+  android: ../output/Portable/Jitter.dll  
+  ios: ../output/Portable/Jitter.dll  
+  ios-unified: ../output/Portable/Jitter.dll  
+  winphone-8.0: ../output/Portable/Jitter.dll  
+  winphone-8.1: ../output/Portable/Jitter.dll  
+  winrt: ../output/Portable/Jitter.dll  
+  mac-unified: ../output/Portable/Jitter.dll  
 local-nuget-repo: ./
 
 icons: 
