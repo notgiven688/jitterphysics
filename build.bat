@@ -21,3 +21,7 @@ copy source\Jitter\bin\Portable\Release\Jitter.xml output\Portable\
 
 rem package
 nuget pack nuget\Jitter.nuspec -OutputDirectory output
+
+rem package
+xamarin-component package ./component/
+mv component\*.xam output

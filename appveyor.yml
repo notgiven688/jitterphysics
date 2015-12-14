@@ -1,0 +1,83 @@
+# build variables
+os: Visual Studio 2015
+configuration: Release
+platform: Any CPU
+environment:
+  LibraryVersion: 0.2.0
+  
+# versioning
+version: $(LibraryVersion).{build}
+assembly_info:
+  patch: true
+  file: '**\AssemblyInfo.*'
+  assembly_version: $(LibraryVersion).0
+  assembly_file_version: '{version}'
+  assembly_informational_version: '{version}-{branch}'
+
+# packages
+install:
+  - cinst xamarin-component -version 0.99.0.194
+
+# build
+branches:
+  only:
+    - master
+before_build:
+  - if not exist output mkdir output
+  - if not exist output\net4 mkdir output\net4
+  - if not exist output\Portable mkdir output\Portable
+  - nuget restore source\Jitter.sln
+build: 
+  project: source\Jitter.sln 
+  verbosity: normal
+after_build:
+  - ps: |
+      $nugetVersion = "$env:APPVEYOR_BUILD_VERSION"
+      
+      Write-Host "Setting .nuspec version tag to $nugetVersion..."
+      $content = (Get-Content nuget\Jitter.nuspec)
+      $content = $content -replace '\$version\$', $nugetVersion
+      $content | Out-File nuget\Jitter.nuspec
+      nuget pack nuget\Jitter.nuspec -OutputDirectory output
+
+      Write-Host "Setting component.yaml version tag to $nugetVersion..."
+      $content = (Get-Content component\component.yaml)
+      $content = $content -replace '\$version\$', $nugetVersion
+      $content | Out-File component\component.yaml
+      xamarin-component package ./component/
+
+test_script:
+  - ps: |
+      Write-Host "Building the samples..."
+      
+      nuget restore samples\JitterDemo\JitterDemo.sln 
+      msbuild samples\JitterDemo\JitterDemo.sln /p:Configuration=$env:configuration /p:Platform="Any CPU"
+      If ($LastExitCode -ne 0) {
+        exit $LastExitCode
+      }
+      
+      nuget restore samples\JitterOpenGLDemo\JitterOpenGLDemo.sln 
+      msbuild samples\JitterOpenGLDemo\JitterOpenGLDemo.sln /p:Configuration=$env:configuration /p:Platform="Any CPU"
+      If ($LastExitCode -ne 0) {
+        exit $LastExitCode
+      }
+      
+      nuget restore samples\JitterPhoneDemo\SimpleJitterPhoneDemo.sln 
+      msbuild samples\JitterPhoneDemo\SimpleJitterPhoneDemo.sln /p:Configuration=$env:configuration /p:Platform="Any CPU"
+      If ($LastExitCode -ne 0) {
+        exit $LastExitCode
+      }
+      
+      nuget restore samples\JitterPortableSample\JitterSample.sln 
+      msbuild samples\JitterPortableSample\JitterSample.sln /p:Configuration=$env:configuration /p:Platform="Any CPU"
+      If ($LastExitCode -ne 0) {
+        exit $LastExitCode
+      }
+      
+# artifacts
+artifacts: 
+  - path: output\
+    name: Jitter-$(APPVEYOR_BUILD_VERSION) 
+    type: zip 
+  - path: output\JitterPhysics*.nupkg
+  - path: output\JitterPhysics*.xam
