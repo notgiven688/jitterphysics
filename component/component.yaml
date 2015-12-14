@@ -5,7 +5,7 @@ id: JitterPhysics
 publisher: Xamarin Inc
 publisher-url: http://dotnetdevaddict.co.za
 summary: Jitter Physics is a fast and lightweight physics engine for all managed languages.
-version: 0.2.0.12
+version: $version$
 src-url: https://github.com/mattleibow/jitterphysics
 
 details: Details.md
@@ -16,12 +16,12 @@ is_shell: true
 no_build: true
 skip_docs: true
 packages:
-  android: JitterPhysics, Version=0.2.0.12
-  ios: JitterPhysics, Version=0.2.0.12
-  ios-unified: JitterPhysics, Version=0.2.0.12
-  winphone-8.0: JitterPhysics, Version=0.2.0.12
-  winphone-8.1: JitterPhysics, Version=0.2.0.12
-  mac-unified: JitterPhysics, Version=0.2.0.12
+  android: JitterPhysics, Version=$version$
+  ios: JitterPhysics, Version=$version$
+  ios-unified: JitterPhysics, Version=$version$
+  winphone-8.0: JitterPhysics, Version=$version$
+  winphone-8.1: JitterPhysics, Version=$version$
+  mac-unified: JitterPhysics, Version=$version$
 libraries: 
   android: ../output/Portable/Jitter.dll  
   ios: ../output/Portable/Jitter.dll  
