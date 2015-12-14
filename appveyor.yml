@@ -55,6 +55,14 @@ after_build:
       
       $nugetVersion = "$env:APPVEYOR_BUILD_VERSION"
       
+      Write-Host "Copying the output files..."
+      copy source\Jitter\bin\net4\Release\Jitter.dll output\net4\
+      copy source\Jitter\bin\net4\Release\Jitter.pdb output\net4\
+      copy source\Jitter\bin\net4\Release\Jitter.xml output\net4\
+      copy source\Jitter\bin\Portable\Release\Jitter.dll output\Portable\
+      copy source\Jitter\bin\Portable\Release\Jitter.pdb output\Portable\
+      copy source\Jitter\bin\Portable\Release\Jitter.xml output\Portable\
+      
       Write-Host "Setting .nuspec version tag to $nugetVersion..."
       $content = (Get-Content nuget\Jitter.nuspec)
       $content = $content -replace '\$version\$', $nugetVersion
@@ -66,6 +74,7 @@ after_build:
       $content = $content -replace '\$version\$', $nugetVersion
       $content | Out-File component\component.yaml
       xamarin-component package ./component/
+      mv component\*.xam output
 
 test_script:
   - ps: |
