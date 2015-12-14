@@ -16,7 +16,26 @@ assembly_info:
 
 # packages
 install:
+  - cinst 7zip -x86
+  - cinst 7zip.commandline -x86
   - cinst xamarin-component -version 0.99.0.194
+  - ps: |
+      $tempDir="$pwd\temp"
+      $installerUrl="http://www.monogame.net/releases/v3.4/MonoGameSetup.exe"
+      $installerFile="$tempDir\MonoGameSetup.zip"
+      $installerExtracted="$tempDir\MonoGameSetup"
+      $programFiles = "${env:ProgramFiles(x86)}\"
+      
+      Write-Host "Downloading MonoGame to $installerFile..."
+      If ((Test-Path  $tempDir) -eq 0) {
+          New-Item -ItemType Directory $tempDir
+      }
+      Invoke-WebRequest $installerUrl -OutFile $installerFile
+      
+      Write-Host "Extracting MonoGame to $installerExtracted..."
+      7z x -y $installerFile -o"$installerExtracted"
+      Write-Host "Copying the MonoGame content pipeline to $programFiles..."
+      Copy-Item "$installerExtracted\`$PROGRAMFILES\" "$programFiles" -Recurse 
 
 # build
 branches:
@@ -32,6 +51,8 @@ build:
   verbosity: normal
 after_build:
   - ps: |
+      $ErrorActionPreference = "Stop"
+      
       $nugetVersion = "$env:APPVEYOR_BUILD_VERSION"
       
       Write-Host "Setting .nuspec version tag to $nugetVersion..."
@@ -48,6 +69,8 @@ after_build:
 
 test_script:
   - ps: |
+      $ErrorActionPreference = "Stop"
+      
       Write-Host "Building the samples..."
       
       nuget restore samples\JitterDemo\JitterDemo.sln 
