@@ -95,7 +95,7 @@ test_script:
       }
       
       nuget restore samples\JitterPhoneDemo\SimpleJitterPhoneDemo.sln 
-      msbuild samples\JitterPhoneDemo\SimpleJitterPhoneDemo.sln /p:Configuration=$env:configuration /p:Platform="Any CPU"
+      msbuild samples\JitterPhoneDemo\SimpleJitterPhoneDemo.sln /p:Configuration=$env:configuration /p:Platform="x86"
       If ($LastExitCode -ne 0) {
         exit $LastExitCode
       }
