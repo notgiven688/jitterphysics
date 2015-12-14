@@ -4,6 +4,13 @@ configuration: Release
 platform: Any CPU
 environment:
   LibraryVersion: 0.2.0
+xamarin:
+  email: 
+    secure: +SUXZSPLHwp39+Yh09d2xxVGsEgHtlSD4NT1Og5h3sg=
+  password:
+    secure: Tvdf5rZl6IOCwZbvyj9B2w==
+  android: true
+  ios: true
   
 # versioning
 version: $(LibraryVersion).{build}
