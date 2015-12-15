@@ -10,32 +10,38 @@ languages.
  - Every platform which supports .NET/Mono 
  - Works with the Mono framework on Linux/Mac without any recompilation 
  - No dependencies. Every 3D engine/framework is supported: OpenTK, SlimDX, 
-   SharpDX, XNA, IrrlichtEngine 
+   SharpDX, XNA, MonoGame, IrrlichtEngine 
 
 **Overall Design** 
  - Written in pure C# with a clean and object orientated API 
  - Optimized for low to no garbage collections and maximum speed 
  - Supported Shapes: TriangleMesh, Terrain, Compound, MinkowskiSum, Box, Sphere, 
    Cylinder, Cone, Capsule, ConvexHull 
- - Take advantage of multi-core CPUs by using the internal multithreading of 
+ - Take advantage of multi-core CPUs by using the internal multi-threading of 
    the engine 
+
+## The Samples
+_The samples use the [MonoGame][mg] framework and the MonoGame content 
+pipeline. To build the samples, and the content, the MonoGame content
+pipeline needs to be installed using the [MonoGame installer][mg-setup]._ 
 
 ## Quick Start
 
 ### Initialize the Physics System
-Create a world class and initialize it with a `CollisionSystem`:
+Create a `World` instance and initialize it with a `CollisionSystem`:
 
     CollisionSystem collision = new CollisionSystemSAP();
     World world = new World(collision);
 
 ### Add Objects to the World
-Create a shape of your choice and pass it to a body:
+Create a shape of your choice, and pass it to a body:
 
     Shape shape = new BoxShape(1.0f, 2.0f, 3.0f);
     RigidBody body = new RigidBody(shape);
 
-It's valid to use the same shape for different bodies. 
-Set the position and orientation of the body by using it's properties. 
+It is valid to use the same shape for different bodies. The 
+position and orientation of the body can be set using it's properties.
+
 The next step is to add the `Body` to the world:
  
     world.AddBody(body);
@@ -53,6 +59,9 @@ This should be done in you main game loop:
  
 The first parameter is the timestep. This value should be as small as possible 
 to get a stable simulation. The second parameter is for whether using internal 
-multithreading or not. That's it the body is now simulated and affected by 
+multi-threading or not. That's it the body is now simulated and affected by 
 default gravity specified in `World.Gravity`. After each timestep the `Position` 
 of the body should be different.
+
+[mg]: http://www.monogame.net/
+[mg-setup]: http://www.monogame.net/2015/04/29/monogame-3-4/

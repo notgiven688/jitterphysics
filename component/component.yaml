@@ -3,7 +3,7 @@
 name: Jitter Physics
 id: JitterPhysics
 publisher: Xamarin Inc
-publisher-url: http://dotnetdevaddict.co.za
+publisher-url: https://xamarin.com
 summary: Jitter Physics is a fast and lightweight physics engine for all managed languages.
 version: $version$
 src-url: https://github.com/mattleibow/jitterphysics

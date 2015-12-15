@@ -85,7 +85,7 @@ Raycasting means that a ray (a line with a start and an direction in
 3-dimensional space. here: (1,1,1) and (-100,0,0)) is 'shot' from it's start 
 along it's direction. The ray 'hits' one of the bodies within the scene and 
 the collision information is reported back. 'fraction' gives you the 
-information where (at the ray) the collision occured:
+information where (at the ray) the collision occurred:
  
     JVector hitPoint = JVector.One + fraction * (JVector.Right * 100.0 f);
  
@@ -135,12 +135,12 @@ physics state a timestep further:
     world.Step(1.0f / 100.0f, true);
  
 The first parameter is the timestep, the second one tells the engine to use 
-internal multithreading or not. In our simple one-body world the box gets 
+internal multi-threading or not. In our simple one-body world the box gets 
 affected by gravity and the position changes. In your 'Draw' method you are now 
 able to draw a box with the position and orientation of the body.
 
 ## Complete Sample
-Here, we careate a complete physics scene, and simulated using just a few 
+Here, we create a complete physics scene, and simulated using just a few 
 lines of code. 
  
     private void BuildScene()
