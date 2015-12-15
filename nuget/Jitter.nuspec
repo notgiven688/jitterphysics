@@ -10,7 +10,7 @@
         <iconUrl>http://benjaminnitschke.com/Jitter128x128.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Jitter Physics is a fast and lightweight physics engine written in C#.</description>
-        <releaseNotes>https://github.com/mattleibow/jitterphysics/releases/tag/v0.2.0.0</releaseNotes>
+        <releaseNotes>https://github.com/mattleibow/jitterphysics/releases/tag/v0.2.0</releaseNotes>
         <copyright>Copyright (c) 2015 Thorben Linneweber, Matthew Leibowitz</copyright>
         <tags>Jitter, Physics, 3D</tags>
     </metadata>
