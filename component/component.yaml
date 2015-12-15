@@ -41,3 +41,5 @@ samples:
     path: ../samples/JitterPortableSample/JitterAndroidSample.sln
   - name: iOS Sample
     path: ../samples/JitterPortableSample/JitteriOSSample.sln
+  - name: Windows Phone Sample
+    path: ../samples/JitterPortableSample/JitterWPASample.sln
