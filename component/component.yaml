@@ -30,7 +30,7 @@ libraries:
   winphone-8.1: ../output/Portable/Jitter.dll  
   winrt: ../output/Portable/Jitter.dll  
   mac-unified: ../output/Portable/Jitter.dll  
-local-nuget-repo: ./
+local-nuget-repo: ../output
 
 icons: 
   - ../media/Jitter Logo/stack_128x128.png
@@ -39,7 +39,28 @@ icons:
 samples: 
   - name: Android Sample
     path: ../samples/JitterPortableSample/JitterAndroidSample.sln
+    removeProjects:
+      - Jitter.Portable
+    installNuGets:
+      - project: JitterAndroidSample
+        packages: JitterPhysics
+      - project: JitterSample
+        packages: JitterPhysics
   - name: iOS Sample
     path: ../samples/JitterPortableSample/JitteriOSSample.sln
+    removeProjects:
+      - Jitter.Portable
+    installNuGets:
+      - project: JitteriOSSample
+        packages: JitterPhysics
+      - project: JitterSample
+        packages: JitterPhysics
   - name: Windows Phone Sample
     path: ../samples/JitterPortableSample/JitterWPASample.sln
+    removeProjects:
+      - Jitter.Portable
+    installNuGets:
+      - project: JitterWPASample
+        packages: JitterPhysics
+      - project: JitterSample
+        packages: JitterPhysics

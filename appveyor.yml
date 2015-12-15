@@ -25,7 +25,7 @@ assembly_info:
 install:
   - cinst 7zip -x86
   - cinst 7zip.commandline -x86
-  - cinst xamarin-component -version 0.99.0.194
+  - cinst xamarin-component -version 1.1.0.7
   - ps: |
       $tempDir="$pwd\temp"
       $installerUrl="http://www.monogame.net/releases/v3.4/MonoGameSetup.exe"
