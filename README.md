@@ -1,6 +1,6 @@
 ## Jitter Physics
 
-![JitterPhysics Build][appveyor-badge] ![JitterPhysics on NuGet][nuget-badge]
+[![JitterPhysics Build][appveyor-badge]][appveyor-link] [![JitterPhysics on NuGet][nuget-badge]][nuget-link]
 
 Jitter Physics is a fast and lightweight 3D physics engine written in C#.
 
@@ -75,4 +75,6 @@ of the body should be different.
 [farseer]: https://farseerphysics.codeplex.com/
 
 [appveyor-badge]: https://img.shields.io/appveyor/ci/mattleibow/JitterPhysics/master.svg?style=flat-square
+[appveyor-link]: https://ci.appveyor.com/project/mattleibow/jitterphysics
 [nuget-badge]: https://img.shields.io/nuget/v/JitterPhysics.svg?style=flat-square
+[nuget-link]: https://www.nuget.org/packages/JitterPhysics/
