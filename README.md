@@ -10,11 +10,11 @@ Jitter Physics is a fast and lightweight 3D physics engine written in C#.
 
 
 **Platforms & Frameworks**
- - Every platform which supports .NET/Mono 
+ - Every platform which supports .NET, Mono or Xamarin
  - Works with the Mono framework on Linux/Mac without any recompilation 
- - Also supports the XBox360 and the WindowsPhone _(up to v0.1.7)_
+ - Also supports the Xbox360 and Windows Phone _(up to v0.1.7)_
  - No dependencies. Every 3D engine/framework is supported: OpenTK, SlimDX, 
-   SharpDX, XNA, IrrlichtEngine 
+   SharpDX, XNA, IrrlichtEngine, Urho3D  
 
 **Overall Design** 
  - Written in pure C# with a clean and object orientated API 
