@@ -66,6 +66,10 @@ multithreading or not. That's it the body is now simulated and affected by
 default gravity specified in `World.Gravity`. After each timestep the `Position` 
 of the body should be different.
 
+## Credits
+
+This library was originally written by Thorben Linneweber. Original source code can be found at https://code.google.com/archive/p/jitterphysics.
+
 
 [img1]: http://img.youtube.com/vi/cM23EJOFp3E/0.jpg
 [vid1]: http://www.youtube.com/watch?v=
