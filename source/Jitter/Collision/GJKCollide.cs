@@ -346,6 +346,12 @@ namespace Jitter.Collision
                     else
                     {
                         lambda = lambda - VdotW / VdotR;
+                        if (lambda > 1)
+                        {
+                            //If we've gone beyond where the ray can reach, there's obviously no hit.
+                            simplexSolverPool.GiveBack(simplexSolver);
+                            return false;
+                        }
                         JVector.Multiply(ref r, lambda, out x);
                         JVector.Add(ref origin, ref x, out x);
                         JVector.Subtract(ref x, ref p, out w);
