@@ -334,6 +334,11 @@ namespace Jitter.Collision
 
                 float VdotW = JVector.Dot(ref v, ref w);
 
+                if (lambda > 1.0f)
+                {
+                    return false;
+                }
+
                 if (VdotW > 0.0f)
                 {
                     VdotR = JVector.Dot(ref v, ref r);
@@ -346,12 +351,6 @@ namespace Jitter.Collision
                     else
                     {
                         lambda = lambda - VdotW / VdotR;
-                        if (lambda > 1)
-                        {
-                            //If we've gone beyond where the ray can reach, there's obviously no hit.
-                            simplexSolverPool.GiveBack(simplexSolver);
-                            return false;
-                        }
                         JVector.Multiply(ref r, lambda, out x);
                         JVector.Add(ref origin, ref x, out x);
                         JVector.Subtract(ref x, ref p, out w);
@@ -367,13 +366,16 @@ namespace Jitter.Collision
 
             // Giving back the fraction like this *should* work
             // but is inaccurate against large objects:
-            // fraction = lambda;
+            fraction = lambda;
 
+            /*
+            // Fraction will be used because calculating fraction using this code results in random flickering of the hit point along the ray.
             JVector p1, p2;
             simplexSolver.ComputePoints(out p1, out p2);
 
             p2 = p2 - origin;
             fraction = p2.Length() / direction.Length();
+            */
 
             #endregion
 
