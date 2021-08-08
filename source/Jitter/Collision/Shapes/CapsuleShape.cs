@@ -63,7 +63,7 @@ namespace Jitter.Collision.Shapes
         /// </summary>
         public override void CalculateMassInertia()
         {
-            float massSphere = (3.0f / 4.0f) * JMath.Pi * radius * radius * radius;
+            float massSphere = (4.0f / 3.0f) * JMath.Pi * radius * radius * radius;
             float massCylinder = JMath.Pi * radius * radius * length;
 
             mass = massCylinder + massSphere;
