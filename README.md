@@ -1,6 +1,12 @@
-## Jitter Physics
-
+# Jitter Physics
 [![JitterPhysics Build][appveyor-badge]][appveyor-link] [![JitterPhysics on NuGet][nuget-badge]][nuget-link]
+
+---
+## Project Update: August 8, 2021
+
+Jitter Physics is under active development again. Expect new updates, improvements and code fixes in the near future.
+
+---
 
 Jitter Physics is a fast and lightweight 3D physics engine written in C#.
 
@@ -13,8 +19,7 @@ Jitter Physics is a fast and lightweight 3D physics engine written in C#.
  - Every platform which supports .NET, Mono or Xamarin
  - Works with the Mono framework on Linux/Mac without any recompilation 
  - Also supports the Xbox360 and Windows Phone _(up to v0.1.7)_
- - No dependencies. Every 3D engine/framework is supported: OpenTK, SlimDX, 
-   SharpDX, XNA, IrrlichtEngine, Urho3D  
+ - No dependencies. Works with every 3D engine/framework. 
 
 **Overall Design** 
  - Written in pure C# with a clean and object orientated API 
@@ -65,10 +70,6 @@ to get a stable simulation. The second parameter is for whether using internal
 multithreading or not. That's it the body is now simulated and affected by 
 default gravity specified in `World.Gravity`. After each timestep the `Position` 
 of the body should be different.
-
-## Credits
-
-This library was originally written by Thorben Linneweber. Original source code can be found at https://code.google.com/archive/p/jitterphysics.
 
 
 [img1]: http://img.youtube.com/vi/cM23EJOFp3E/0.jpg
