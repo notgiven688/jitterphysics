@@ -8,10 +8,6 @@ A new version of the engine is available!
 
 [Jitter Physics 2](https://github.com/notgiven688/jitterphysics2) !
 
-## Project Update: August 8, 2021
-
-Jitter Physics is under active development again. Expect new updates, improvements and code fixes in the near future.
-
 ---
 
 Jitter Physics is a fast and lightweight 3D physics engine written in C#.
